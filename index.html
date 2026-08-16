@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Favo3DWorld – Printed into Reality</title>
+  <meta name="description" content="Favo3DWorld – hochwertige 3D-gedruckte Modelle, auf Lager oder Print on Demand.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <span>🚚 Kostenloser Versand ab CHF 70.–</span>
+    <span>🇨🇭 Schweizer Qualität</span>
+    <span>🛡 Sichere Bezahlung</span>
+  </div>
+
+  <header class="main-header">
+    <a class="brand" href="#start">
+      <div class="fw-logo">
+        <span class="f">F</span><span class="w">W</span>
+      </div>
+      <div class="brand-copy">
+        <strong>FAVO<span>3D</span></strong>
+        <small>WORLD</small>
+        <em>PRINTED INTO REALITY</em>
+      </div>
+    </a>
+
+    <div class="search">
+      <input type="search" placeholder="Suche nach Produkten...">
+      <button>⌕</button>
+    </div>
+
+    <div class="account-actions">
+      <button>♙ <span>Konto</span></button>
+      <button>♡ <span>Wunschliste</span></button>
+      <button class="cart cart-trigger" type="button">▢ <span>Warenkorb</span><b class="cart-count">0</b></button>
+<button class="admin-open" id="openAdmin" type="button">⚙ Produkte verwalten</button>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <a href="#shop">Shop⌄</a>
+    <a href="#kategorien">Kategorien⌄</a>
+    <a href="#lager">Auf Lager</a>
+    <a href="#demand">Print on Demand</a>
+    <a href="#ueber">Über uns</a>
+    <a href="#faq">FAQ</a>
+    <a href="#kontakt">Kontakt</a>
+  </nav>
+
+  <main id="start">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">PRINTED INTO REALITY</span>
+        <h1>Deine Ideen.<br>Unsere<br><span>Leidenschaft.</span></h1>
+        <p>Besondere 3D-gedruckte Modelle für Sammler, Deko-Liebhaber, Gamer und kreative Köpfe.</p>
+        <div class="cta-row">
+          <a href="#shop" class="btn primary">Jetzt entdecken →</a>
+          <a href="#ueber" class="btn secondary">Über den Druck</a>
+        </div>
+        <div class="mini-features">
+          <span>◒ Hochwertiger Druck</span>
+          <span>♡ Mit Liebe gefertigt</span>
+          <span>⬡ Sicherer Versand</span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <img src="assets/portal-hero.png" alt="Favo3DWorld Portal Illustration">
+      </div>
+
+      <div class="hero-side">
+        <article id="lager" class="status-card">
+          <div class="status-icon teal">◇</div>
+          <div>
+            <strong>SOFORT VERFÜGBAR</strong>
+            <p>Bereits gedruckt und auf Lager.</p>
+            <p><b>Versand in 1–2 Werktagen.</b></p>
+          </div>
+        </article>
+
+        <article id="demand" class="status-card">
+          <div class="status-icon gold">▤</div>
+          <div>
+            <strong>PRINT ON DEMAND</strong>
+            <p>Wird nach deiner Bestellung für dich gedruckt.</p>
+            <p><b>Produktionszeit: je nach Modell.</b></p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="shop-flow">
+      <div><b>1</b><span>Modell wählen</span></div>
+      <i>→</i><div><b>2</b><span>Farben konfigurieren</span></div>
+      <i>→</i><div><b>3</b><span>Warenkorb</span></div>
+      <i>→</i><div><b>4</b><span>TWINT · Karte · PayPal</span></div>
+    </section>
+
+    <section id="shop" class="content-grid">
+      <div class="products-wrap">
+        <div class="section-title"><h2>Beliebte Modelle →</h2></div>
+        <div class="products">
+          <article class="product">
+            <div class="product-media">
+              <span class="badge demand">Print on Demand</span>
+              <button class="heart">♡</button>
+              <img src="assets/cavallo-schwarz-schwarz.png" alt="Cavallo">
+            </div>
+            <h3>Cavallo</h3>
+            <strong>ab CHF 15.–</strong>
+            <div class="stars">★★★★★ <small>Mehrfarbig konfigurierbar</small></div>
+            <button class="horse-configure" id="openHorseConfig" type="button">Konfigurieren</button>
+          </article>
+          <article class="product">
+            <div class="product-media">
+              <span class="badge demand">Print on Demand</span>
+              <button class="heart">♡</button>
+              <img src="assets/hoodie-drache.png" alt="Hoodie Drache">
+            </div>
+            <h3>Hoodie Drache</h3>
+            <strong>ab CHF 18.–</strong>
+            <div class="stars">★★★★★ <small>Körper & Hoodie konfigurierbar</small></div>
+            <button class="hoodie-configure" id="openHoodieConfig" type="button">Konfigurieren</button>
+          </article>
+
+          <article class="product">
+            <div class="product-media">
+              <span class="badge demand">Print on Demand</span>
+              <button class="heart">♡</button>
+              <img src="assets/krieger.png" alt="Nordischer Krieger">
+            </div>
+            <h3>Nordischer Krieger</h3>
+            <strong>CHF 34.90</strong>
+            <div class="stars">★★★★★ <small>(86)</small></div>
+            <button class="configure" data-name="Nordischer Krieger" data-price="34.90">Konfigurieren</button>
+          </article>
+
+          <article class="product">
+            <div class="product-media">
+              <span class="badge stock">Auf Lager</span>
+              <button class="heart">♡</button>
+              <img src="assets/drachenwaechter.png" alt="Drachenwächter">
+            </div>
+            <h3>Drachenwächter</h3>
+            <strong>CHF 39.90</strong>
+            <div class="stars">★★★★★ <small>(128)</small></div>
+            <button class="add">In den Warenkorb</button>
+          </article>
+
+          <article class="product">
+            <div class="product-media">
+              <span class="badge demand">Print on Demand</span>
+              <button class="heart">♡</button>
+              <img src="assets/baby-drache.png" alt="Baby Drache">
+            </div>
+            <h3>Baby Drache</h3>
+            <strong>CHF 24.90</strong>
+            <div class="stars">★★★★★ <small>(92)</small></div>
+            <button class="configure" data-name="Baby Drache" data-price="24.90">Konfigurieren</button>
+          </article>
+        </div>
+        <div class="all-products"><button>Alle Produkte ansehen</button></div>
+      </div>
+
+      <aside id="kategorien" class="categories">
+        <div class="section-title"><h2>Kategorien entdecken →</h2></div>
+        <div class="category-grid">
+          <button>🏰<span>Fantasy &<br>Figuren</span></button>
+          <button>⚱️<span>Deko &<br>Zubehör</span></button>
+          <button>🐾<span>Tiere &<br>Natur</span></button>
+          <button>🤖<span>Sci-Fi &<br>Technik</span></button>
+          <button>🚗<span>Fahrzeuge &<br>Modelle</span></button>
+          <button>🎁<span>Geschenke &<br>Personalisierte</span></button>
+          <button>🗿<span>Büsten &<br>Statuen</span></button>
+          <button>⚔️<span>Wargaming &<br>Tabletop</span></button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="benefits">
+      <div>🏅<span><b>Top Qualität</b><small>Präzise Details und saubere Oberflächen.</small></span></div>
+      <div>🎨<span><b>Viele Farben</b><small>Wähle deine Lieblingsfarbe bei vielen Modellen.</small></span></div>
+      <div>🔒<span><b>Sichere Zahlung</b><small>Bequem & sicher bezahlen.</small></span></div>
+      <div>🎧<span><b>Kundensupport</b><small>Wir sind für dich da – vor und nach der Bestellung.</small></span></div>
+      <div class="quote">“ <span>Top Qualität, schneller Versand und mit viel Liebe zum Detail gedruckt.<br><b>– Lukas M.</b></span> ★★★★★</div>
+    </section>
+
+    <section id="ueber" class="simple-section">
+      <span class="eyebrow">ÜBER UNS</span>
+      <h2>Deine Welt. Gedruckt für dich.</h2>
+      <p>Ein Teil unserer Modelle ist sofort verfügbar. Andere werden nach Bestellung in deiner gewünschten Konfiguration gefertigt.</p>
+    </section>
+
+    <section id="faq" class="simple-section">
+      <span class="eyebrow">FAQ</span>
+      <details open><summary>Was bedeutet Print on Demand?</summary><p>Das Modell wird nach deiner Bestellung gefertigt. Du kannst je nach Produkt Farbe, Grösse und weitere Optionen auswählen.</p></details>
+      <details><summary>Was bedeutet Auf Lager?</summary><p>Das Produkt ist bereits gedruckt und kann nach der Bestellung schneller versendet werden.</p></details>
+    </section>
+  </main>
+
+  <footer id="kontakt">
+    <div><b>FAVO3D WORLD</b><span>Printed into Reality</span></div>
+    <div><a href="#shop">Shop</a><a href="#kategorien">Kategorien</a></div>
+    <div><a href="#faq">FAQ</a><a href="#">Versand</a><a href="#">Kontakt</a></div>
+  </footer>
+
+  
+
+  <button class="floating-cart cart-trigger" type="button">🛒 Warenkorb <b class="cart-count">0</b></button>
+
+  
+<div class="admin-modal" id="adminModal">
+  <div class="overlay" data-close-admin></div>
+  <div class="admin-card">
+    <button class="x" data-close-admin>×</button>
+    <span class="eyebrow">FAVO3D WORLD</span>
+    <h2>Produktverwaltung</h2>
+    <p class="admin-intro">Hier kannst du Testprodukte selbst anlegen. Die Daten werden in diesem Browser gespeichert.</p>
+    <div class="admin-grid">
+      <section>
+        <h3>Neues Produkt</h3>
+        <label>Produktname<input id="adminName" placeholder="z. B. Fantasy Drache"></label>
+        <label>Produktart
+          <select id="adminType"><option>Print on Demand</option><option>Auf Lager</option></select>
+        </label>
+        <label>Produktbild<input id="adminImage" type="file" accept="image/*"></label>
+        <label>3D-Modell (.3mf)<input id="admin3mf" type="file" accept=".3mf,model/3mf"></label>
+        <div class="file-status" id="admin3mfStatus">Noch keine 3MF-Datei gewählt</div>
+        <div class="image-preview" id="adminImagePreview">Noch kein Bild gewählt</div>
+        <div class="three-mf-info">
+          <b>3MF-Datei</b>
+          <span>Die Demo speichert Dateiname, Größe und die 3MF-Datei lokal im Browser. Im echten Shop wird die Datei geschützt auf dem Server gespeichert und ist für Kunden nicht downloadbar.</span>
+        </div>
+
+        <h3>Grössen & Preise</h3>
+        <div id="sizeRows" class="size-rows"></div>
+        <button class="add-size" id="addSize" type="button">＋ Grösse hinzufügen</button>
+        <label class="check"><input id="customSize" type="checkbox" checked> Andere Größe auf Anfrage erlauben</label>
+
+        <h3>Farbbereiche</h3>
+        <label>Bereich 1<input id="zone1" placeholder="z. B. Körper"></label>
+        <label>Bereich 2<input id="zone2" placeholder="z. B. Sockel / Hoodie"></label>
+        <p class="small-note">Standardfarben: Petrol, Schwarz, Weiß, Gold und Rot.</p>
+        <button class="btn primary wide" id="saveProduct" type="button">Produkt speichern</button>
+        <button class="btn secondary wide edit-cancel" id="cancelEdit" type="button" style="display:none">Bearbeiten abbrechen</button>
+      </section>
+      <section>
+        <h3>Meine Testprodukte</h3>
+        <div id="adminProducts"></div>
+        <div class="admin-warning"><b>Demo-Verwaltung</b><br>Diese Version speichert selbst angelegte Produkte nur lokal in deinem Browser. Für den echten Online-Shop bauen wir später Login, Datenbank und Bildspeicher ein.</div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="horse-modal" id="horseModal">
+    <div class="overlay" data-close-horse></div>
+    <div class="horse-card">
+      <button class="x" data-close-horse>×</button>
+      <div class="horse-preview">
+        <span class="badge demand">Print on Demand</span>
+        <img id="horsePreview" src="assets/cavallo-schwarz-schwarz.png" alt="Cavallo Vorschau">
+        <div class="chosen" id="chosenPreview">Pferd Schwarz · Sockel Schwarz</div>
+      </div>
+      <div class="horse-options">
+        <span class="eyebrow">MEHRFARBIGE KONFIGURATION</span>
+        <h2>Cavallo</h2>
+        <p>Pferd und Sockel können unabhängig voneinander konfiguriert werden.</p>
+
+        <div class="option">
+          <div class="option-head"><b>🐎 Pferd</b><span id="horseColorName">Schwarz</span></div>
+          <div class="swatches" id="horseColors">
+            <button data-key="petrol" data-label="Petrol" style="--c:#2e9190"></button>
+            <button class="active" data-key="schwarz" data-label="Schwarz" style="--c:#252525"></button>
+            <button data-key="weiss" data-label="Weiss" style="--c:#ecebe7"></button>
+            <button data-key="gold" data-label="Gold" style="--c:#c89b4b"></button>
+            <button data-key="rot" data-label="Rot" style="--c:#a94e49"></button>
+          </div>
+        </div>
+
+        <div class="option">
+          <div class="option-head"><b>◉ Sockel</b><span id="baseColorName">Schwarz</span></div>
+          <div class="swatches" id="baseColors">
+            <button data-key="petrol" data-label="Petrol" style="--c:#2e9190"></button>
+            <button class="active" data-key="schwarz" data-label="Schwarz" style="--c:#252525"></button>
+            <button data-key="weiss" data-label="Weiss" style="--c:#ecebe7"></button>
+            <button data-key="gold" data-label="Gold" style="--c:#c89b4b"></button>
+            <button data-key="rot" data-label="Rot" style="--c:#a94e49"></button>
+          </div>
+        </div>
+
+        <label class="select-label">Grösse
+          <select id="horseSize">
+      <option value="50" data-price="15">50 cm hoch — CHF 15.–</option>
+      <option value="60" data-price="20">60 cm hoch — CHF 20.–</option>
+      <option value="70" data-price="25">70 cm hoch — CHF 25.–</option>
+      <option value="custom" data-price="0">Andere Grösse — auf Anfrage</option>
+    </select>
+        </label>
+        <div class="config-summary"><span id="horseSummary">Pferd: Schwarz · Sockel: Schwarz · 50 cm</span><strong id="horsePrice">CHF 15.–</strong></div>
+        <button class="btn primary wide" id="horseAdd" type="button">In den Warenkorb</button>
+        <button class="btn secondary wide request-size" id="requestSize" type="button" style="display:none">Andere Grösse anfragen</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="horse-modal" id="hoodieModal">
+    <div class="overlay" data-close-hoodie></div>
+    <div class="horse-card">
+      <button class="x" data-close-hoodie>×</button>
+      <div class="horse-preview">
+        <span class="badge demand">Print on Demand</span>
+        <img id="hoodiePreview" src="assets/hoodie-drache-schwarz.png" alt="Hoodie Drache Vorschau">
+        <div class="chosen" id="hoodieChosen">Körper Schwarz · Hoodie Schwarz</div>
+      </div>
+      <div class="horse-options">
+        <span class="eyebrow">MEHRFARBIGE KONFIGURATION</span>
+        <h2>Hoodie Drache</h2>
+        <p>Körper und Hoodie können getrennt ausgewählt werden. In dieser Demo wird die Hoodie-Farbe bereits im Bild gezeigt.</p>
+
+        <div class="option">
+          <div class="option-head"><b>🐉 Körper</b><span id="bodyColorName">Schwarz</span></div>
+          <div class="swatches" id="bodyColors">
+            <button data-key="petrol" data-label="Petrol" style="--c:#2e9190"></button>
+            <button class="active" data-key="schwarz" data-label="Schwarz" style="--c:#252525"></button>
+            <button data-key="weiss" data-label="Weiss" style="--c:#ecebe7"></button>
+            <button data-key="gold" data-label="Gold" style="--c:#c89b4b"></button>
+            <button data-key="rot" data-label="Rot" style="--c:#a94e49"></button>
+          </div>
+        </div>
+
+        <div class="option">
+          <div class="option-head"><b>👕 Hoodie</b><span id="hoodieColorName">Schwarz</span></div>
+          <div class="swatches" id="hoodieColors">
+            <button data-key="petrol" data-label="Petrol" style="--c:#2e9190"></button>
+            <button class="active" data-key="schwarz" data-label="Schwarz" style="--c:#252525"></button>
+            <button data-key="weiss" data-label="Weiss" style="--c:#ecebe7"></button>
+            <button data-key="gold" data-label="Gold" style="--c:#c89b4b"></button>
+            <button data-key="rot" data-label="Rot" style="--c:#a94e49"></button>
+          </div>
+        </div>
+
+        <label class="select-label">Grösse
+          <select id="hoodieSize">
+            <option value="50" data-price="18">50 cm hoch — CHF 18.–</option>
+            <option value="60" data-price="23">60 cm hoch — CHF 23.–</option>
+            <option value="70" data-price="28">70 cm hoch — CHF 28.–</option>
+            <option value="custom" data-price="0">Andere Grösse — auf Anfrage</option>
+          </select>
+        </label>
+        <div class="config-summary"><span id="hoodieSummary">Körper: Schwarz · Hoodie: Schwarz · 50 cm</span><strong id="hoodiePrice">CHF 18.00</strong></div>
+        <button class="btn primary wide" id="hoodieAdd" type="button">In den Warenkorb</button>
+        <button class="btn secondary wide request-size" id="hoodieRequest" type="button" style="display:none">Andere Grösse anfragen</button>
+      </div>
+    </div>
+  </div>
+
+<div class="drawer" id="cartDrawer">
+    <div class="overlay" data-close-cart></div>
+    <aside class="drawer-panel">
+      <button class="x" data-close-cart>×</button>
+      <span class="eyebrow">DEINE BESTELLUNG</span>
+      <h2>Warenkorb</h2>
+      <div id="cartItems"><p class="empty">Dein Warenkorb ist noch leer.</p></div>
+      <div class="cart-total"><span>Total</span><strong id="cartTotal">CHF 0.00</strong></div>
+      <button class="btn primary wide" id="toCheckout" type="button" disabled>Zur Kasse</button>
+    </aside>
+  </div>
+
+  <div class="checkout-modal" id="checkoutModal">
+    <div class="overlay" data-close-checkout></div>
+    <div class="checkout-card">
+      <button class="x" data-close-checkout>×</button>
+      <span class="eyebrow">CHECKOUT</span>
+      <h2>Bestellung abschliessen</h2>
+      <div class="checkout-grid">
+        <div>
+          <h3>Lieferadresse</h3>
+          <label>Vorname<input id="firstName" placeholder="Max"></label>
+          <label>Nachname<input id="lastName" placeholder="Muster"></label>
+          <label>E-Mail<input id="email" type="email" placeholder="max@beispiel.ch"></label>
+          <label>Strasse & Nr.<input id="street" placeholder="Musterstrasse 1"></label>
+          <div class="two"><label>PLZ<input id="zip" placeholder="3000"></label><label>Ort<input id="city" placeholder="Bern"></label></div>
+        </div>
+        <div>
+          <h3>Zahlungsart</h3>
+          <div class="payments">
+            <button class="payment active" data-pay="TWINT"><b>TWINT</b><span>Schweizer Mobile Payment</span></button>
+            <button class="payment" data-pay="Karte"><b>💳 Kredit-/Debitkarte</b><span>Visa / Mastercard</span></button>
+            <button class="payment" data-pay="PayPal"><b>PayPal</b><span>Mit PayPal bezahlen</span></button>
+          </div>
+          <div class="checkout-summary"><small>Deine Produkte</small><div id="checkoutItems"></div><div class="grand"><span>Total</span><strong id="checkoutTotal">CHF 0.00</strong></div></div>
+        </div>
+      </div>
+      <button class="btn primary wide place-order" id="placeOrder" type="button">Testbestellung absenden</button>
+      <p class="demo-note">Demo – es wird noch keine echte Zahlung ausgelöst.</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Zum Warenkorb hinzugefügt ✓</div>
+  <script>
+
+let cart=[], horse='schwarz', horseLabel='Schwarz', base='schwarz', baseLabel='Schwarz', payment='TWINT';
+let price=15;
+const horseModal=document.getElementById('horseModal'), drawer=document.getElementById('cartDrawer'), checkout=document.getElementById('checkoutModal'), toast=document.getElementById('toast');
+
+document.querySelectorAll('.heart').forEach(b=>b.onclick=()=>b.textContent=b.textContent==='♡'?'♥':'♡');
+document.getElementById('openHorseConfig').addEventListener('click',()=>horseModal.classList.add('open'));
+document.querySelectorAll('[data-close-horse]').forEach(x=>x.onclick=()=>horseModal.classList.remove('open'));
+document.querySelectorAll('[data-close-cart]').forEach(x=>x.onclick=()=>drawer.classList.remove('open'));
+document.querySelectorAll('[data-close-checkout]').forEach(x=>x.onclick=()=>checkout.classList.remove('open'));
+
+function updateHorse(){
+ document.getElementById('horsePreview').src=`assets/cavallo-${horse}-${base}.png`;
+ document.getElementById('horseColorName').textContent=horseLabel;
+ document.getElementById('baseColorName').textContent=baseLabel;
+ const sel=document.getElementById('horseSize');
+ const s=sel.value;
+ const custom=s==='custom';
+ price=custom?0:Number(sel.options[sel.selectedIndex].dataset.price);
+ document.getElementById('chosenPreview').textContent=`Pferd ${horseLabel} · Sockel ${baseLabel}`;
+ document.getElementById('horseSummary').textContent=custom
+   ? `Pferd: ${horseLabel} · Sockel: ${baseLabel} · Andere Grösse`
+   : `Pferd: ${horseLabel} · Sockel: ${baseLabel} · ${s} cm`;
+ document.getElementById('horsePrice').textContent=custom?'Preis auf Anfrage':`CHF ${price.toFixed(2)}`;
+ document.getElementById('horseAdd').style.display=custom?'none':'block';
+ document.getElementById('requestSize').style.display=custom?'block':'none';
+}
+document.querySelectorAll('#horseColors button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#horseColors button').forEach(x=>x.classList.remove('active'));b.classList.add('active');horse=b.dataset.key;horseLabel=b.dataset.label;updateHorse()});
+document.querySelectorAll('#baseColors button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#baseColors button').forEach(x=>x.classList.remove('active'));b.classList.add('active');base=b.dataset.key;baseLabel=b.dataset.label;updateHorse()});
+document.getElementById('horseSize').onchange=updateHorse;
+
+document.getElementById('horseAdd').onclick=()=>{
+ cart.push({name:'Cavallo',horse,horseLabel,base,baseLabel,size:document.getElementById('horseSize').value+' cm',price});
+ horseModal.classList.remove('open'); renderCart(); drawer.classList.add('open'); toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1400);
+};
+document.querySelectorAll('.cart-trigger').forEach(btn=>btn.addEventListener('click',()=>drawer.classList.add('open')));
+
+function renderCart(){
+ document.querySelectorAll('.cart-count').forEach(el=>el.textContent=cart.length);
+ const wrap=document.getElementById('cartItems');
+ wrap.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-line"><img src="${x.image || `assets/cavallo-${x.horse}-${x.base}.png`}"><div><b>${x.name}</b><small>${x.name==="Hoodie Drache"?x.horseLabel:"Pferd: "+x.horseLabel}</small><small>${x.name==="Hoodie Drache"?x.baseLabel:"Sockel: "+x.baseLabel}</small><small>Grösse: ${x.size}</small></div><div><b>CHF ${x.price.toFixed(2)}</b><button class="remove" onclick="removeItem(${i})">Entfernen</button></div></div>`).join(''):'<p class="empty">Dein Warenkorb ist noch leer.</p>';
+ const total=cart.reduce((a,x)=>a+x.price,0);
+ document.getElementById('cartTotal').textContent=`CHF ${total.toFixed(2)}`;
+ document.getElementById('toCheckout').disabled=!cart.length;
+}
+window.removeItem=i=>{cart.splice(i,1);renderCart()};
+document.getElementById('toCheckout').onclick=()=>{
+ drawer.classList.remove('open');checkout.classList.add('open');
+ document.getElementById('checkoutItems').innerHTML=cart.map(x=>`<p><b>${x.name}</b><br>${x.name==="Hoodie Drache"?x.horseLabel+" · "+x.baseLabel:"Pferd "+x.horseLabel+" · Sockel "+x.baseLabel} · ${x.size}</p>`).join('');
+ document.getElementById('checkoutTotal').textContent=`CHF ${cart.reduce((a,x)=>a+x.price,0).toFixed(2)}`;
+};
+document.querySelectorAll('.payment').forEach(b=>b.onclick=()=>{document.querySelectorAll('.payment').forEach(x=>x.classList.remove('active'));b.classList.add('active');payment=b.dataset.pay});
+document.getElementById('placeOrder').onclick=()=>{
+ const ids=['firstName','lastName','email','street','zip','city'];
+ if(ids.some(id=>!document.getElementById(id).value.trim())){alert('Bitte fülle zuerst die Lieferadresse aus.');return;}
+ const no='FW-'+Math.floor(100000+Math.random()*900000);
+ alert(`Testbestellung ${no} erstellt.\nZahlungsart: ${payment}\n\nEs wurde keine echte Zahlung ausgelöst.`);
+ cart=[];renderCart();checkout.classList.remove('open');
+};
+document.getElementById('requestSize').addEventListener('click',()=>{
+  const details=prompt('Welche Höhe möchtest du für das Cavallo-Modell?\nZum Beispiel: 85 cm');
+  if(details && details.trim()){
+    alert(`Anfrage vorbereitet:\nCavallo – ${details.trim()}\nPferd: ${horseLabel}\nSockel: ${baseLabel}\n\nIm echten Shop wird diese Anfrage an Favo3DWorld gesendet.`);
+  }
+});
+
+const hoodieModal=document.getElementById('hoodieModal');
+let body='schwarz', bodyLabel='Schwarz', hoodie='schwarz', hoodieLabel='Schwarz', hoodiePrice=18;
+document.getElementById('openHoodieConfig').addEventListener('click',()=>hoodieModal.classList.add('open'));
+document.querySelectorAll('[data-close-hoodie]').forEach(x=>x.addEventListener('click',()=>hoodieModal.classList.remove('open')));
+
+function updateHoodie(){
+ const sel=document.getElementById('hoodieSize'), s=sel.value, custom=s==='custom';
+ hoodiePrice=custom?0:Number(sel.options[sel.selectedIndex].dataset.price);
+ document.getElementById('hoodiePreview').src=`assets/hoodie-drache-${hoodie}.png`;
+ document.getElementById('bodyColorName').textContent=bodyLabel;
+ document.getElementById('hoodieColorName').textContent=hoodieLabel;
+ document.getElementById('hoodieChosen').textContent=`Körper ${bodyLabel} · Hoodie ${hoodieLabel}`;
+ document.getElementById('hoodieSummary').textContent=custom?`Körper: ${bodyLabel} · Hoodie: ${hoodieLabel} · Andere Grösse`:`Körper: ${bodyLabel} · Hoodie: ${hoodieLabel} · ${s} cm`;
+ document.getElementById('hoodiePrice').textContent=custom?'Preis auf Anfrage':`CHF ${hoodiePrice.toFixed(2)}`;
+ document.getElementById('hoodieAdd').style.display=custom?'none':'block';
+ document.getElementById('hoodieRequest').style.display=custom?'block':'none';
+}
+document.querySelectorAll('#bodyColors button').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#bodyColors button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+ body=b.dataset.key;bodyLabel=b.dataset.label;updateHoodie();
+}));
+document.querySelectorAll('#hoodieColors button').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#hoodieColors button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+ hoodie=b.dataset.key;hoodieLabel=b.dataset.label;updateHoodie();
+}));
+document.getElementById('hoodieSize').addEventListener('change',updateHoodie);
+document.getElementById('hoodieAdd').addEventListener('click',()=>{
+ cart.push({name:'Hoodie Drache',horse:body,horseLabel:'Körper '+bodyLabel,base:hoodie,baseLabel:'Hoodie '+hoodieLabel,size:document.getElementById('hoodieSize').value+' cm',price:hoodiePrice,image:`assets/hoodie-drache-${hoodie}.png`});
+ hoodieModal.classList.remove('open');renderCart();drawer.classList.add('open');
+});
+document.getElementById('hoodieRequest').addEventListener('click',()=>{
+ const d=prompt('Welche Höhe möchtest du für den Hoodie Drachen?');
+ if(d&&d.trim()) alert(`Anfrage vorbereitet: Hoodie Drache – ${d.trim()} – Körper ${bodyLabel} – Hoodie ${hoodieLabel}`);
+});
+updateHoodie();
+
+renderCart();updateHorse();
+
+
+
+
+const adminModal=document.getElementById('adminModal');
+let adminImageData='', admin3mfData='', admin3mfName='', editingIndex=null;
+
+const builtIns=[
+ {name:'Cavallo',type:'Print on Demand',image:'assets/cavallo-schwarz-schwarz.png',modelName:'',sizes:[{size:'50',price:'15'},{size:'60',price:'20'},{size:'70',price:'25'}],custom:true,zone1:'Pferd',zone2:'Sockel',builtIn:'cavallo'},
+ {name:'Hoodie Drache',type:'Print on Demand',image:'assets/hoodie-drache.png',modelName:'Hoodie Drache V2.3mf',sizes:[{size:'50',price:'18'},{size:'60',price:'23'},{size:'70',price:'28'}],custom:true,zone1:'Körper',zone2:'Hoodie',builtIn:'hoodie'}
+];
+
+function getAdminProducts(){
+ try{
+  const saved=JSON.parse(localStorage.getItem('favoAdminProductsV2')||'null');
+  if(saved) return saved;
+ }catch(e){}
+ return JSON.parse(JSON.stringify(builtIns));
+}
+function setAdminProducts(p){localStorage.setItem('favoAdminProductsV2',JSON.stringify(p));}
+
+function addSizeRow(size='',price=''){
+ const wrap=document.getElementById('sizeRows');
+ const row=document.createElement('div');row.className='dynamic-size-row';
+ row.innerHTML=`<input class="size-value" type="number" min="1" step="1" placeholder="Höhe cm" value="${size}">
+ <input class="price-value" type="number" min="0" step=".50" placeholder="Preis CHF" value="${price}">
+ <button type="button" class="remove-size">×</button>`;
+ row.querySelector('.remove-size').onclick=()=>{if(wrap.children.length>1)row.remove();};
+ wrap.appendChild(row);
+}
+function resetForm(){
+ editingIndex=null;
+ document.getElementById('adminName').value='';
+ document.getElementById('adminType').value='Print on Demand';
+ document.getElementById('adminImage').value='';adminImageData='';
+ document.getElementById('adminImagePreview').textContent='Noch kein Bild gewählt';
+ document.getElementById('admin3mf').value='';admin3mfData='';admin3mfName='';
+ document.getElementById('admin3mfStatus').textContent='Noch keine 3MF-Datei gewählt';
+ document.getElementById('zone1').value='';document.getElementById('zone2').value='';
+ document.getElementById('customSize').checked=true;
+ document.getElementById('sizeRows').innerHTML='';addSizeRow();
+ document.getElementById('saveProduct').textContent='Produkt speichern';
+ document.getElementById('cancelEdit').style.display='none';
+}
+document.getElementById('addSize').onclick=()=>addSizeRow();
+document.getElementById('cancelEdit').onclick=resetForm;
+document.getElementById('openAdmin').addEventListener('click',()=>{adminModal.classList.add('open');renderAdminProducts();});
+document.querySelectorAll('[data-close-admin]').forEach(x=>x.addEventListener('click',()=>adminModal.classList.remove('open')));
+
+document.getElementById('adminImage').addEventListener('change',e=>{
+ const file=e.target.files[0];if(!file)return;const reader=new FileReader();
+ reader.onload=()=>{adminImageData=reader.result;document.getElementById('adminImagePreview').innerHTML=`<img src="${adminImageData}">`;};
+ reader.readAsDataURL(file);
+});
+document.getElementById('admin3mf').addEventListener('change',e=>{
+ const file=e.target.files[0],status=document.getElementById('admin3mfStatus');if(!file)return;
+ if(!file.name.toLowerCase().endsWith('.3mf')){alert('Bitte eine .3mf-Datei auswählen.');e.target.value='';return;}
+ admin3mfName=file.name;status.textContent=`✓ ${file.name} · ${(file.size/1024/1024).toFixed(2)} MB`;
+ if(file.size>2.5*1024*1024){admin3mfData='';status.textContent+=' · Dateiname gespeichert';return;}
+ const r=new FileReader();r.onload=()=>{admin3mfData=r.result;status.textContent+=` · lokal gespeichert`;};r.readAsDataURL(file);
+});
+
+function renderAdminProducts(){
+ const items=getAdminProducts(),wrap=document.getElementById('adminProducts');
+ wrap.innerHTML=items.map((p,i)=>{
+   const sizes=(p.sizes||[]).map(s=>`${s.size} cm CHF ${s.price}`).join(' · ');
+   return `<div class="admin-product">${p.image?`<img src="${p.image}">`:''}<div><b>${p.name}</b><small>${p.type}${p.modelName?' · 3MF: '+p.modelName:''}</small><small>${sizes||'Noch keine Grösse'}</small><small>${p.zone1||'Bereich 1'} + ${p.zone2||'Bereich 2'}</small></div><div class="admin-actions"><button onclick="editAdminProduct(${i})">Bearbeiten</button><button class="danger" onclick="deleteAdminProduct(${i})">Löschen</button></div></div>`;
+ }).join('');
+ renderCustomCards(items);
+}
+window.editAdminProduct=i=>{
+ const p=getAdminProducts()[i];editingIndex=i;
+ document.getElementById('adminName').value=p.name||'';
+ document.getElementById('adminType').value=p.type||'Print on Demand';
+ adminImageData=p.image||'';document.getElementById('adminImagePreview').innerHTML=p.image?`<img src="${p.image}">`:'Noch kein Bild gewählt';
+ admin3mfName=p.modelName||'';admin3mfData=p.modelData||'';document.getElementById('admin3mfStatus').textContent=p.modelName?`✓ ${p.modelName}`:'Noch keine 3MF-Datei gewählt';
+ document.getElementById('zone1').value=p.zone1||'';document.getElementById('zone2').value=p.zone2||'';
+ document.getElementById('customSize').checked=p.custom!==false;
+ document.getElementById('sizeRows').innerHTML='';(p.sizes&&p.sizes.length?p.sizes:[{size:'',price:''}]).forEach(s=>addSizeRow(s.size,s.price));
+ document.getElementById('saveProduct').textContent='Änderungen speichern';
+ document.getElementById('cancelEdit').style.display='block';
+ document.querySelector('.admin-card').scrollTop=0;
+};
+window.deleteAdminProduct=i=>{if(!confirm('Produkt wirklich löschen?'))return;const a=getAdminProducts();a.splice(i,1);setAdminProducts(a);renderAdminProducts();if(editingIndex===i)resetForm();};
+
+document.getElementById('saveProduct').addEventListener('click',()=>{
+ const name=document.getElementById('adminName').value.trim();if(!name){alert('Bitte einen Produktnamen eingeben.');return;}
+ const sizes=[...document.querySelectorAll('.dynamic-size-row')].map(r=>({size:r.querySelector('.size-value').value,price:r.querySelector('.price-value').value})).filter(s=>s.size&&s.price);
+ if(!sizes.length){alert('Bitte mindestens eine Grösse und einen Preis eingeben.');return;}
+ const items=getAdminProducts();
+ const old=editingIndex!==null?items[editingIndex]:{};
+ const p={...old,name,type:document.getElementById('adminType').value,image:adminImageData||old.image||'',modelName:admin3mfName||old.modelName||'',modelData:admin3mfData||old.modelData||'',sizes,custom:document.getElementById('customSize').checked,zone1:document.getElementById('zone1').value.trim(),zone2:document.getElementById('zone2').value.trim()};
+ if(editingIndex===null)items.push(p);else items[editingIndex]=p;
+ setAdminProducts(items);renderAdminProducts();alert(editingIndex===null?'Produkt gespeichert.':'Änderungen gespeichert.');resetForm();
+});
+
+function renderCustomCards(items){
+ document.querySelectorAll('.custom-admin-product').forEach(x=>x.remove());
+ const grid=document.getElementById('productGrid');if(!grid)return;
+ // Built-in cards remain the shop's full configurators; add only newly created products.
+ items.filter(p=>!p.builtIn).forEach(p=>{
+  const card=document.createElement('article');card.className='product custom-admin-product';
+  const vals=(p.sizes||[]).map(s=>Number(s.price)).filter(Boolean),min=vals.length?Math.min(...vals):0;
+  card.innerHTML=`<div class="product-media"><span class="badge demand">${p.type}</span>${p.image?`<img src="${p.image}">`:'<div class="no-product-image">3D</div>'}</div><h3>${p.name}</h3><strong>${min?'ab CHF '+min.toFixed(2):'Preis auf Anfrage'}</strong><div class="stars"><small>${p.zone1||'Bereich 1'} & ${p.zone2||'Bereich 2'}</small></div><button class="admin-demo-config" type="button">Details</button>`;
+  card.querySelector('button').onclick=()=>alert(`${p.name}\n\n${(p.sizes||[]).map(s=>s.size+' cm: CHF '+s.price).join('\n')}\n\nFarbbereiche: ${p.zone1||'Bereich 1'} + ${p.zone2||'Bereich 2'}`);
+  grid.appendChild(card);
+ });
+}
+resetForm();renderCustomCards(getAdminProducts());
+
+
+window.addEventListener('DOMContentLoaded',()=>{
+  const status=document.createElement('div');
+  status.id='demoStatus';
+  status.textContent='✓ Shop-Demo bereit';
+  document.body.appendChild(status);
+  setTimeout(()=>status.classList.add('hide'),1800);
+});
+
+</script>
+</body>
+</html>
