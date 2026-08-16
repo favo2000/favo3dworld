@@ -93,6 +93,11 @@
         </article>
       </div>
     </section>
+<section class="order-notice">
+ <b>Bestellungen sind möglich</b>
+ <span>Online-Zahlung ist noch nicht aktiviert. Nach der Bestellung erhält der Kunde die Bestätigung und Zahlungsdetails separat.</span>
+</section>
+
 
     <section class="shop-flow">
       <div><b>1</b><span>Modell wählen</span></div>
@@ -104,12 +109,12 @@
     <section id="shop" class="content-grid">
       <div class="products-wrap">
         <div class="section-title"><h2>Beliebte Modelle →</h2></div>
-        <div class="products">
+        <div class="products" id="productGrid">
           <article class="product">
             <div class="product-media">
               <span class="badge demand">Print on Demand</span>
               <button class="heart">♡</button>
-              <img src="assets/cavallo-schwarz-schwarz.png" alt="Cavallo">
+              <img src="assets/cavallo-real.jpg" alt="Cavallo">
             </div>
             <h3>Cavallo</h3>
             <strong>ab CHF 15.–</strong>
@@ -120,7 +125,7 @@
             <div class="product-media">
               <span class="badge demand">Print on Demand</span>
               <button class="heart">♡</button>
-              <img src="assets/hoodie-drache.png" alt="Hoodie Drache">
+              <img src="assets/hoodie-real.jpg" alt="Hoodie Drache">
             </div>
             <h3>Hoodie Drache</h3>
             <strong>ab CHF 18.–</strong>
@@ -180,7 +185,62 @@
           <button>⚔️<span>Wargaming &<br>Tabletop</span></button>
         </div>
       </aside>
-    </section>
+    
+        <article class="product">
+          <div class="product-media">
+            <span class="badge stock">Auf Lager · 5 Stück</span>
+            <img src="assets/scheiben-real.jpg" alt="Scheiben">
+          </div>
+          <h3>Scheiben</h3>
+          <strong>CHF 10.–</strong>
+          <div class="stars"><small>Eine feste Grösse</small></div>
+          <button class="hoodie-configure" id="addScheiben" type="button">In den Warenkorb</button>
+        </article>
+
+        <article class="product">
+          <div class="product-media">
+            <span class="badge demand">Print on Demand</span>
+            <img id="zenPreview" src="assets/zen-real.jpg" alt="Zen Schildkröte">
+          </div>
+          <h3>Zen Schildkröte</h3>
+          <strong>ab CHF 18.–</strong>
+          <div class="stars"><small>50 / 60 / 70 cm · Sondergrösse auf Anfrage</small></div>
+          <button class="hoodie-configure" id="openZenConfig" type="button">Konfigurieren</button>
+        </article>
+
+        <article class="product">
+          <div class="product-media">
+            <span class="badge demand">Print on Demand</span>
+            <img src="assets/pika-real.jpg" alt="Pika Urban">
+          </div>
+          <h3>Pika Urban</h3>
+          <strong>ab CHF 18.–</strong>
+          <div class="stars"><small>Mehrfarbig · Farben wählbar</small></div>
+          <button class="hoodie-configure" id="openPikaConfig" type="button">Farben & Grösse wählen</button>
+        </article>
+
+        <article class="product">
+          <div class="product-media">
+            <span class="badge demand">Print on Demand</span>
+            <img src="assets/frugo-real.jpg" alt="Frugo">
+          </div>
+          <h3>Frugo</h3>
+          <strong>ab CHF 15.–</strong>
+          <div class="stars"><small>Einfarbig · Farbe wählbar</small></div>
+          <button class="hoodie-configure simple-config" data-product="Frugo" data-image="assets/frugo-real.jpg" data-prices="15,20,25" data-color="yes" type="button">Konfigurieren</button>
+        </article>
+
+        <article class="product">
+          <div class="product-media">
+            <span class="badge demand">Print on Demand</span>
+            <img src="assets/papa-real.jpg" alt="Papa Sch.">
+          </div>
+          <h3>Papa Sch.</h3>
+          <strong>ab CHF 18.–</strong>
+          <div class="stars"><small>Originalfarben · keine Farbauswahl</small></div>
+          <button class="hoodie-configure simple-config" data-product="Papa Sch." data-image="assets/papa-real.jpg" data-prices="18,23,28" type="button">Grösse wählen</button>
+        </article>
+</section>
 
     <section class="benefits">
       <div>🏅<span><b>Top Qualität</b><small>Präzise Details und saubere Oberflächen.</small></span></div>
@@ -228,7 +288,10 @@
         <label>Produktart
           <select id="adminType"><option>Print on Demand</option><option>Auf Lager</option></select>
         </label>
-        <label>Produktbild<input id="adminImage" type="file" accept="image/*"></label>
+        <label>Produktbild für den Shop
+          <input id="adminImage" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+          <small class="field-help">Bitte JPG, PNG oder WEBP auswählen. Die 3MF-Datei allein erzeugt in dieser Demo noch kein Produktfoto.</small>
+        </label>
         <label>3D-Modell (.3mf)<input id="admin3mf" type="file" accept=".3mf,model/3mf"></label>
         <div class="file-status" id="admin3mfStatus">Noch keine 3MF-Datei gewählt</div>
         <div class="image-preview" id="adminImagePreview">Noch kein Bild gewählt</div>
@@ -264,7 +327,7 @@
       <button class="x" data-close-horse>×</button>
       <div class="horse-preview">
         <span class="badge demand">Print on Demand</span>
-        <img id="horsePreview" src="assets/cavallo-schwarz-schwarz.png" alt="Cavallo Vorschau">
+        <img id="horsePreview" src="assets/cavallo-real.jpg" alt="Cavallo Vorschau">
         <div class="chosen" id="chosenPreview">Pferd Schwarz · Sockel Schwarz</div>
       </div>
       <div class="horse-options">
@@ -361,6 +424,130 @@
     </div>
   </div>
 
+
+<div class="horse-modal" id="zenModal">
+  <div class="overlay" data-close-zen></div>
+  <div class="horse-card">
+    <button class="x" data-close-zen>×</button>
+    <div class="horse-preview">
+      <span class="badge demand">Print on Demand</span>
+      <img src="assets/zen-real.jpg" alt="Zen Schildkröte">
+      <div class="chosen" id="zenChosen">Zen Schildkröte · 50 cm</div>
+    </div>
+    <div class="horse-options">
+      <span class="eyebrow">KONFIGURATION</span>
+      <h2>Zen Schildkröte</h2>
+      <p>Die Zen Schildkröte ist einfarbig. Wähle eine Farbe für das komplette Modell und danach die Grösse.</p>
+      <div class="option">
+        <div class="option-head"><b>🎨 Modellfarbe</b><span id="zenColorName">Grün</span></div>
+        <div class="swatches" id="zenColors">
+          <button data-key="petrol" data-label="Petrol" style="--c:#2e9190"></button>
+          <button data-key="schwarz" data-label="Schwarz" style="--c:#282828"></button>
+          <button data-key="weiss" data-label="Weiss" style="--c:#ebeae6"></button>
+          <button data-key="gold" data-label="Gold" style="--c:#c89b4b"></button>
+          <button data-key="rot" data-label="Rot" style="--c:#aa4641"></button>
+          <button class="active" data-key="gruen" data-label="Grün" style="--c:#379655"></button>
+        </div>
+      </div>
+      <label class="select-label">Grösse
+        <select id="zenSize">
+          <option value="50" data-price="18">50 cm — CHF 18.–</option>
+          <option value="60" data-price="23">60 cm — CHF 23.–</option>
+          <option value="70" data-price="28">70 cm — CHF 28.–</option>
+          <option value="custom" data-price="0">Andere Grösse — auf Anfrage</option>
+        </select>
+      </label>
+      <div class="config-summary"><span id="zenSummary">50 cm</span><strong id="zenPrice">CHF 18.00</strong></div>
+      <button class="btn primary wide" id="zenAdd" type="button">In den Warenkorb</button>
+      <button class="btn secondary wide" id="zenRequest" type="button" style="display:none">Andere Grösse anfragen</button>
+    </div>
+  </div>
+</div>
+
+<div class="horse-modal" id="simpleModal">
+ <div class="overlay" data-close-simple></div>
+ <div class="horse-card">
+  <button class="x" data-close-simple>×</button>
+  <div class="horse-preview">
+   <span class="badge demand">Print on Demand</span>
+   <img id="simpleImage" src="" alt="">
+   <div class="chosen" id="simpleChosen"></div>
+  </div>
+  <div class="horse-options">
+   <span class="eyebrow">PRODUKT KONFIGURATION</span>
+   <h2 id="simpleTitle"></h2>
+   <div class="option" id="simpleColorBlock" style="display:none">
+    <div class="option-head"><b>🎨 Modellfarbe</b><span id="simpleColorName">Petrol</span></div>
+    <div class="swatches" id="simpleColors">
+     <button class="active" data-label="Petrol" style="--c:#2e9190"></button>
+     <button data-label="Schwarz" style="--c:#282828"></button>
+     <button data-label="Weiss" style="--c:#ebeae6"></button>
+     <button data-label="Gold" style="--c:#c89b4b"></button>
+     <button data-label="Rot" style="--c:#aa4641"></button>
+     <button data-label="Grün" style="--c:#379655"></button>
+    </div>
+   </div>
+   <label class="select-label">Grösse
+    <select id="simpleSize">
+     <option value="0">50 cm</option><option value="1">60 cm</option><option value="2">70 cm</option><option value="custom">Andere Grösse — auf Anfrage</option>
+    </select>
+   </label>
+   <div class="config-summary"><span id="simpleSummary"></span><strong id="simplePrice"></strong></div>
+   <button class="btn primary wide" id="simpleAdd">In den Warenkorb</button>
+   <button class="btn secondary wide" id="simpleRequest" style="display:none">Andere Grösse anfragen</button>
+  </div>
+ </div>
+</div>
+
+<div class="horse-modal" id="pikaModal">
+  <div class="overlay" data-close-pika></div>
+  <div class="horse-card">
+    <button class="x" data-close-pika>×</button>
+    <div class="horse-preview">
+      <span class="badge demand">Print on Demand</span>
+      <img id="pikaPreview" src="assets/pika-gelb-grau.webp" alt="Pika Urban Vorschau">
+      <div class="chosen" id="pikaChosen">Körper Gelb · Hoodie Grau · 50 cm</div>
+    </div>
+    <div class="horse-options">
+      <span class="eyebrow">MEHRFARBIGE KONFIGURATION</span>
+      <h2>Pika Urban</h2>
+      <p>Die vorhandenen Modellfarben können für Körper und Hoodie kombiniert werden. Schwarze und rote Details im Modell bleiben erhalten.</p>
+
+      <div class="option">
+        <div class="option-head"><b>⚡ Körper</b><span id="pikaBodyName">Gelb</span></div>
+        <div class="swatches" id="pikaBodyColors">
+          <button class="active" data-key="gelb" data-label="Gelb" style="--c:#f0cd19"></button>
+          <button data-key="grau" data-label="Grau" style="--c:#91969b"></button>
+          <button data-key="schwarz" data-label="Schwarz" style="--c:#232323"></button>
+          <button data-key="rot" data-label="Rot" style="--c:#cd322d"></button>
+        </div>
+      </div>
+
+      <div class="option">
+        <div class="option-head"><b>👕 Hoodie</b><span id="pikaHoodieName">Grau</span></div>
+        <div class="swatches" id="pikaHoodieColors">
+          <button data-key="gelb" data-label="Gelb" style="--c:#f0cd19"></button>
+          <button class="active" data-key="grau" data-label="Grau" style="--c:#91969b"></button>
+          <button data-key="schwarz" data-label="Schwarz" style="--c:#232323"></button>
+          <button data-key="rot" data-label="Rot" style="--c:#cd322d"></button>
+        </div>
+      </div>
+
+      <label class="select-label">Grösse
+        <select id="pikaSize">
+          <option value="50" data-price="18">50 cm — CHF 18.–</option>
+          <option value="60" data-price="23">60 cm — CHF 23.–</option>
+          <option value="70" data-price="28">70 cm — CHF 28.–</option>
+          <option value="custom" data-price="0">Andere Grösse — auf Anfrage</option>
+        </select>
+      </label>
+
+      <div class="config-summary"><span id="pikaSummary">Körper Gelb · Hoodie Grau · 50 cm</span><strong id="pikaPrice">CHF 18.00</strong></div>
+      <button class="btn primary wide" id="pikaAdd" type="button">In den Warenkorb</button>
+      <button class="btn secondary wide" id="pikaRequest" type="button" style="display:none">Andere Grösse anfragen</button>
+    </div>
+  </div>
+</div>
 <div class="drawer" id="cartDrawer">
     <div class="overlay" data-close-cart></div>
     <aside class="drawer-panel">
@@ -516,18 +703,24 @@ const adminModal=document.getElementById('adminModal');
 let adminImageData='', admin3mfData='', admin3mfName='', editingIndex=null;
 
 const builtIns=[
- {name:'Cavallo',type:'Print on Demand',image:'assets/cavallo-schwarz-schwarz.png',modelName:'',sizes:[{size:'50',price:'15'},{size:'60',price:'20'},{size:'70',price:'25'}],custom:true,zone1:'Pferd',zone2:'Sockel',builtIn:'cavallo'},
- {name:'Hoodie Drache',type:'Print on Demand',image:'assets/hoodie-drache.png',modelName:'Hoodie Drache V2.3mf',sizes:[{size:'50',price:'18'},{size:'60',price:'23'},{size:'70',price:'28'}],custom:true,zone1:'Körper',zone2:'Hoodie',builtIn:'hoodie'}
+ {name:'Cavallo',type:'Print on Demand',image:'assets/cavallo-real.jpg',modelName:'',sizes:[{size:'50',price:'15'},{size:'60',price:'20'},{size:'70',price:'25'}],custom:true,zone1:'Pferd',zone2:'Sockel',builtIn:'cavallo'},
+ {name:'Hoodie Drache',type:'Print on Demand',image:'assets/hoodie-real.jpg',modelName:'Hoodie Drache V2.3mf',sizes:[{size:'50',price:'18'},{size:'60',price:'23'},{size:'70',price:'28'}],custom:true,zone1:'Körper',zone2:'Hoodie',builtIn:'hoodie'}
 ];
 
+let productMemory=null;
 function getAdminProducts(){
+ if(productMemory) return productMemory;
  try{
   const saved=JSON.parse(localStorage.getItem('favoAdminProductsV2')||'null');
-  if(saved) return saved;
+  if(saved){productMemory=saved;return productMemory;}
  }catch(e){}
- return JSON.parse(JSON.stringify(builtIns));
+ productMemory=JSON.parse(JSON.stringify(builtIns));
+ return productMemory;
 }
-function setAdminProducts(p){localStorage.setItem('favoAdminProductsV2',JSON.stringify(p));}
+function setAdminProducts(p){
+ productMemory=p;
+ try{localStorage.setItem('favoAdminProductsV2',JSON.stringify(p));}catch(e){}
+}
 
 function addSizeRow(size='',price=''){
  const wrap=document.getElementById('sizeRows');
@@ -558,8 +751,25 @@ document.getElementById('openAdmin').addEventListener('click',()=>{adminModal.cl
 document.querySelectorAll('[data-close-admin]').forEach(x=>x.addEventListener('click',()=>adminModal.classList.remove('open')));
 
 document.getElementById('adminImage').addEventListener('change',e=>{
- const file=e.target.files[0];if(!file)return;const reader=new FileReader();
- reader.onload=()=>{adminImageData=reader.result;document.getElementById('adminImagePreview').innerHTML=`<img src="${adminImageData}">`;};
+ const file=e.target.files[0];
+ const preview=document.getElementById('adminImagePreview');
+ if(!file){adminImageData='';preview.textContent='Noch kein Bild gewählt';return;}
+ if(!file.type.startsWith('image/')){
+   alert('Bitte ein Produktbild als JPG, PNG oder WEBP auswählen.');
+   e.target.value='';
+   adminImageData='';
+   return;
+ }
+ const reader=new FileReader();
+ reader.onload=()=>{
+   adminImageData=reader.result;
+   preview.innerHTML=`<img src="${adminImageData}" alt="Produktbild Vorschau"><span class="image-ok">✓ Bild geladen</span>`;
+ };
+ reader.onerror=()=>{
+   adminImageData='';
+   preview.textContent='Bild konnte nicht gelesen werden.';
+   alert('Das Bild konnte nicht geladen werden. Bitte probiere JPG oder PNG.');
+ };
  reader.readAsDataURL(file);
 });
 document.getElementById('admin3mf').addEventListener('change',e=>{
@@ -601,23 +811,161 @@ document.getElementById('saveProduct').addEventListener('click',()=>{
  const old=editingIndex!==null?items[editingIndex]:{};
  const p={...old,name,type:document.getElementById('adminType').value,image:adminImageData||old.image||'',modelName:admin3mfName||old.modelName||'',modelData:admin3mfData||old.modelData||'',sizes,custom:document.getElementById('customSize').checked,zone1:document.getElementById('zone1').value.trim(),zone2:document.getElementById('zone2').value.trim()};
  if(editingIndex===null)items.push(p);else items[editingIndex]=p;
- setAdminProducts(items);renderAdminProducts();alert(editingIndex===null?'Produkt gespeichert.':'Änderungen gespeichert.');resetForm();
+ setAdminProducts(items);
+ renderAdminProducts();
+ renderCustomCards(items);
+ const wasNew=editingIndex===null;
+ const savedName=p.name;
+ resetForm();
+ adminModal.classList.remove('open');
+ document.getElementById('shop').scrollIntoView({behavior:'smooth',block:'start'});
+ setTimeout(()=>{
+   const card=[...document.querySelectorAll('.custom-admin-product h3')].find(h=>h.textContent===savedName);
+   if(card){
+     card.closest('.product').classList.add('just-added');
+     setTimeout(()=>card.closest('.product').classList.remove('just-added'),2200);
+   }
+   alert(wasNew
+     ? `✓ ${savedName} wurde gespeichert und auf der Startseite eingefügt.`
+     : `✓ ${savedName} wurde aktualisiert.`);
+ },300);
 });
 
 function renderCustomCards(items){
  document.querySelectorAll('.custom-admin-product').forEach(x=>x.remove());
- const grid=document.getElementById('productGrid');if(!grid)return;
+ const grid=document.getElementById('productGrid');
+ if(!grid){
+   console.error('Produktbereich #productGrid nicht gefunden');
+   return;
+ }
  // Built-in cards remain the shop's full configurators; add only newly created products.
  items.filter(p=>!p.builtIn).forEach(p=>{
   const card=document.createElement('article');card.className='product custom-admin-product';
   const vals=(p.sizes||[]).map(s=>Number(s.price)).filter(Boolean),min=vals.length?Math.min(...vals):0;
-  card.innerHTML=`<div class="product-media"><span class="badge demand">${p.type}</span>${p.image?`<img src="${p.image}">`:'<div class="no-product-image">3D</div>'}</div><h3>${p.name}</h3><strong>${min?'ab CHF '+min.toFixed(2):'Preis auf Anfrage'}</strong><div class="stars"><small>${p.zone1||'Bereich 1'} & ${p.zone2||'Bereich 2'}</small></div><button class="admin-demo-config" type="button">Details</button>`;
+  card.innerHTML=`<div class="product-media"><span class="badge demand">${p.type}</span><span class="admin-new-badge">NEU</span>${p.image?`<img src="${p.image}" alt="${p.name}">`:'<div class="no-product-image"><b>3D</b><small>Produktbild fehlt</small></div>'}</div><h3>${p.name}</h3><strong>${min?'ab CHF '+min.toFixed(2):'Preis auf Anfrage'}</strong><div class="stars"><small>${p.zone1||'Bereich 1'} & ${p.zone2||'Bereich 2'}</small></div><button class="admin-demo-config" type="button">Details</button>`;
   card.querySelector('button').onclick=()=>alert(`${p.name}\n\n${(p.sizes||[]).map(s=>s.size+' cm: CHF '+s.price).join('\n')}\n\nFarbbereiche: ${p.zone1||'Bereich 1'} + ${p.zone2||'Bereich 2'}`);
   grid.appendChild(card);
  });
 }
-resetForm();renderCustomCards(getAdminProducts());
+resetForm();
+window.addEventListener('DOMContentLoaded',()=>renderCustomCards(getAdminProducts()));
 
+
+
+// Scheiben – feste Grösse, CHF 10
+document.getElementById('addScheiben')?.addEventListener('click',()=>{
+  cart.push({name:'Scheiben',horse:'',horseLabel:'Feste Grösse',base:'',baseLabel:'',size:'Feste Grösse',price:10,image:'assets/scheiben-real.jpg'});
+  renderCart(); drawer.classList.add('open');
+});
+
+// Zen Schildkröte
+const zenModal=document.getElementById('zenModal');
+let zenColor='gruen', zenColorLabel='Grün';
+document.getElementById('openZenConfig')?.addEventListener('click',()=>zenModal.classList.add('open'));
+document.querySelectorAll('[data-close-zen]').forEach(x=>x.addEventListener('click',()=>zenModal.classList.remove('open')));
+function updateZen(){
+ const s=document.getElementById('zenSize'), custom=s.value==='custom';
+ const zp=document.getElementById('zenPreview'); if(zp) zp.src=`assets/zen-${zenColor}.webp`;
+ document.getElementById('zenColorName').textContent=zenColorLabel;
+ const price=custom?0:Number(s.options[s.selectedIndex].dataset.price);
+ document.getElementById('zenChosen').textContent=custom?`Zen Schildkröte · ${zenColorLabel} · Andere Grösse`:`Zen Schildkröte · ${zenColorLabel} · ${s.value} cm`;
+ document.getElementById('zenSummary').textContent=custom?`${zenColorLabel} · Andere Grösse`:`${zenColorLabel} · ${s.value} cm`;
+ document.getElementById('zenPrice').textContent=custom?'Preis auf Anfrage':`CHF ${price.toFixed(2)}`;
+ document.getElementById('zenAdd').style.display=custom?'none':'block';
+ document.getElementById('zenRequest').style.display=custom?'block':'none';
+}
+document.querySelectorAll('#zenColors button').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#zenColors button').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');zenColor=b.dataset.key;zenColorLabel=b.dataset.label;updateZen();
+}));
+document.getElementById('zenSize')?.addEventListener('change',updateZen);
+document.getElementById('zenAdd')?.addEventListener('click',()=>{
+ const s=document.getElementById('zenSize'),price=Number(s.options[s.selectedIndex].dataset.price);
+ cart.push({name:'Zen Schildkröte',horse:zenColor,horseLabel:'Farbe: '+zenColorLabel,base:'',baseLabel:'',size:s.value+' cm',price,image:`assets/zen-${zenColor}.webp`});
+ zenModal.classList.remove('open');renderCart();drawer.classList.add('open');
+});
+document.getElementById('zenRequest')?.addEventListener('click',()=>{
+ const d=prompt('Welche Höhe möchtest du für die Zen Schildkröte?');
+ if(d&&d.trim()) alert(`Anfrage vorbereitet: Zen Schildkröte – ${d.trim()} – Farbe ${zenColorLabel}`);
+});
+updateZen();
+
+
+let simpleProduct='',simpleImage='',simplePrices=[18,23,28],simpleHasColor=false,simpleColor='Petrol';
+const simpleModal=document.getElementById('simpleModal');
+document.querySelectorAll('.simple-config').forEach(btn=>btn.addEventListener('click',()=>{
+ simpleProduct=btn.dataset.product;simpleImage=btn.dataset.image;simplePrices=btn.dataset.prices.split(',').map(Number);simpleHasColor=btn.dataset.color==='yes';simpleColor='Petrol';
+ document.getElementById('simpleTitle').textContent=simpleProduct;document.getElementById('simpleImage').src=simpleImage;
+ document.getElementById('simpleColorBlock').style.display=simpleHasColor?'block':'none';
+ document.getElementById('simpleSize').value='0';
+ document.querySelectorAll('#simpleColors button').forEach((x,i)=>x.classList.toggle('active',i===0));
+ updateSimple();simpleModal.classList.add('open');
+}));
+document.querySelectorAll('[data-close-simple]').forEach(x=>x.addEventListener('click',()=>simpleModal.classList.remove('open')));
+document.querySelectorAll('#simpleColors button').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#simpleColors button').forEach(x=>x.classList.remove('active'));b.classList.add('active');simpleColor=b.dataset.label;document.getElementById('simpleColorName').textContent=simpleColor;updateSimple();
+}));
+function updateSimple(){
+ const s=document.getElementById('simpleSize'),custom=s.value==='custom',sizes=['50','60','70'];
+ const size=custom?'Andere Grösse':sizes[Number(s.value)], price=custom?0:simplePrices[Number(s.value)];
+ document.getElementById('simpleChosen').textContent=`${simpleProduct}${simpleHasColor?' · '+simpleColor:''} · ${size}${custom?'':' cm'}`;
+ document.getElementById('simpleSummary').textContent=`${simpleHasColor?simpleColor+' · ':''}${size}${custom?'':' cm'}`;
+ document.getElementById('simplePrice').textContent=custom?'Preis auf Anfrage':`CHF ${price.toFixed(2)}`;
+ document.getElementById('simpleAdd').style.display=custom?'none':'block';document.getElementById('simpleRequest').style.display=custom?'block':'none';
+}
+document.getElementById('simpleSize').addEventListener('change',updateSimple);
+document.getElementById('simpleAdd').addEventListener('click',()=>{
+ const s=document.getElementById('simpleSize'),sizes=['50','60','70'],i=Number(s.value);
+ cart.push({name:simpleProduct,horse:'',horseLabel:simpleHasColor?'Farbe: '+simpleColor:'Originalfarben',base:'',baseLabel:'',size:sizes[i]+' cm',price:simplePrices[i],image:simpleImage});
+ simpleModal.classList.remove('open');renderCart();drawer.classList.add('open');
+});
+document.getElementById('simpleRequest').addEventListener('click',()=>{const d=prompt('Welche Höhe möchtest du?');if(d)alert(`Anfrage vorbereitet: ${simpleProduct} – ${d}`)});
+
+
+// Pika Urban – body and hoodie colors selectable using original model palette.
+const pikaModal=document.getElementById('pikaModal');
+let pikaBody='gelb',pikaBodyLabel='Gelb',pikaHoodie='grau',pikaHoodieLabel='Grau';
+
+document.getElementById('openPikaConfig')?.addEventListener('click',()=>{
+  pikaBody='gelb';pikaBodyLabel='Gelb';pikaHoodie='grau';pikaHoodieLabel='Grau';
+  document.getElementById('pikaSize').value='50';
+  document.querySelectorAll('#pikaBodyColors button').forEach(x=>x.classList.toggle('active',x.dataset.key==='gelb'));
+  document.querySelectorAll('#pikaHoodieColors button').forEach(x=>x.classList.toggle('active',x.dataset.key==='grau'));
+  updatePika();pikaModal.classList.add('open');
+});
+document.querySelectorAll('[data-close-pika]').forEach(x=>x.addEventListener('click',()=>pikaModal.classList.remove('open')));
+
+function updatePika(){
+ const s=document.getElementById('pikaSize'), custom=s.value==='custom';
+ const p=custom?0:Number(s.options[s.selectedIndex].dataset.price);
+ document.getElementById('pikaPreview').src=`assets/pika-${pikaBody}-${pikaHoodie}.webp`;
+ document.getElementById('pikaBodyName').textContent=pikaBodyLabel;
+ document.getElementById('pikaHoodieName').textContent=pikaHoodieLabel;
+ const size=custom?'Andere Grösse':`${s.value} cm`;
+ document.getElementById('pikaChosen').textContent=`Körper ${pikaBodyLabel} · Hoodie ${pikaHoodieLabel} · ${size}`;
+ document.getElementById('pikaSummary').textContent=`Körper ${pikaBodyLabel} · Hoodie ${pikaHoodieLabel} · ${size}`;
+ document.getElementById('pikaPrice').textContent=custom?'Preis auf Anfrage':`CHF ${p.toFixed(2)}`;
+ document.getElementById('pikaAdd').style.display=custom?'none':'block';
+ document.getElementById('pikaRequest').style.display=custom?'block':'none';
+}
+document.querySelectorAll('#pikaBodyColors button').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#pikaBodyColors button').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');pikaBody=b.dataset.key;pikaBodyLabel=b.dataset.label;updatePika();
+}));
+document.querySelectorAll('#pikaHoodieColors button').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('#pikaHoodieColors button').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');pikaHoodie=b.dataset.key;pikaHoodieLabel=b.dataset.label;updatePika();
+}));
+document.getElementById('pikaSize')?.addEventListener('change',updatePika);
+document.getElementById('pikaAdd')?.addEventListener('click',()=>{
+ const s=document.getElementById('pikaSize'),price=Number(s.options[s.selectedIndex].dataset.price);
+ cart.push({name:'Pika Urban',horse:pikaBody,horseLabel:'Körper: '+pikaBodyLabel,base:pikaHoodie,baseLabel:'Hoodie: '+pikaHoodieLabel,size:s.value+' cm',price,image:`assets/pika-${pikaBody}-${pikaHoodie}.webp`});
+ pikaModal.classList.remove('open');renderCart();drawer.classList.add('open');
+});
+document.getElementById('pikaRequest')?.addEventListener('click',()=>{
+ const d=prompt('Welche Höhe möchtest du für Pika Urban?');
+ if(d&&d.trim())alert(`Anfrage vorbereitet: Pika Urban – ${d.trim()} – Körper ${pikaBodyLabel} – Hoodie ${pikaHoodieLabel}`);
+});
 
 window.addEventListener('DOMContentLoaded',()=>{
   const status=document.createElement('div');
@@ -627,6 +975,55 @@ window.addEventListener('DOMContentLoaded',()=>{
   setTimeout(()=>status.classList.add('hide'),1800);
 });
 
+</script>
+
+<script>
+const FR_MAP = new Map([
+ ['Shop','Boutique'],['Über uns','À propos'],['Kontakt','Contact'],['Warenkorb','Panier'],
+ ['Print on Demand','Impression à la demande'],['Auf Lager','En stock'],['Auf Lager · 5 Stück','En stock · 5 pièces'],
+ ['Konfigurieren','Configurer'],['Grösse wählen','Choisir la taille'],['Größe wählen','Choisir la taille'],
+ ['Farben & Grösse wählen','Choisir couleurs & taille'],['Farben & Größe wählen','Choisir couleurs & taille'],
+ ['In den Warenkorb','Ajouter au panier'],['Modellfarbe','Couleur du modèle'],['Körper','Corps'],['Hoodie','Sweat à capuche'],
+ ['Grösse','Taille'],['Größe','Taille'],['Andere Grösse — auf Anfrage','Autre taille — sur demande'],
+ ['Andere Größe — auf Anfrage','Autre taille — sur demande'],['Andere Grösse','Autre taille'],['Andere Größe','Autre taille'],
+ ['Preis auf Anfrage','Prix sur demande'],['Sondergrösse anfragen','Demander une taille spéciale'],
+ ['Andere Grösse anfragen','Demander une autre taille'],['Andere Größe anfragen','Demander une autre taille'],
+ ['Deine Auswahl','Votre sélection'],['PRODUKT KONFIGURATION','CONFIGURATION DU PRODUIT'],
+ ['MEHRFARBIGE KONFIGURATION','CONFIGURATION MULTICOLORE'],['KONFIGURATION','CONFIGURATION'],
+ ['Einfarbig · Farbe wählbar','Monochrome · couleur au choix'],
+ ['Mehrfarbig · Farben wählbar','Multicolore · couleurs au choix'],
+ ['Originalfarben · keine Farbauswahl','Couleurs originales · sans choix de couleur'],
+ ['Eine feste Grösse','Une taille fixe'],['Eine feste Größe','Une taille fixe'],
+ ['Bestellungen sind möglich','Les commandes sont possibles'],
+ ['Online-Zahlung ist noch nicht aktiviert. Nach der Bestellung erhält der Kunde die Bestätigung und Zahlungsdetails separat.','Le paiement en ligne n’est pas encore activé. Après la commande, le client reçoit séparément la confirmation et les informations de paiement.'],
+ ['Schwarz','Noir'],['Weiss','Blanc'],['Weiß','Blanc'],['Gold','Or'],['Rot','Rouge'],['Grün','Vert'],['Grau','Gris'],['Gelb','Jaune'],
+ ['Feste Grösse','Taille fixe'],['Feste Größe','Taille fixe']
+]);
+const DE_MAP=new Map([...FR_MAP].map(([de,fr])=>[fr,de]));
+let currentLang='de';
+
+function translateTextNode(node,map){
+ const t=node.nodeValue,trim=t.trim();
+ if(!trim)return;
+ if(map.has(trim)) node.nodeValue=t.replace(trim,map.get(trim));
+}
+function translatePage(lang){
+ const map=lang==='fr'?FR_MAP:DE_MAP;
+ const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+ let n; const nodes=[]; while(n=walker.nextNode())nodes.push(n);
+ nodes.forEach(n=>translateTextNode(n,map));
+ document.documentElement.lang=lang;
+ currentLang=lang;
+ document.getElementById('langDE')?.classList.toggle('active',lang==='de');
+ document.getElementById('langFR')?.classList.toggle('active',lang==='fr');
+ try{localStorage.setItem('favoLang',lang)}catch(e){}
+}
+document.getElementById('langDE')?.addEventListener('click',()=>translatePage('de'));
+document.getElementById('langFR')?.addEventListener('click',()=>translatePage('fr'));
+window.addEventListener('DOMContentLoaded',()=>{
+ let lang='de';try{lang=localStorage.getItem('favoLang')||'de'}catch(e){}
+ if(lang==='fr')translatePage('fr');
+});
 </script>
 </body>
 </html>

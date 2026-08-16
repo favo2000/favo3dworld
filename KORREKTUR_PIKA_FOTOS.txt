@@ -1,0 +1,27 @@
+Korrekturen in dieser Version:
+
+1. Pika Urban:
+- richtige Vorschau direkt aus Pika urban.3mf
+- Körperfarbe und Hoodie-Farbe separat wählbar
+- nur Farben aus der Originalpalette: Gelb, Grau, Schwarz, Rot
+- schwarze/rote Detailbereiche bleiben im Vorschaubild erhalten
+- 50 cm CHF 18 / 60 cm CHF 23 / 70 cm CHF 28 / Sondergrösse
+
+2. Produktfotos:
+Die Shopbilder wurden erneut direkt aus den jeweiligen 3MF-Dateien gezogen:
+- Cavallo
+- Hoodie Drache
+- Scheiben
+- Zen Schildkröte
+- Pika Urban
+- Frugo
+- Papa Sch.
+
+Verwendete Quellen:
+cavallo: Auxiliaries/.thumbnails/thumbnail_middle.png
+hoodie: Auxiliaries/.thumbnails/thumbnail_middle.png
+scheiben: Auxiliaries/.thumbnails/thumbnail_middle.png
+zen: Auxiliaries/.thumbnails/thumbnail_middle.png
+pika: Auxiliaries/.thumbnails/thumbnail_middle.png
+frugo: Auxiliaries/.thumbnails/thumbnail_middle.png
+papa: Auxiliaries/.thumbnails/thumbnail_middle.png
