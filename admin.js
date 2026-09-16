@@ -164,7 +164,7 @@
   $('adminReload').onclick = async () => { if (busy) return; locked(true); try { await load(); status('Liste aktualisiert.'); } catch(e) { status(e.message,true); } finally { locked(false); } };
   $('openAdmin').onclick = () => { $('adminModal').classList.add('open'); (authorized ? $('adminName') : $('adminEmail')).focus(); };
   document.querySelectorAll('[data-close-admin]').forEach(b => b.onclick = () => { $('adminModal').classList.remove('open'); $('openAdmin').focus(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !busy) $('adminModal').classList.remove('open'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !busy && !document.querySelector('.product-3d-dialog[open]')) $('adminModal').classList.remove('open'); });
   $('adminLogin').addEventListener('submit', async event => {
     event.preventDefault(); if (busy || !client) return;
     const button = $('adminLogin').querySelector('button'); button.disabled = true; busy = true;

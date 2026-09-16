@@ -5,7 +5,18 @@
   const PATH = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.glb$/;
   const text = (de, fr) => document.documentElement.lang === 'fr' ? fr : de;
   let library, dialog, viewer, message, controls, opener, generation = 0, timer;
-  let state = 'loading', productName = '';
+  let state = 'loading', productName = '', graphicsSupported;
+
+  function canRender() {
+    if (graphicsSupported === undefined) {
+      try {
+        const context = document.createElement('canvas').getContext('webgl2');
+        graphicsSupported = !!context;
+        context?.getExtension('WEBGL_lose_context')?.loseContext();
+      } catch { graphicsSupported = false; }
+    }
+    return graphicsSupported;
+  }
 
   function url(path) {
     if (typeof path !== 'string' || !PATH.test(path)) return null;
@@ -86,6 +97,7 @@
     const messages = {
       loading: ['3D-Modell wird geladen …', 'Chargement du modèle 3D …'],
       ready: ['3D-Modell bereit.', 'Modèle 3D prêt.'],
+      unsupported: ['Dieser Browser unterstützt die 3D-Darstellung nicht. Bitte einen Browser mit WebGL 2 verwenden. Produktbild und Konfigurator bleiben verfügbar.', 'Ce navigateur ne prend pas en charge la vue 3D. Utilisez un navigateur avec WebGL 2. La photo et le configurateur restent disponibles.'],
       error: ['Die 3D-Ansicht ist momentan nicht verfügbar. Das Produktbild und der Konfigurator bleiben nutzbar.', 'La vue 3D est indisponible. La photo et le configurateur restent disponibles.']
     };
     message.textContent = text(...messages[state]);
@@ -134,6 +146,7 @@
     productName = product.name; opener = sourceButton; state = 'loading';
     controls.hidden = true; refreshLanguage();
     dialog.showModal(); document.documentElement.classList.add('product-3d-is-open');
+    if (!canRender()) { state = 'unsupported'; refreshLanguage(); return; }
     function failed() {
       if (current !== generation || !dialog.open) return;
       clearTimeout(timer); state = 'error'; controls.hidden = true; refreshLanguage();

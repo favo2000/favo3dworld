@@ -7,6 +7,7 @@ async function run(){
  const dom=new JSDOM(read('index.html'),{url:'https://shop.example.test',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,$=id=>w.document.getElementById(id);
  w.alert=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
+ w.HTMLCanvasElement.prototype.getContext=()=>({getExtension:()=>null});
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
  class Viewer extends w.HTMLElement{getCameraOrbit(){return{theta:1,phi:1,radius:2};}}
