@@ -1,7 +1,7 @@
 <!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>GLB preview regression check</title><link rel="stylesheet" href="../product-3d.css">
 <style>body{font:16px system-ui;margin:16px}button{min-height:44px}iframe{display:block;width:390px;max-width:100%;height:760px;border:1px solid #888}article{max-width:350px;padding:16px;background:#eef6f4}</style>
-<script src="../supabase-config.js"></script><script src="../product-3d.js"></script>
+<script src="../supabase-config.js"></script><script src="../product-3d.js?v=glb-20260916"></script>
 <h1>GLB preview regression check</h1><p>Read-only viewer test. No product data is changed.</p><label>Local synthetic GLB (not uploaded)<input id="local" type="file" accept=".glb"></label><p id="localStatus"></p><button id="language">DE / FR</button><article id="fixture"><h2>Synthetic test model</h2><p>Image-first product placeholder</p></article><output id="camera" aria-live="polite"></output><div id="mobile"></div>
 <script>
 const params=new URLSearchParams(location.search),path=params.get('model');
