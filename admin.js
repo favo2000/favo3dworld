@@ -107,7 +107,7 @@
     event.preventDefault(); if (busy || !authorized) return;
     locked(true); let uploaded = null, saved = false;
     try {
-      const user = await requireAdmin();
+      await requireAdmin();
       const values = {
         name: $('adminName').value.trim(), description_de: $('adminDescriptionDe').value.trim(),
         description_fr: $('adminDescriptionFr').value.trim() || null,
@@ -119,7 +119,7 @@
       const file = $('adminImage').files[0]; validateFile(file);
       if (file && !$('adminRemoveImage').checked) {
         const extension = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
-        const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
+        const path = `${crypto.randomUUID()}.${extension}`;
         status('Bild wird hochgeladen …');
         const {error} = await client.storage.from('product-images').upload(path, file, {contentType:file.type, upsert:false});
         if (error) throw error;

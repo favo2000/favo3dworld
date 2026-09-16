@@ -84,9 +84,10 @@ RLS mit Admin- und Fremdbenutzer-Identitäten in einer zurückgerollten
 Transaktion geprüft: Admin CRUD erlaubt, fremde Schreibzugriffe verweigert.
 Öffentlicher REST-Katalog erfolgreich; öffentliche Modellspalten-Abfrage
 und nicht angemeldeter Storage-Upload verweigert.
-Der echte Passwort-Login und erfolgreiche Storage-Upload mit der Sitzung
-des Besitzers benötigen dessen Anmeldung und wurden nicht durch Zugriff
-auf Passwörter oder Erstellen eines Ersatzkontos umgangen.
+Echter Login mit dem bestehenden Admin-Konto, Bild-Upload und Preisänderung
+wurden am 16.09.2026 über die veröffentlichte Oberfläche erfolgreich geprüft.
+Die inaktiven Testprodukte wurden anschliessend entfernt. Das unreferenzierte
+Testbild (vorhandenes Shop-Logo) bleibt im Bild-Bucket erhalten.
 
 Automatisierte DOM-Tests mit simuliertem Supabase-Client: `npm ci && npm test`.
 Deckt Login/Abweisung, CRUD, Upload, Katalog-Aktualisierung, Umbenennung,
