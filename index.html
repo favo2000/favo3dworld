@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>#shop .product[hidden] { display:none !important; }</style>
+  <script src="supabase-config.js"></script>
+  <script src="products.js" defer></script>
 </head>
 <body>
   <div class="topbar">
@@ -109,8 +112,10 @@
     <section id="shop" class="content-grid">
       <div class="products-wrap">
         <div class="section-title"><h2>Beliebte Modelle →</h2></div>
-        <div class="products" id="productGrid">
-          <article class="product">
+        <p id="catalogStatus" role="status" aria-live="polite">Produkte werden geladen …</p>
+        <button id="catalogRetry" type="button" hidden>Erneut versuchen</button>
+        <div class="products" id="productGrid" aria-busy="true">
+          <article class="product" hidden>
             <div class="product-media">
               <span class="badge demand">Print on Demand</span>
               <button class="heart">♡</button>
@@ -121,7 +126,7 @@
             <div class="stars">★★★★★ <small>Mehrfarbig konfigurierbar</small></div>
             <button class="horse-configure" id="openHorseConfig" type="button">Konfigurieren</button>
           </article>
-          <article class="product">
+          <article class="product" hidden>
             <div class="product-media">
               <span class="badge demand">Print on Demand</span>
               <button class="heart">♡</button>
@@ -133,7 +138,7 @@
             <button class="hoodie-configure" id="openHoodieConfig" type="button">Konfigurieren</button>
           </article>
 
-          <article class="product">
+          <article class="product" hidden>
             <div class="product-media">
               <span class="badge demand">Print on Demand</span>
               <button class="heart">♡</button>
@@ -145,7 +150,7 @@
             <button class="configure" data-name="Nordischer Krieger" data-price="34.90">Konfigurieren</button>
           </article>
 
-          <article class="product">
+          <article class="product" hidden>
             <div class="product-media">
               <span class="badge stock">Auf Lager</span>
               <button class="heart">♡</button>
@@ -157,7 +162,7 @@
             <button class="add">In den Warenkorb</button>
           </article>
 
-          <article class="product">
+          <article class="product" hidden>
             <div class="product-media">
               <span class="badge demand">Print on Demand</span>
               <button class="heart">♡</button>
@@ -186,7 +191,7 @@
         </div>
       </aside>
     
-        <article class="product">
+        <article class="product" hidden>
           <div class="product-media">
             <span class="badge stock">Auf Lager · 5 Stück</span>
             <img src="assets/scheiben-real.jpg" alt="Scheiben">
@@ -197,7 +202,7 @@
           <button class="hoodie-configure" id="addScheiben" type="button">In den Warenkorb</button>
         </article>
 
-        <article class="product">
+        <article class="product" hidden>
           <div class="product-media">
             <span class="badge demand">Print on Demand</span>
             <img id="zenPreview" src="assets/zen-real.jpg" alt="Zen Schildkröte">
@@ -208,7 +213,7 @@
           <button class="hoodie-configure" id="openZenConfig" type="button">Konfigurieren</button>
         </article>
 
-        <article class="product">
+        <article class="product" hidden>
           <div class="product-media">
             <span class="badge demand">Print on Demand</span>
             <img src="assets/pika-real.jpg" alt="Pika Urban">
@@ -219,7 +224,7 @@
           <button class="hoodie-configure" id="openPikaConfig" type="button">Farben & Grösse wählen</button>
         </article>
 
-        <article class="product">
+        <article class="product" hidden>
           <div class="product-media">
             <span class="badge demand">Print on Demand</span>
             <img src="assets/frugo-real.jpg" alt="Frugo">
@@ -230,7 +235,7 @@
           <button class="hoodie-configure simple-config" data-product="Frugo" data-image="assets/frugo-real.jpg" data-prices="15,20,25" data-color="yes" type="button">Konfigurieren</button>
         </article>
 
-        <article class="product">
+        <article class="product" hidden>
           <div class="product-media">
             <span class="badge demand">Print on Demand</span>
             <img src="assets/papa-real.jpg" alt="Papa Sch.">
@@ -280,7 +285,7 @@
     <button class="x" data-close-admin>×</button>
     <span class="eyebrow">FAVO3D WORLD</span>
     <h2>Produktverwaltung</h2>
-    <p class="admin-intro">Hier kannst du Testprodukte selbst anlegen. Die Daten werden in diesem Browser gespeichert.</p>
+    <p class="admin-intro">Lokale Demo-Verwaltung: Änderungen werden nur in diesem Browser gespeichert und erscheinen nicht im Live-Katalog. Shop-Produkte werden aktuell im Supabase-Projekt Favo3DWorld gepflegt.</p>
     <div class="admin-grid">
       <section>
         <h3>Neues Produkt</h3>
@@ -624,7 +629,7 @@ document.querySelectorAll('#baseColors button').forEach(b=>b.onclick=()=>{docume
 document.getElementById('horseSize').onchange=updateHorse;
 
 document.getElementById('horseAdd').onclick=()=>{
- cart.push({name:'Cavallo',horse,horseLabel,base,baseLabel,size:document.getElementById('horseSize').value+' cm',price});
+ if (!addCatalogItem({name:'Cavallo',horse,horseLabel,base,baseLabel,size:document.getElementById('horseSize').value+' cm',price})) return;
  horseModal.classList.remove('open'); renderCart(); drawer.classList.add('open'); toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1400);
 };
 document.querySelectorAll('.cart-trigger').forEach(btn=>btn.addEventListener('click',()=>drawer.classList.add('open')));
@@ -632,7 +637,7 @@ document.querySelectorAll('.cart-trigger').forEach(btn=>btn.addEventListener('cl
 function renderCart(){
  document.querySelectorAll('.cart-count').forEach(el=>el.textContent=cart.length);
  const wrap=document.getElementById('cartItems');
- wrap.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-line"><img src="${x.image || `assets/cavallo-${x.horse}-${x.base}.png`}"><div><b>${x.name}</b><small>${x.name==="Hoodie Drache"?x.horseLabel:"Pferd: "+x.horseLabel}</small><small>${x.name==="Hoodie Drache"?x.baseLabel:"Sockel: "+x.baseLabel}</small><small>Grösse: ${x.size}</small></div><div><b>CHF ${x.price.toFixed(2)}</b><button class="remove" onclick="removeItem(${i})">Entfernen</button></div></div>`).join(''):'<p class="empty">Dein Warenkorb ist noch leer.</p>';
+ wrap.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-line"><img src="${escapeCatalogText(x.image || `assets/cavallo-${x.horse}-${x.base}.png`)}"><div><b>${escapeCatalogText(x.name)}</b><small>${x.name==="Hoodie Drache"?x.horseLabel:"Pferd: "+x.horseLabel}</small><small>${x.name==="Hoodie Drache"?x.baseLabel:"Sockel: "+x.baseLabel}</small><small>Grösse: ${escapeCatalogText(x.size)}</small></div><div><b>CHF ${x.price.toFixed(2)}</b><button class="remove" onclick="removeItem(${i})">Entfernen</button></div></div>`).join(''):'<p class="empty">Dein Warenkorb ist noch leer.</p>';
  const total=cart.reduce((a,x)=>a+x.price,0);
  document.getElementById('cartTotal').textContent=`CHF ${total.toFixed(2)}`;
  document.getElementById('toCheckout').disabled=!cart.length;
@@ -640,7 +645,7 @@ function renderCart(){
 window.removeItem=i=>{cart.splice(i,1);renderCart()};
 document.getElementById('toCheckout').onclick=()=>{
  drawer.classList.remove('open');checkout.classList.add('open');
- document.getElementById('checkoutItems').innerHTML=cart.map(x=>`<p><b>${x.name}</b><br>${x.name==="Hoodie Drache"?x.horseLabel+" · "+x.baseLabel:"Pferd "+x.horseLabel+" · Sockel "+x.baseLabel} · ${x.size}</p>`).join('');
+ document.getElementById('checkoutItems').innerHTML=cart.map(x=>`<p><b>${escapeCatalogText(x.name)}</b><br>${x.name==="Hoodie Drache"?x.horseLabel+" · "+x.baseLabel:"Pferd "+x.horseLabel+" · Sockel "+x.baseLabel} · ${escapeCatalogText(x.size)}</p>`).join('');
  document.getElementById('checkoutTotal').textContent=`CHF ${cart.reduce((a,x)=>a+x.price,0).toFixed(2)}`;
 };
 document.querySelectorAll('.payment').forEach(b=>b.onclick=()=>{document.querySelectorAll('.payment').forEach(x=>x.classList.remove('active'));b.classList.add('active');payment=b.dataset.pay});
@@ -685,7 +690,7 @@ document.querySelectorAll('#hoodieColors button').forEach(b=>b.addEventListener(
 }));
 document.getElementById('hoodieSize').addEventListener('change',updateHoodie);
 document.getElementById('hoodieAdd').addEventListener('click',()=>{
- cart.push({name:'Hoodie Drache',horse:body,horseLabel:'Körper '+bodyLabel,base:hoodie,baseLabel:'Hoodie '+hoodieLabel,size:document.getElementById('hoodieSize').value+' cm',price:hoodiePrice,image:`assets/hoodie-drache-${hoodie}.png`});
+ if (!addCatalogItem({name:'Hoodie Drache',horse:body,horseLabel:'Körper '+bodyLabel,base:hoodie,baseLabel:'Hoodie '+hoodieLabel,size:document.getElementById('hoodieSize').value+' cm',price:hoodiePrice,image:`assets/hoodie-drache-${hoodie}.png`})) return;
  hoodieModal.classList.remove('open');renderCart();drawer.classList.add('open');
 });
 document.getElementById('hoodieRequest').addEventListener('click',()=>{
@@ -826,27 +831,15 @@ document.getElementById('saveProduct').addEventListener('click',()=>{
      setTimeout(()=>card.closest('.product').classList.remove('just-added'),2200);
    }
    alert(wasNew
-     ? `✓ ${savedName} wurde gespeichert und auf der Startseite eingefügt.`
-     : `✓ ${savedName} wurde aktualisiert.`);
+     ? `✓ ${savedName} wurde lokal als Demo gespeichert. Der Live-Katalog bleibt unverändert.`
+     : `✓ ${savedName} wurde lokal aktualisiert. Der Live-Katalog bleibt unverändert.`);
  },300);
 });
 
 function renderCustomCards(items){
- document.querySelectorAll('.custom-admin-product').forEach(x=>x.remove());
- const grid=document.getElementById('productGrid');
- if(!grid){
-   console.error('Produktbereich #productGrid nicht gefunden');
-   return;
- }
- // Built-in cards remain the shop's full configurators; add only newly created products.
- items.filter(p=>!p.builtIn).forEach(p=>{
-  const card=document.createElement('article');card.className='product custom-admin-product';
-  const vals=(p.sizes||[]).map(s=>Number(s.price)).filter(Boolean),min=vals.length?Math.min(...vals):0;
-  card.innerHTML=`<div class="product-media"><span class="badge demand">${p.type}</span><span class="admin-new-badge">NEU</span>${p.image?`<img src="${p.image}" alt="${p.name}">`:'<div class="no-product-image"><b>3D</b><small>Produktbild fehlt</small></div>'}</div><h3>${p.name}</h3><strong>${min?'ab CHF '+min.toFixed(2):'Preis auf Anfrage'}</strong><div class="stars"><small>${p.zone1||'Bereich 1'} & ${p.zone2||'Bereich 2'}</small></div><button class="admin-demo-config" type="button">Details</button>`;
-  card.querySelector('button').onclick=()=>alert(`${p.name}\n\n${(p.sizes||[]).map(s=>s.size+' cm: CHF '+s.price).join('\n')}\n\nFarbbereiche: ${p.zone1||'Bereich 1'} + ${p.zone2||'Bereich 2'}`);
-  grid.appendChild(card);
- });
+ // Local demo products are deliberately separate from the Supabase catalog.
 }
+
 resetForm();
 window.addEventListener('DOMContentLoaded',()=>renderCustomCards(getAdminProducts()));
 
@@ -854,7 +847,7 @@ window.addEventListener('DOMContentLoaded',()=>renderCustomCards(getAdminProduct
 
 // Scheiben – feste Grösse, CHF 10
 document.getElementById('addScheiben')?.addEventListener('click',()=>{
-  cart.push({name:'Scheiben',horse:'',horseLabel:'Feste Grösse',base:'',baseLabel:'',size:'Feste Grösse',price:10,image:'assets/scheiben-real.jpg'});
+  if (!addCatalogItem({name:'Scheiben',horse:'',horseLabel:'Feste Grösse',base:'',baseLabel:'',size:'Feste Grösse',price:10,image:'assets/scheiben-real.jpg'})) return;
   renderCart(); drawer.classList.add('open');
 });
 
@@ -881,7 +874,7 @@ document.querySelectorAll('#zenColors button').forEach(b=>b.addEventListener('cl
 document.getElementById('zenSize')?.addEventListener('change',updateZen);
 document.getElementById('zenAdd')?.addEventListener('click',()=>{
  const s=document.getElementById('zenSize'),price=Number(s.options[s.selectedIndex].dataset.price);
- cart.push({name:'Zen Schildkröte',horse:zenColor,horseLabel:'Farbe: '+zenColorLabel,base:'',baseLabel:'',size:s.value+' cm',price,image:`assets/zen-${zenColor}.webp`});
+ if (!addCatalogItem({name:'Zen Schildkröte',horse:zenColor,horseLabel:'Farbe: '+zenColorLabel,base:'',baseLabel:'',size:s.value+' cm',price,image:`assets/zen-${zenColor}.webp`})) return;
  zenModal.classList.remove('open');renderCart();drawer.classList.add('open');
 });
 document.getElementById('zenRequest')?.addEventListener('click',()=>{
@@ -916,7 +909,7 @@ function updateSimple(){
 document.getElementById('simpleSize').addEventListener('change',updateSimple);
 document.getElementById('simpleAdd').addEventListener('click',()=>{
  const s=document.getElementById('simpleSize'),sizes=['50','60','70'],i=Number(s.value);
- cart.push({name:simpleProduct,horse:'',horseLabel:simpleHasColor?'Farbe: '+simpleColor:'Originalfarben',base:'',baseLabel:'',size:sizes[i]+' cm',price:simplePrices[i],image:simpleImage});
+ if (!addCatalogItem({name:simpleProduct,horse:'',horseLabel:simpleHasColor?'Farbe: '+simpleColor:'Originalfarben',base:'',baseLabel:'',size:sizes[i]+' cm',price:simplePrices[i],image:simpleImage})) return;
  simpleModal.classList.remove('open');renderCart();drawer.classList.add('open');
 });
 document.getElementById('simpleRequest').addEventListener('click',()=>{const d=prompt('Welche Höhe möchtest du?');if(d)alert(`Anfrage vorbereitet: ${simpleProduct} – ${d}`)});
@@ -928,7 +921,7 @@ let pikaBody='gelb',pikaBodyLabel='Gelb',pikaHoodie='grau',pikaHoodieLabel='Grau
 
 document.getElementById('openPikaConfig')?.addEventListener('click',()=>{
   pikaBody='gelb';pikaBodyLabel='Gelb';pikaHoodie='grau';pikaHoodieLabel='Grau';
-  document.getElementById('pikaSize').value='50';
+  document.getElementById('pikaSize').value=[...document.getElementById('pikaSize').options].find(o=>!o.disabled)?.value || 'custom';
   document.querySelectorAll('#pikaBodyColors button').forEach(x=>x.classList.toggle('active',x.dataset.key==='gelb'));
   document.querySelectorAll('#pikaHoodieColors button').forEach(x=>x.classList.toggle('active',x.dataset.key==='grau'));
   updatePika();pikaModal.classList.add('open');
@@ -959,7 +952,7 @@ document.querySelectorAll('#pikaHoodieColors button').forEach(b=>b.addEventListe
 document.getElementById('pikaSize')?.addEventListener('change',updatePika);
 document.getElementById('pikaAdd')?.addEventListener('click',()=>{
  const s=document.getElementById('pikaSize'),price=Number(s.options[s.selectedIndex].dataset.price);
- cart.push({name:'Pika Urban',horse:pikaBody,horseLabel:'Körper: '+pikaBodyLabel,base:pikaHoodie,baseLabel:'Hoodie: '+pikaHoodieLabel,size:s.value+' cm',price,image:`assets/pika-${pikaBody}-${pikaHoodie}.webp`});
+ if (!addCatalogItem({name:'Pika Urban',horse:pikaBody,horseLabel:'Körper: '+pikaBodyLabel,base:pikaHoodie,baseLabel:'Hoodie: '+pikaHoodieLabel,size:s.value+' cm',price,image:`assets/pika-${pikaBody}-${pikaHoodie}.webp`})) return;
  pikaModal.classList.remove('open');renderCart();drawer.classList.add('open');
 });
 document.getElementById('pikaRequest')?.addEventListener('click',()=>{
@@ -970,7 +963,7 @@ document.getElementById('pikaRequest')?.addEventListener('click',()=>{
 window.addEventListener('DOMContentLoaded',()=>{
   const status=document.createElement('div');
   status.id='demoStatus';
-  status.textContent='✓ Shop-Demo bereit';
+  status.textContent='✓ Webseite bereit';
   document.body.appendChild(status);
   setTimeout(()=>status.classList.add('hide'),1800);
 });
@@ -1014,6 +1007,7 @@ function translatePage(lang){
  nodes.forEach(n=>translateTextNode(n,map));
  document.documentElement.lang=lang;
  currentLang=lang;
+ if(window.refreshCatalogLanguage) window.refreshCatalogLanguage();
  document.getElementById('langDE')?.classList.toggle('active',lang==='de');
  document.getElementById('langFR')?.classList.toggle('active',lang==='fr');
  try{localStorage.setItem('favoLang',lang)}catch(e){}
@@ -1027,3 +1021,4 @@ window.addEventListener('DOMContentLoaded',()=>{
 </script>
 </body>
 </html>
+
