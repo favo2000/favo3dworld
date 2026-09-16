@@ -17,7 +17,7 @@
   <div class="topbar">
     <span>🚚 Kostenloser Versand ab CHF 70.–</span>
     <span>🇨🇭 Schweizer Qualität</span>
-    <span>🛡 Sichere Bezahlung</span>
+    <span>🛡 Zahlung auf Rechnung</span>
   </div>
 
   <header class="main-header">
@@ -98,7 +98,7 @@
     </section>
 <section class="order-notice">
  <b>Bestellungen sind möglich</b>
- <span>Online-Zahlung ist noch nicht aktiviert. Nach der Bestellung erhält der Kunde die Bestätigung und Zahlungsdetails separat.</span>
+ <span>Zahlung ausschließlich auf Rechnung. Es wird keine Online-Zahlung ausgelöst.</span>
 </section>
 
 
@@ -106,7 +106,7 @@
       <div><b>1</b><span>Modell wählen</span></div>
       <i>→</i><div><b>2</b><span>Farben konfigurieren</span></div>
       <i>→</i><div><b>3</b><span>Warenkorb</span></div>
-      <i>→</i><div><b>4</b><span>TWINT · Karte · PayPal</span></div>
+      <i>→</i><div><b>4</b><span>Rechnung</span></div>
     </section>
 
     <section id="shop" class="content-grid">
@@ -250,7 +250,7 @@
     <section class="benefits">
       <div>🏅<span><b>Top Qualität</b><small>Präzise Details und saubere Oberflächen.</small></span></div>
       <div>🎨<span><b>Viele Farben</b><small>Wähle deine Lieblingsfarbe bei vielen Modellen.</small></span></div>
-      <div>🔒<span><b>Sichere Zahlung</b><small>Bequem & sicher bezahlen.</small></span></div>
+      <div>🔒<span><b>Zahlung auf Rechnung</b><small>Bequem per Rechnung bezahlen.</small></span></div>
       <div>🎧<span><b>Kundensupport</b><small>Wir sind für dich da – vor und nach der Bestellung.</small></span></div>
       <div class="quote">“ <span>Top Qualität, schneller Versand und mit viel Liebe zum Detail gedruckt.<br><b>– Lukas M.</b></span> ★★★★★</div>
     </section>
@@ -560,6 +560,7 @@
       <span class="eyebrow">DEINE BESTELLUNG</span>
       <h2>Warenkorb</h2>
       <div id="cartItems"><p class="empty">Dein Warenkorb ist noch leer.</p></div>
+      <p class="cart-payment"><span>Zahlungsart</span>: <strong>Rechnung</strong></p>
       <div class="cart-total"><span>Total</span><strong id="cartTotal">CHF 0.00</strong></div>
       <button class="btn primary wide" id="toCheckout" type="button" disabled>Zur Kasse</button>
     </aside>
@@ -583,22 +584,21 @@
         <div>
           <h3>Zahlungsart</h3>
           <div class="payments">
-            <button class="payment active" data-pay="TWINT"><b>TWINT</b><span>Schweizer Mobile Payment</span></button>
-            <button class="payment" data-pay="Karte"><b>💳 Kredit-/Debitkarte</b><span>Visa / Mastercard</span></button>
-            <button class="payment" data-pay="PayPal"><b>PayPal</b><span>Mit PayPal bezahlen</span></button>
+            <button class="payment active" type="button" data-pay="Rechnung" aria-pressed="true"><b>Rechnung</b><span>Keine Online-Zahlung</span></button>
           </div>
           <div class="checkout-summary"><small>Deine Produkte</small><div id="checkoutItems"></div><div class="grand"><span>Total</span><strong id="checkoutTotal">CHF 0.00</strong></div></div>
         </div>
       </div>
       <button class="btn primary wide place-order" id="placeOrder" type="button">Testbestellung absenden</button>
-      <p class="demo-note">Demo – es wird noch keine echte Zahlung ausgelöst.</p>
+      <p class="demo-note">Testbestellung auf Rechnung – es wird keine echte Bestellung übermittelt und keine Online-Zahlung ausgelöst.</p>
     </div>
   </div>
 
   <div class="toast" id="toast">Zum Warenkorb hinzugefügt ✓</div>
   <script>
 
-let cart=[], horse='schwarz', horseLabel='Schwarz', base='schwarz', baseLabel='Schwarz', payment='TWINT';
+let cart=[], horse='schwarz', horseLabel='Schwarz', base='schwarz', baseLabel='Schwarz';
+const payment='Rechnung';
 let price=15;
 const horseModal=document.getElementById('horseModal'), drawer=document.getElementById('cartDrawer'), checkout=document.getElementById('checkoutModal'), toast=document.getElementById('toast');
 
@@ -648,7 +648,6 @@ document.getElementById('toCheckout').onclick=()=>{
  document.getElementById('checkoutItems').innerHTML=cart.map(x=>`<p><b>${escapeCatalogText(x.name)}</b><br>${x.name==="Hoodie Drache"?x.horseLabel+" · "+x.baseLabel:"Pferd "+x.horseLabel+" · Sockel "+x.baseLabel} · ${escapeCatalogText(x.size)}</p>`).join('');
  document.getElementById('checkoutTotal').textContent=`CHF ${cart.reduce((a,x)=>a+x.price,0).toFixed(2)}`;
 };
-document.querySelectorAll('.payment').forEach(b=>b.onclick=()=>{document.querySelectorAll('.payment').forEach(x=>x.classList.remove('active'));b.classList.add('active');payment=b.dataset.pay});
 document.getElementById('placeOrder').onclick=()=>{
  const ids=['firstName','lastName','email','street','zip','city'];
  if(ids.some(id=>!document.getElementById(id).value.trim())){alert('Bitte fülle zuerst die Lieferadresse aus.');return;}
@@ -972,6 +971,10 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 <script>
 const FR_MAP = new Map([
+ ['Rechnung','Facture'],['Zahlungsart','Mode de paiement'],['Zahlung auf Rechnung','Paiement sur facture'],
+ ['🛡 Zahlung auf Rechnung','🛡 Paiement sur facture'],['Keine Online-Zahlung','Aucun paiement en ligne'],
+ ['Bequem per Rechnung bezahlen.','Payez facilement sur facture.'],
+ ['Testbestellung auf Rechnung – es wird keine echte Bestellung übermittelt und keine Online-Zahlung ausgelöst.','Commande test sur facture — aucune commande réelle n’est transmise et aucun paiement en ligne n’est déclenché.'],
  ['Shop','Boutique'],['Über uns','À propos'],['Kontakt','Contact'],['Warenkorb','Panier'],
  ['Print on Demand','Impression à la demande'],['Auf Lager','En stock'],['Auf Lager · 5 Stück','En stock · 5 pièces'],
  ['Konfigurieren','Configurer'],['Grösse wählen','Choisir la taille'],['Größe wählen','Choisir la taille'],
@@ -988,7 +991,7 @@ const FR_MAP = new Map([
  ['Originalfarben · keine Farbauswahl','Couleurs originales · sans choix de couleur'],
  ['Eine feste Grösse','Une taille fixe'],['Eine feste Größe','Une taille fixe'],
  ['Bestellungen sind möglich','Les commandes sont possibles'],
- ['Online-Zahlung ist noch nicht aktiviert. Nach der Bestellung erhält der Kunde die Bestätigung und Zahlungsdetails separat.','Le paiement en ligne n’est pas encore activé. Après la commande, le client reçoit séparément la confirmation et les informations de paiement.'],
+ ['Zahlung ausschließlich auf Rechnung. Es wird keine Online-Zahlung ausgelöst.','Paiement uniquement sur facture. Aucun paiement en ligne n’est déclenché.'],
  ['Schwarz','Noir'],['Weiss','Blanc'],['Weiß','Blanc'],['Gold','Or'],['Rot','Rouge'],['Grün','Vert'],['Grau','Gris'],['Gelb','Jaune'],
  ['Feste Grösse','Taille fixe'],['Feste Größe','Taille fixe']
 ]);

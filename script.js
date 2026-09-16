@@ -1,5 +1,6 @@
 
-let cart=[], horse='schwarz', horseLabel='Schwarz', base='schwarz', baseLabel='Schwarz', payment='TWINT';
+let cart=[], horse='schwarz', horseLabel='Schwarz', base='schwarz', baseLabel='Schwarz';
+const payment='Rechnung';
 const price=34.90;
 const horseModal=document.getElementById('horseModal'), drawer=document.getElementById('cartDrawer'), checkout=document.getElementById('checkoutModal'), toast=document.getElementById('toast');
 
@@ -41,7 +42,6 @@ document.getElementById('toCheckout').onclick=()=>{
  document.getElementById('checkoutItems').innerHTML=cart.map(x=>`<p><b>${x.name}</b><br>Pferd ${x.horseLabel} · Sockel ${x.baseLabel} · ${x.size}</p>`).join('');
  document.getElementById('checkoutTotal').textContent=`CHF ${cart.reduce((a,x)=>a+x.price,0).toFixed(2)}`;
 };
-document.querySelectorAll('.payment').forEach(b=>b.onclick=()=>{document.querySelectorAll('.payment').forEach(x=>x.classList.remove('active'));b.classList.add('active');payment=b.dataset.pay});
 document.getElementById('placeOrder').onclick=()=>{
  const ids=['firstName','lastName','email','street','zip','city'];
  if(ids.some(id=>!document.getElementById(id).value.trim())){alert('Bitte fülle zuerst die Lieferadresse aus.');return;}
