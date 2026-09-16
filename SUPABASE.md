@@ -33,8 +33,8 @@ RLS und Datenbankschema wurden nicht geändert.
 Bei Ladefehlern erscheint ein Wiederholen-Button, ohne veraltete Demo-Produkte
 anzuzeigen. Bei leerer Tabelle erscheint eine Leermeldung.
 Die lokale Demo-Verwaltung bleibt getrennt und veröffentlicht keine Produkte.
-Live-Produkte werden derzeit im Supabase-Dashboard gepflegt. Checkout und
-Sondergrößen-Anfragen bleiben Demos; es werden keine Bestellungen übertragen.
+Live-Produkte werden derzeit im Supabase-Dashboard gepflegt. Bestellungen werden durch `checkout.js` und die Edge Function `place-order` gespeichert.
+Sondergrößen-Anfragen bleiben eine Demo. Details siehe `ORDERS.md`.
 
 ## Prüfung
 

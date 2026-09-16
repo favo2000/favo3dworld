@@ -1,0 +1,48 @@
+-- All test data and stock changes are rolled back.
+begin;
+do $$
+declare p jsonb; receipt jsonb; again jsonb; n integer; amount numeric; before_stock bigint; rejected boolean; oid uuid;
+begin
+ select stock into before_stock from public."Products" where name='Scheiben';
+ p := jsonb_build_object('request_key',gen_random_uuid(),'payment_method','Rechnung','customer',jsonb_build_object('first_name','Integration','last_name','Test','email','integration-test@example.invalid','street','Teststrasse 1','postal_code','3000','city','Bern','country','CH'),'items',jsonb_build_array(jsonb_build_object('product_id',3,'size','fixed','colors','{}'::jsonb,'quantity',2)),'expected_total',20);
+ execute 'set local role service_role';
+ receipt := public.submit_invoice_order(p,repeat('a',64));
+ again := public.submit_invoice_order(p,repeat('a',64));
+ if receipt<>again then raise exception 'idempotency failed'; end if;
+ select id,total into oid,amount from public."Orders" where request_key=(p->>'request_key')::uuid;
+ if amount<>20 then raise exception 'total failed'; end if;
+ select count(*) into n from public."OrderItems" where order_id=oid and quantity=2 and unit_price=10 and line_total=20;
+ if n<>1 then raise exception 'snapshot failed'; end if;
+ if (select stock from public."Products" where id=3)<>before_stock-2 then raise exception 'stock failed'; end if;
+ rejected:=false;begin perform public.submit_invoice_order(jsonb_set(p,'{expected_total}','1'),repeat('a',64));exception when others then if sqlerrm='REQUEST_CONFLICT' then rejected:=true;else raise;end if;end;
+ if not rejected then raise exception 'conflict accepted'; end if;
+ p:=jsonb_set(p,'{request_key}',to_jsonb(gen_random_uuid()));
+ rejected:=false;begin perform public.submit_invoice_order(jsonb_set(p,'{payment_method}','"Karte"'),repeat('a',64));exception when others then if sqlerrm='INVALID_REQUEST' then rejected:=true;else raise;end if;end;
+ if not rejected then raise exception 'wrong payment accepted'; end if;
+ rejected:=false;begin perform public.submit_invoice_order(jsonb_set(p,'{expected_total}','1'),repeat('a',64));exception when others then if sqlerrm='PRICE_CHANGED' then rejected:=true;else raise;end if;end;
+ if not rejected then raise exception 'wrong price accepted'; end if;
+ if (select stock from public."Products" where id=3)<>before_stock-2 then raise exception 'failed order changed stock'; end if;
+ rejected:=false;begin perform public.submit_invoice_order(jsonb_set(p,'{items,0,quantity}','20'),repeat('a',64));exception when others then if sqlerrm='OUT_OF_STOCK' then rejected:=true;else raise;end if;end;
+ if not rejected then raise exception 'oversell accepted'; end if;
+ execute 'reset role';
+ if has_table_privilege('anon','public."Orders"','select') or has_table_privilege('anon','public."Orders"','insert') or has_function_privilege('anon','public.submit_invoice_order(jsonb,text)','execute') then raise exception 'guest privileges'; end if;
+ if has_column_privilege('authenticated','public."Orders"','total','update') or has_table_privilege('authenticated','public."OrderItems"','insert') or has_function_privilege('authenticated','public.submit_invoice_order(jsonb,text)','execute') then raise exception 'user privileges'; end if;
+ perform set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',true);
+ execute 'set local role authenticated';
+ select count(*) into n from public."Orders" where id=oid; if n<>0 then raise exception 'customer read leaked';end if;
+ select count(*) into n from public."OrderItems" where order_id=oid; if n<>0 then raise exception 'items read leaked';end if;
+ update public."Orders" set status='Versendet' where id=oid; get diagnostics n=row_count;if n<>0 then raise exception 'customer update leaked';end if;
+ execute 'reset role';
+ perform set_config('request.jwt.claim.sub','0e780550-3efb-4d78-b940-9566af5a398d',true);
+ execute 'set local role authenticated';
+ select count(*) into n from public."Orders" where id=oid;if n<>1 then raise exception 'admin cannot read';end if;
+ update public."Orders" set status='In Bearbeitung' where id=oid;get diagnostics n=row_count;if n<>1 then raise exception 'admin cannot update';end if;
+ rejected:=false;begin update public."Orders" set total=1 where id=oid;exception when insufficient_privilege then rejected:=true;end;
+ if not rejected then raise exception 'admin can change prices';end if;
+ rejected:=false;begin update public."Orders" set status='invalid' where id=oid;exception when check_violation then rejected:=true;end;
+ if not rejected then raise exception 'invalid status accepted';end if;
+ execute 'reset role';
+end;
+$$;
+rollback;
+select 'PASS: transaction, snapshots, totals, stock, idempotency, wrong payment/price, oversell, guest privileges, customer RLS, admin read/status-only updates' as result;
