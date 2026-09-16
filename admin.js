@@ -1,7 +1,7 @@
 /* Only the publishable key is used. RLS is the authoritative access check. */
 (() => {
   'use strict';
-  const COLUMNS = 'id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active';
+  const COLUMNS = 'id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active,glb_path';
   const $ = id => document.getElementById(id);
   const config = window.FAVO_SUPABASE;
   let client, authorized = false, busy = false, editing = null, rows = [], previewURL;
@@ -32,6 +32,8 @@
     editing = null; $('adminProductForm').reset(); $('adminEditTitle').textContent = 'Neues Produkt';
     if (previewURL) URL.revokeObjectURL(previewURL);
     previewURL = null; preview(null);
+    $('adminGlbStatus').textContent = 'Noch keine GLB-Datei zugeordnet.';
+    $('adminGlbPreview').hidden = true;
   }
   async function requireAdmin() {
     const { data, error } = await client.auth.getUser();
@@ -56,6 +58,8 @@
     $('adminActive').checked = p.active === true;
     $('adminColorMode').value = p.color_mode;
     preview(p.image_url);
+    $('adminGlbStatus').textContent = p.glb_path ? 'GLB gespeichert. Neue Datei auswählen, um die 3D-Ansicht zu ersetzen.' : 'Noch keine GLB-Datei zugeordnet.';
+    $('adminGlbPreview').hidden = !window.Favo3D?.url(p.glb_path);
     $('adminName').focus();
   }
   function render() {
@@ -103,6 +107,13 @@
       $('adminRemoveImage').checked = false; preview(previewURL || editing?.image_url);
     } catch (e) { $('adminImage').value = ''; status(e.message, true); }
   });
+  $('adminGlb').addEventListener('change', () => {
+    const file = $('adminGlb').files[0];
+    $('adminGlbStatus').textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB · wird beim Speichern geprüft und hochgeladen` : editing?.glb_path ? 'Die gespeicherte GLB-Datei bleibt erhalten.' : 'Noch keine GLB-Datei zugeordnet.';
+  });
+  $('adminGlbPreview').onclick = () => {
+    if (!busy && editing) window.Favo3D.open(editing, editing.image_url, $('adminGlbPreview'));
+  };
   $('adminProductForm').addEventListener('submit', async event => {
     event.preventDefault(); if (busy || !authorized) return;
     locked(true); let uploaded = null, saved = false;
@@ -116,6 +127,9 @@
         image_url: $('adminRemoveImage').checked ? null : editing?.image_url || null
       };
       if (!values.name || !values.description_de) throw new Error('Produktname und deutsche Beschreibung sind erforderlich.');
+      const glbFile = $('adminGlb').files[0];
+      // Validate before either upload. Never reinterpret private model_url as a GLB.
+      if (glbFile) await window.Favo3D.validateFile(glbFile);
       const file = $('adminImage').files[0]; validateFile(file);
       if (file && !$('adminRemoveImage').checked) {
         const extension = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
@@ -126,6 +140,14 @@
         uploaded = path;
         values.image_url = client.storage.from('product-images').getPublicUrl(path).data.publicUrl;
       }
+      if (glbFile) {
+        const glbPath = `${crypto.randomUUID()}.glb`;
+        status('GLB-Datei wird hochgeladen …');
+        const {error} = await client.storage.from('product-glb').upload(glbPath, glbFile, {contentType:'model/gltf-binary', upsert:false});
+        if (error) throw error;
+        uploaded = glbPath;
+        values.glb_path = glbPath;
+      }
       status('Produkt wird gespeichert …');
       const query = editing ? client.from('Products').update(values).eq('id', editing.id) : client.from('Products').insert(values);
       const {data, error} = await query.select('id');
@@ -135,7 +157,7 @@
       await load(); await refreshShop(); status('Produkt gespeichert. Der Shop wurde aktualisiert.');
     } catch (e) {
       // Keep an uploaded file on uncertain network outcomes; a successful commit may reference it.
-      status((saved ? 'Gespeichert, aber Aktualisierung fehlgeschlagen: ' : 'Speichern fehlgeschlagen: ') + e.message + (uploaded && !saved ? ' Das hochgeladene Bild bleibt zur Sicherheit im Speicher; vor erneutem Speichern die Liste aktualisieren.' : ''), true);
+      status((saved ? 'Gespeichert, aber Aktualisierung fehlgeschlagen: ' : 'Speichern fehlgeschlagen: ') + e.message + (uploaded && !saved ? ' Bereits hochgeladene Dateien bleiben zur Sicherheit im Speicher; vor erneutem Speichern die Liste aktualisieren.' : ''), true);
     } finally { locked(false); }
   });
   $('adminNew').onclick = () => { if (!busy) { reset(); status('Neues Produkt'); } };

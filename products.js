@@ -89,6 +89,7 @@ function refreshCatalogLanguage() {
       : Number(p.stock) > 0 ? catalogText('Auf Lager · ','En stock · ') + p.stock
       : catalogText('Ausverkauft','Épuisé');
   }
+  window.Favo3D?.refreshLanguage();
 }
 function renderCatalog() {
   const grid = document.getElementById('productGrid');
@@ -125,7 +126,7 @@ function renderCatalog() {
     }
     card.querySelector('.badge').className = 'badge ' + (p.stock === null ? 'demand' : 'stock');
     configureCatalogSizes(p);
-    const button = card.querySelector('button:not(.heart)');
+    const button = card.querySelector('button:not(.heart):not(.product-3d-open)');
     button.disabled = p.stock !== null && Number(p.stock) <= 0;
     if (!catalogBindings[catalogOriginalNames[p.id]] && catalogOriginalNames[p.id] !== 'Scheiben') {
       // Replace the legacy button to remove its hard-coded price listener.
@@ -133,6 +134,7 @@ function renderCatalog() {
       button.replaceWith(replacement);
       replacement.addEventListener('click', () => openCatalogSimple(p, src));
     }
+    window.Favo3D?.attachButton(card, p, src);
     card.hidden = false;
   }
   refreshCatalogLanguage();
@@ -154,7 +156,7 @@ async function loadCatalog() {
     const config = window.FAVO_SUPABASE;
     const url = new URL('/rest/v1/Products', config.url);
     // Production model URLs are deliberately never requested by the storefront.
-    url.searchParams.set('select','id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active');
+    url.searchParams.set('select','id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active,glb_path');
     url.searchParams.set('active','eq.true');
     url.searchParams.set('order','id.asc');
     const response = await fetch(url, {headers:{apikey:config.publishableKey}, signal:controller.signal, cache:'no-store'});

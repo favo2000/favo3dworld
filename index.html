@@ -11,11 +11,13 @@
   <link rel="stylesheet" href="styles.css">
   <style>#shop .product[hidden] { display:none !important; }</style>
   <script src="supabase-config.js"></script>
+  <script src="product-3d.js" defer></script>
   <script src="products.js" defer></script>
   <script src="checkout.js" defer></script>
   <script src="vendor/supabase-2.57.4.js" defer></script>
   <script src="admin.js" defer></script>
   <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="product-3d.css">
 </head>
 <body>
   <div class="topbar">
@@ -314,11 +316,15 @@
  <p class="field-help">JPG, PNG oder WebP, maximal 5 MB. Das Bild wird beim Speichern hochgeladen.</p>
  <div id="adminImagePreview" class="image-preview"></div>
  <label class="check"><input id="adminRemoveImage" type="checkbox"> Bildzuordnung entfernen</label>
+ <label>Öffentliche 3D-Ansicht (.glb)<input id="adminGlb" type="file" accept=".glb,model/gltf-binary"></label>
+ <p class="field-help">GLB mit eingebetteten Texturen, maximal 25 MB (empfohlen unter 10 MB). Beim Speichern wird nur die 3D-Ansicht ersetzt; Produktbilder bleiben erhalten. Diese GLB-Datei ist öffentlich abrufbar. Keine 3MF-Originale auswählen.</p>
+ <p id="adminGlbStatus" class="file-status">Noch keine GLB-Datei zugeordnet.</p>
+ <button id="adminGlbPreview" class="btn secondary" type="button" hidden>Gespeicherte 3D-Ansicht prüfen</button>
  <button class="btn primary wide" type="submit">Produkt speichern</button>
  <button class="btn secondary wide" id="adminNew" type="button">Neues Produkt / Bearbeiten abbrechen</button>
  </fieldset></form>
  </section><section><h3>Online-Produkte</h3><button id="adminReload" type="button">Liste aktualisieren</button><div id="adminProducts"></div>
- <p class="small-note">Änderungen gelten sofort im Shop. 3MF-Dateien werden hier noch nicht hochgeladen; der dafür vorbereitete Speicher ist privat.</p>
+ <p class="small-note">Änderungen gelten sofort im Shop. Nur ausdrücklich hochgeladene GLB-Vorschauen sind öffentlich. Der Speicher für 3MF-Originale bleibt privat.</p>
  </section></div></div></div></div>
 
 <div class="horse-modal" id="horseModal">

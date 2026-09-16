@@ -31,7 +31,7 @@ w.supabase={createClient:()=>client};
 w.eval(read('supabase-config.js'));
 // Concatenate scripts to preserve the shared lexical scope of classic scripts.
 const inline=[...w.document.querySelectorAll('script:not([src])')].map(s=>s.textContent).join('\n');
-w.eval(inline+'\n'+read('products.js')+'\n'+read('admin.js'));
+w.eval(inline+'\n'+read('product-3d.js')+'\n'+read('products.js')+'\n'+read('admin.js'));
 const tick=()=>new Promise(r=>setTimeout(r,20));const submit=id=>$(id).dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
 await tick();assert.equal($('adminWorkspace').hidden,true);
 $('adminEmail').value='admin@example.test';$('adminPassword').value='test';submit('adminLogin');await tick();
@@ -42,6 +42,17 @@ submit('adminProductForm');await tick();assert.equal(uploads,1);assert.equal(row
 assert.equal(w.document.querySelector('#shop .product:not([hidden]) h3').textContent,'Cavallo neu');
 $('horseAdd').click();assert.match($('cartItems').textContent,/Cavallo neu/);
 Object.defineProperty($('adminImage'),'files',{configurable:true,value:[]});
+$('adminProducts').querySelector('button').click();
+Object.defineProperty($('adminGlb'),'files',{configurable:true,value:[new File([require('./glb-fixture.cjs')()],'preview.glb')]});
+submit('adminProductForm');await tick();assert.equal(uploads,2);const firstGlb=rows[0].glb_path;assert.match(firstGlb,/\.glb$/);
+$('adminProducts').querySelector('button').click();submit('adminProductForm');await tick();assert.equal(uploads,3);assert.notEqual(rows[0].glb_path,firstGlb);
+const replacedGlb=rows[0].glb_path;
+Object.defineProperty($('adminGlb'),'files',{configurable:true,value:[]});
+$('adminProducts').querySelector('button').click();submit('adminProductForm');await tick();assert.equal(rows[0].glb_path,replacedGlb);assert.equal(uploads,3);
+$('adminProducts').querySelector('button').click();
+Object.defineProperty($('adminGlb'),'files',{configurable:true,value:[new File(['private'],'original.3mf')]});
+submit('adminProductForm');await tick();assert.equal(uploads,3);assert.equal(rows[0].glb_path,replacedGlb);assert.match($('adminStatus').textContent,/3MF/);
+Object.defineProperty($('adminGlb'),'files',{configurable:true,value:[]});
 $('adminProducts').querySelector('button').click();$('adminActive').checked=false;submit('adminProductForm');await tick();
 assert.equal(w.document.querySelectorAll('#shop .product:not([hidden])').length,0);
 $('adminName').value='Neues Modell';$('adminDescriptionDe').value='Beschreibung';$('adminPrice50').value='5';submit('adminProductForm');await tick();assert.equal(rows.length,2);
