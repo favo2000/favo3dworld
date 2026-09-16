@@ -1,0 +1,10 @@
+#adminModal [hidden] { display: none !important; }
+#adminModal fieldset { border: 0; padding: 0; min-width: 0; }
+#adminModal textarea { width: 100%; box-sizing: border-box; border: 1px solid #d8dedc; border-radius: 8px; padding: 12px; font: inherit; resize: vertical; }
+#adminModal input[type=checkbox] { width: auto; }
+#adminLogin { max-width: 420px; }
+#adminStatus { min-height: 1.5em; }
+#adminStatus[data-error=true] { color: #a62121; }
+#adminModal button:disabled { opacity: .55; cursor: wait; }
+#adminModal .admin-product { overflow-wrap: anywhere; }
+#adminModal .admin-product button { margin: 4px; }

@@ -9,6 +9,7 @@ const catalogBindings = {
   'Zen Schildkröte': { size: 'zenSize', update: () => updateZen() },
   'Pika Urban': { size: 'pikaSize', update: () => updatePika() }
 };
+const catalogOriginalNames = {1:'Cavallo',2:'Hoodie Drache',3:'Scheiben',4:'Zen Schildkröte',5:'Pika Urban',6:'Frugo',7:'Papa Sch.'};
 const catalogSizes = ['50', '60', '70'];
 function escapeCatalogText(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -28,7 +29,7 @@ function catalogImage(value, fallback = '') {
 }
 function catalogText(de, fr) { return document.documentElement.lang === 'fr' ? fr : de; }
 function addCatalogItem(item) {
-  const p = catalogProducts.find(p => p.name === item.name);
+  const p = catalogProducts.find(p => p.name === item.name || catalogOriginalNames[p.id] === item.name);
   const size = item.size === 'Feste Grösse' ? '50' : item.size.split(' ')[0];
   const amount = p && catalogPrice(p, size);
   const count = p ? cart.filter(x => x.productId === p.id).length : 0;
@@ -36,11 +37,11 @@ function addCatalogItem(item) {
     alert(catalogText('Dieses Produkt ist in dieser Auswahl nicht verfügbar.', 'Ce produit n’est pas disponible dans cette configuration.'));
     return false;
   }
-  cart.push({...item, productId:p.id, price:amount});
+  cart.push({...item, name:p.name, productId:p.id, price:amount});
   return true;
 }
 function configureCatalogSizes(p) {
-  const binding = catalogBindings[p.name];
+  const binding = catalogBindings[catalogOriginalNames[p.id]];
   if (!binding) return;
   const select = document.getElementById(binding.size);
   for (const option of select.options) {
@@ -94,7 +95,7 @@ function renderCatalog() {
   document.querySelectorAll('#shop .product').forEach(card => {card.hidden = true;});
   document.querySelectorAll('.catalog-generated').forEach(card => card.remove());
   for (const p of catalogProducts) {
-    let card = catalogTemplates.get(p.name);
+    let card = catalogTemplates.get(catalogOriginalNames[p.id]);
     const existing = !!card;
     if (!card) {
       card = document.createElement('article');
@@ -106,7 +107,8 @@ function renderCatalog() {
     card.dataset.catalogId = p.id;
     card.querySelector('h3').textContent = p.name;
     const image = card.querySelector('.product-media img');
-    const fallback = existing ? image.getAttribute('src') : 'assets/logo-reference.png';
+    if (!image.dataset.originalSrc) image.dataset.originalSrc = image.getAttribute('src') || 'assets/logo-reference.png';
+    const fallback = existing ? image.dataset.originalSrc : 'assets/logo-reference.png';
     const src = catalogImage(p.image_url, fallback);
     image.src = src;
     image.alt = p.name;
@@ -125,7 +127,7 @@ function renderCatalog() {
     configureCatalogSizes(p);
     const button = card.querySelector('button:not(.heart)');
     button.disabled = p.stock !== null && Number(p.stock) <= 0;
-    if (!catalogBindings[p.name] && p.name !== 'Scheiben') {
+    if (!catalogBindings[catalogOriginalNames[p.id]] && catalogOriginalNames[p.id] !== 'Scheiben') {
       // Replace the legacy button to remove its hard-coded price listener.
       const replacement = button.cloneNode(true);
       button.replaceWith(replacement);

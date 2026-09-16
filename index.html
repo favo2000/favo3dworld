@@ -13,6 +13,9 @@
   <script src="supabase-config.js"></script>
   <script src="products.js" defer></script>
   <script src="checkout.js" defer></script>
+  <script src="vendor/supabase-2.57.4.js" defer></script>
+  <script src="admin.js" defer></script>
+  <link rel="stylesheet" href="admin.css">
 </head>
 <body>
   <div class="topbar">
@@ -280,52 +283,43 @@
   <button class="floating-cart cart-trigger" type="button">🛒 Warenkorb <b class="cart-count">0</b></button>
 
   
-<div class="admin-modal" id="adminModal">
-  <div class="overlay" data-close-admin></div>
-  <div class="admin-card">
-    <button class="x" data-close-admin>×</button>
-    <span class="eyebrow">FAVO3D WORLD</span>
-    <h2>Produktverwaltung</h2>
-    <p class="admin-intro">Lokale Demo-Verwaltung: Änderungen werden nur in diesem Browser gespeichert und erscheinen nicht im Live-Katalog. Shop-Produkte werden aktuell im Supabase-Projekt Favo3DWorld gepflegt.</p>
-    <div class="admin-grid">
-      <section>
-        <h3>Neues Produkt</h3>
-        <label>Produktname<input id="adminName" placeholder="z. B. Fantasy Drache"></label>
-        <label>Produktart
-          <select id="adminType"><option>Print on Demand</option><option>Auf Lager</option></select>
-        </label>
-        <label>Produktbild für den Shop
-          <input id="adminImage" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
-          <small class="field-help">Bitte JPG, PNG oder WEBP auswählen. Die 3MF-Datei allein erzeugt in dieser Demo noch kein Produktfoto.</small>
-        </label>
-        <label>3D-Modell (.3mf)<input id="admin3mf" type="file" accept=".3mf,model/3mf"></label>
-        <div class="file-status" id="admin3mfStatus">Noch keine 3MF-Datei gewählt</div>
-        <div class="image-preview" id="adminImagePreview">Noch kein Bild gewählt</div>
-        <div class="three-mf-info">
-          <b>3MF-Datei</b>
-          <span>Die Demo speichert Dateiname, Größe und die 3MF-Datei lokal im Browser. Im echten Shop wird die Datei geschützt auf dem Server gespeichert und ist für Kunden nicht downloadbar.</span>
-        </div>
-
-        <h3>Grössen & Preise</h3>
-        <div id="sizeRows" class="size-rows"></div>
-        <button class="add-size" id="addSize" type="button">＋ Grösse hinzufügen</button>
-        <label class="check"><input id="customSize" type="checkbox" checked> Andere Größe auf Anfrage erlauben</label>
-
-        <h3>Farbbereiche</h3>
-        <label>Bereich 1<input id="zone1" placeholder="z. B. Körper"></label>
-        <label>Bereich 2<input id="zone2" placeholder="z. B. Sockel / Hoodie"></label>
-        <p class="small-note">Standardfarben: Petrol, Schwarz, Weiß, Gold und Rot.</p>
-        <button class="btn primary wide" id="saveProduct" type="button">Produkt speichern</button>
-        <button class="btn secondary wide edit-cancel" id="cancelEdit" type="button" style="display:none">Bearbeiten abbrechen</button>
-      </section>
-      <section>
-        <h3>Meine Testprodukte</h3>
-        <div id="adminProducts"></div>
-        <div class="admin-warning"><b>Demo-Verwaltung</b><br>Diese Version speichert selbst angelegte Produkte nur lokal in deinem Browser. Für den echten Online-Shop bauen wir später Login, Datenbank und Bildspeicher ein.</div>
-      </section>
-    </div>
-  </div>
-</div>
+<div class="admin-modal" id="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminHeading">
+ <div class="overlay" data-close-admin></div><div class="admin-card">
+ <button class="x" data-close-admin type="button" aria-label="Schliessen">×</button>
+ <span class="eyebrow">FAVO3D WORLD</span><h2 id="adminHeading">Produktverwaltung</h2>
+ <p id="adminStatus" role="status" aria-live="polite"></p>
+ <form id="adminLogin">
+ <label>E-Mail<input id="adminEmail" type="email" autocomplete="username" required></label>
+ <label>Passwort<input id="adminPassword" type="password" autocomplete="current-password" required></label>
+ <button class="btn primary" type="submit">Anmelden</button>
+ </form>
+ <div id="adminWorkspace" hidden>
+ <button class="btn secondary" id="adminLogout" type="button">Abmelden</button>
+ <div class="admin-grid"><section>
+ <h3 id="adminEditTitle">Neues Produkt</h3>
+ <form id="adminProductForm"><fieldset id="adminFields">
+ <label>Produktname<input id="adminName" maxlength="200" required></label>
+ <label>Beschreibung Deutsch<textarea id="adminDescriptionDe" rows="3" required></textarea></label>
+ <label>Description française<textarea id="adminDescriptionFr" rows="3"></textarea></label>
+ <label>Preis 50 cm / feste Grösse (CHF)<input id="adminPrice50" type="number" min="0" step="0.01"></label>
+ <label>Preis 60 cm (CHF)<input id="adminPrice60" type="number" min="0" step="0.01"></label>
+ <label>Preis 70 cm (CHF)<input id="adminPrice70" type="number" min="0" step="0.01"></label>
+ <p class="field-help">Leerer Preis: Grösse nicht verfügbar. Bei Scheiben gilt der erste Preis für die feste Grösse.</p>
+ <label>Lagerbestand<input id="adminStock" type="number" min="0" step="1"></label>
+ <p class="field-help">Leer = Print on Demand, 0 = ausverkauft.</p>
+ <label class="check"><input id="adminActive" type="checkbox" checked> Im Shop aktiv</label>
+ <label>Farbmodus<select id="adminColorMode"><option value="einfarbig">Einfarbig</option><option value="original">Originalfarben</option><option value="mehrfarbig">Mehrfarbig</option><option value="hoodie">Hoodie</option></select></label>
+ <p class="field-help">Die speziellen Farbkonfiguratoren bleiben den bestehenden Modellen zugeordnet. Neue Modelle verwenden den allgemeinen Konfigurator.</p>
+ <label>Neues Produktbild<input id="adminImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
+ <p class="field-help">JPG, PNG oder WebP, maximal 5 MB. Das Bild wird beim Speichern hochgeladen.</p>
+ <div id="adminImagePreview" class="image-preview"></div>
+ <label class="check"><input id="adminRemoveImage" type="checkbox"> Bildzuordnung entfernen</label>
+ <button class="btn primary wide" type="submit">Produkt speichern</button>
+ <button class="btn secondary wide" id="adminNew" type="button">Neues Produkt / Bearbeiten abbrechen</button>
+ </fieldset></form>
+ </section><section><h3>Online-Produkte</h3><button id="adminReload" type="button">Liste aktualisieren</button><div id="adminProducts"></div>
+ <p class="small-note">Änderungen gelten sofort im Shop. 3MF-Dateien werden hier noch nicht hochgeladen; der dafür vorbereitete Speicher ist privat.</p>
+ </section></div></div></div></div>
 
 <div class="horse-modal" id="horseModal">
     <div class="overlay" data-close-horse></div>
@@ -695,147 +689,6 @@ updateHoodie();
 
 renderCart();updateHorse();
 
-
-
-
-const adminModal=document.getElementById('adminModal');
-let adminImageData='', admin3mfData='', admin3mfName='', editingIndex=null;
-
-const builtIns=[
- {name:'Cavallo',type:'Print on Demand',image:'assets/cavallo-real.jpg',modelName:'',sizes:[{size:'50',price:'15'},{size:'60',price:'20'},{size:'70',price:'25'}],custom:true,zone1:'Pferd',zone2:'Sockel',builtIn:'cavallo'},
- {name:'Hoodie Drache',type:'Print on Demand',image:'assets/hoodie-real.jpg',modelName:'Hoodie Drache V2.3mf',sizes:[{size:'50',price:'18'},{size:'60',price:'23'},{size:'70',price:'28'}],custom:true,zone1:'Körper',zone2:'Hoodie',builtIn:'hoodie'}
-];
-
-let productMemory=null;
-function getAdminProducts(){
- if(productMemory) return productMemory;
- try{
-  const saved=JSON.parse(localStorage.getItem('favoAdminProductsV2')||'null');
-  if(saved){productMemory=saved;return productMemory;}
- }catch(e){}
- productMemory=JSON.parse(JSON.stringify(builtIns));
- return productMemory;
-}
-function setAdminProducts(p){
- productMemory=p;
- try{localStorage.setItem('favoAdminProductsV2',JSON.stringify(p));}catch(e){}
-}
-
-function addSizeRow(size='',price=''){
- const wrap=document.getElementById('sizeRows');
- const row=document.createElement('div');row.className='dynamic-size-row';
- row.innerHTML=`<input class="size-value" type="number" min="1" step="1" placeholder="Höhe cm" value="${size}">
- <input class="price-value" type="number" min="0" step=".50" placeholder="Preis CHF" value="${price}">
- <button type="button" class="remove-size">×</button>`;
- row.querySelector('.remove-size').onclick=()=>{if(wrap.children.length>1)row.remove();};
- wrap.appendChild(row);
-}
-function resetForm(){
- editingIndex=null;
- document.getElementById('adminName').value='';
- document.getElementById('adminType').value='Print on Demand';
- document.getElementById('adminImage').value='';adminImageData='';
- document.getElementById('adminImagePreview').textContent='Noch kein Bild gewählt';
- document.getElementById('admin3mf').value='';admin3mfData='';admin3mfName='';
- document.getElementById('admin3mfStatus').textContent='Noch keine 3MF-Datei gewählt';
- document.getElementById('zone1').value='';document.getElementById('zone2').value='';
- document.getElementById('customSize').checked=true;
- document.getElementById('sizeRows').innerHTML='';addSizeRow();
- document.getElementById('saveProduct').textContent='Produkt speichern';
- document.getElementById('cancelEdit').style.display='none';
-}
-document.getElementById('addSize').onclick=()=>addSizeRow();
-document.getElementById('cancelEdit').onclick=resetForm;
-document.getElementById('openAdmin').addEventListener('click',()=>{adminModal.classList.add('open');renderAdminProducts();});
-document.querySelectorAll('[data-close-admin]').forEach(x=>x.addEventListener('click',()=>adminModal.classList.remove('open')));
-
-document.getElementById('adminImage').addEventListener('change',e=>{
- const file=e.target.files[0];
- const preview=document.getElementById('adminImagePreview');
- if(!file){adminImageData='';preview.textContent='Noch kein Bild gewählt';return;}
- if(!file.type.startsWith('image/')){
-   alert('Bitte ein Produktbild als JPG, PNG oder WEBP auswählen.');
-   e.target.value='';
-   adminImageData='';
-   return;
- }
- const reader=new FileReader();
- reader.onload=()=>{
-   adminImageData=reader.result;
-   preview.innerHTML=`<img src="${adminImageData}" alt="Produktbild Vorschau"><span class="image-ok">✓ Bild geladen</span>`;
- };
- reader.onerror=()=>{
-   adminImageData='';
-   preview.textContent='Bild konnte nicht gelesen werden.';
-   alert('Das Bild konnte nicht geladen werden. Bitte probiere JPG oder PNG.');
- };
- reader.readAsDataURL(file);
-});
-document.getElementById('admin3mf').addEventListener('change',e=>{
- const file=e.target.files[0],status=document.getElementById('admin3mfStatus');if(!file)return;
- if(!file.name.toLowerCase().endsWith('.3mf')){alert('Bitte eine .3mf-Datei auswählen.');e.target.value='';return;}
- admin3mfName=file.name;status.textContent=`✓ ${file.name} · ${(file.size/1024/1024).toFixed(2)} MB`;
- if(file.size>2.5*1024*1024){admin3mfData='';status.textContent+=' · Dateiname gespeichert';return;}
- const r=new FileReader();r.onload=()=>{admin3mfData=r.result;status.textContent+=` · lokal gespeichert`;};r.readAsDataURL(file);
-});
-
-function renderAdminProducts(){
- const items=getAdminProducts(),wrap=document.getElementById('adminProducts');
- wrap.innerHTML=items.map((p,i)=>{
-   const sizes=(p.sizes||[]).map(s=>`${s.size} cm CHF ${s.price}`).join(' · ');
-   return `<div class="admin-product">${p.image?`<img src="${p.image}">`:''}<div><b>${p.name}</b><small>${p.type}${p.modelName?' · 3MF: '+p.modelName:''}</small><small>${sizes||'Noch keine Grösse'}</small><small>${p.zone1||'Bereich 1'} + ${p.zone2||'Bereich 2'}</small></div><div class="admin-actions"><button onclick="editAdminProduct(${i})">Bearbeiten</button><button class="danger" onclick="deleteAdminProduct(${i})">Löschen</button></div></div>`;
- }).join('');
- renderCustomCards(items);
-}
-window.editAdminProduct=i=>{
- const p=getAdminProducts()[i];editingIndex=i;
- document.getElementById('adminName').value=p.name||'';
- document.getElementById('adminType').value=p.type||'Print on Demand';
- adminImageData=p.image||'';document.getElementById('adminImagePreview').innerHTML=p.image?`<img src="${p.image}">`:'Noch kein Bild gewählt';
- admin3mfName=p.modelName||'';admin3mfData=p.modelData||'';document.getElementById('admin3mfStatus').textContent=p.modelName?`✓ ${p.modelName}`:'Noch keine 3MF-Datei gewählt';
- document.getElementById('zone1').value=p.zone1||'';document.getElementById('zone2').value=p.zone2||'';
- document.getElementById('customSize').checked=p.custom!==false;
- document.getElementById('sizeRows').innerHTML='';(p.sizes&&p.sizes.length?p.sizes:[{size:'',price:''}]).forEach(s=>addSizeRow(s.size,s.price));
- document.getElementById('saveProduct').textContent='Änderungen speichern';
- document.getElementById('cancelEdit').style.display='block';
- document.querySelector('.admin-card').scrollTop=0;
-};
-window.deleteAdminProduct=i=>{if(!confirm('Produkt wirklich löschen?'))return;const a=getAdminProducts();a.splice(i,1);setAdminProducts(a);renderAdminProducts();if(editingIndex===i)resetForm();};
-
-document.getElementById('saveProduct').addEventListener('click',()=>{
- const name=document.getElementById('adminName').value.trim();if(!name){alert('Bitte einen Produktnamen eingeben.');return;}
- const sizes=[...document.querySelectorAll('.dynamic-size-row')].map(r=>({size:r.querySelector('.size-value').value,price:r.querySelector('.price-value').value})).filter(s=>s.size&&s.price);
- if(!sizes.length){alert('Bitte mindestens eine Grösse und einen Preis eingeben.');return;}
- const items=getAdminProducts();
- const old=editingIndex!==null?items[editingIndex]:{};
- const p={...old,name,type:document.getElementById('adminType').value,image:adminImageData||old.image||'',modelName:admin3mfName||old.modelName||'',modelData:admin3mfData||old.modelData||'',sizes,custom:document.getElementById('customSize').checked,zone1:document.getElementById('zone1').value.trim(),zone2:document.getElementById('zone2').value.trim()};
- if(editingIndex===null)items.push(p);else items[editingIndex]=p;
- setAdminProducts(items);
- renderAdminProducts();
- renderCustomCards(items);
- const wasNew=editingIndex===null;
- const savedName=p.name;
- resetForm();
- adminModal.classList.remove('open');
- document.getElementById('shop').scrollIntoView({behavior:'smooth',block:'start'});
- setTimeout(()=>{
-   const card=[...document.querySelectorAll('.custom-admin-product h3')].find(h=>h.textContent===savedName);
-   if(card){
-     card.closest('.product').classList.add('just-added');
-     setTimeout(()=>card.closest('.product').classList.remove('just-added'),2200);
-   }
-   alert(wasNew
-     ? `✓ ${savedName} wurde lokal als Demo gespeichert. Der Live-Katalog bleibt unverändert.`
-     : `✓ ${savedName} wurde lokal aktualisiert. Der Live-Katalog bleibt unverändert.`);
- },300);
-});
-
-function renderCustomCards(items){
- // Local demo products are deliberately separate from the Supabase catalog.
-}
-
-resetForm();
-window.addEventListener('DOMContentLoaded',()=>renderCustomCards(getAdminProducts()));
 
 
 

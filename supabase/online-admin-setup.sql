@@ -1,0 +1,7 @@
+-- Audit summary: applied migrations secure_favo_online_admin and favo_admin_status_rpc.
+-- Account-specific SQL is retained only in the Supabase migration history.
+-- Products: existing admin-only ALL policy retained; public SELECT restricted to active=true.
+-- Column SELECT grants exclude model_url. id uses an identity sequence.
+-- product-images: public; JPEG/PNG/WebP, max 5 MiB; admin-only management.
+-- product-models: private; admin-only access.
+-- is_favo_admin(): SECURITY INVOKER, boolean, authenticated-only execution.
