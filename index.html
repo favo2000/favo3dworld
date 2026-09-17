@@ -11,14 +11,15 @@
   <link rel="stylesheet" href="styles.css">
   <style>#shop .product[hidden] { display:none !important; }</style>
   <script src="supabase-config.js"></script>
-  <script src="product-options.js?v=quantity-20260917" defer></script>
+  <script src="product-options.js?v=language-20260917" defer></script>
   <script src="products.js?v=quantity-20260917" defer></script>
   <script src="checkout.js?v=quantity-20260917" defer></script>
   <script src="vendor/supabase-2.57.4.js" defer></script>
   <script src="admin-options.js?v=options-20260917" defer></script>
   <script src="admin.js?v=options-20260917" defer></script>
   <link rel="stylesheet" href="admin.css">
-  <link rel="stylesheet" href="product-options.css?v=quantity-20260917">
+  <link rel="stylesheet" href="product-options.css?v=language-20260917">
+  <link rel="stylesheet" href="language.css?v=language-20260917">
 </head>
 <body>
   <div class="topbar">
@@ -52,8 +53,9 @@
     </div>
   </header>
 
+  <div class="shop-navigation">
+    <div class="lang-switch" role="group" aria-label="Sprache / Langue"><button id="langDE" type="button" lang="de" aria-label="Deutsch" aria-pressed="true">DE</button><span aria-hidden="true">|</span><button id="langFR" type="button" lang="fr" aria-label="Français" aria-pressed="false">FR</button></div>
   <nav class="nav">
-    <div class="lang-switch" role="group" aria-label="Sprache / Langue"><button id="langDE" type="button" lang="de" aria-pressed="true">DE</button><button id="langFR" type="button" lang="fr" aria-pressed="false">FR</button></div>
     <a href="#shop">Shop⌄</a>
     <a href="#kategorien">Kategorien⌄</a>
     <a href="#lager">Auf Lager</a>
@@ -62,6 +64,7 @@
     <a href="#faq">FAQ</a>
     <a href="#kontakt">Kontakt</a>
   </nav>
+  </div>
 
   <main id="start">
     <section class="hero">
@@ -620,7 +623,7 @@ function updateHorse(){
  document.getElementById('horseSummary').textContent=custom
    ? `Pferd: ${horseLabel} · Sockel: ${baseLabel} · Andere Grösse`
    : `Pferd: ${horseLabel} · Sockel: ${baseLabel} · ${s} cm`;
- document.getElementById('horsePrice').textContent=custom?'Preis auf Anfrage':`CHF ${price.toFixed(2)}`;
+ document.getElementById('horsePrice').textContent=custom?cartText('Preis auf Anfrage','Prix sur demande'):`CHF ${price.toFixed(2)}`;
  document.getElementById('horseAdd').style.display=custom?'none':'block';
  document.getElementById('requestSize').style.display=custom?'block':'none';
  window.ProductOptions?.sync(1);
@@ -655,11 +658,12 @@ function renderCheckoutSummary(){
  document.getElementById('checkoutTotal').textContent=`CHF ${cart.reduce((a,x)=>a+x.price*itemQuantity(x),0).toFixed(2)}`;
 }
 document.getElementById('requestSize').addEventListener('click',()=>{
-  const details=prompt('Welche Höhe möchtest du für das Cavallo-Modell?\nZum Beispiel: 85 cm');
-  if(details && details.trim()){
-    alert(`Anfrage vorbereitet:\nCavallo – ${details.trim()}\nPferd: ${horseLabel}\nSockel: ${baseLabel}\n\nIm echten Shop wird diese Anfrage an Favo3DWorld gesendet.`);
-  }
+ requestSizeInLanguage(document.querySelector('#horseModal h2').textContent,'horseSummary');
 });
+function requestSizeInLanguage(name,summaryId){
+ const details=prompt(cartText('Welche Höhe möchtest du? Zum Beispiel: 85 cm','Quelle hauteur souhaites-tu ? Par exemple : 85 cm'));
+ if(details&&details.trim())alert(cartText('Anfrage vorbereitet: ','Demande préparée : ')+name+' – '+details.trim()+' – '+document.getElementById(summaryId).textContent);
+}
 
 const hoodieModal=document.getElementById('hoodieModal');
 let body='schwarz', bodyLabel='Schwarz', hoodie='schwarz', hoodieLabel='Schwarz', hoodiePrice=18;
@@ -674,7 +678,7 @@ function updateHoodie(){
  document.getElementById('hoodieColorName').textContent=hoodieLabel;
  document.getElementById('hoodieChosen').textContent=`Körper ${bodyLabel} · Hoodie ${hoodieLabel}`;
  document.getElementById('hoodieSummary').textContent=custom?`Körper: ${bodyLabel} · Hoodie: ${hoodieLabel} · Andere Grösse`:`Körper: ${bodyLabel} · Hoodie: ${hoodieLabel} · ${s} cm`;
- document.getElementById('hoodiePrice').textContent=custom?'Preis auf Anfrage':`CHF ${hoodiePrice.toFixed(2)}`;
+ document.getElementById('hoodiePrice').textContent=custom?cartText('Preis auf Anfrage','Prix sur demande'):`CHF ${hoodiePrice.toFixed(2)}`;
  document.getElementById('hoodieAdd').style.display=custom?'none':'block';
  document.getElementById('hoodieRequest').style.display=custom?'block':'none';
  window.ProductOptions?.sync(2);
@@ -693,8 +697,7 @@ document.getElementById('hoodieAdd').addEventListener('click',()=>{
  hoodieModal.classList.remove('open');renderCart();drawer.classList.add('open');
 });
 document.getElementById('hoodieRequest').addEventListener('click',()=>{
- const d=prompt('Welche Höhe möchtest du für den Hoodie Drachen?');
- if(d&&d.trim()) alert(`Anfrage vorbereitet: Hoodie Drache – ${d.trim()} – Körper ${bodyLabel} – Hoodie ${hoodieLabel}`);
+ requestSizeInLanguage(document.querySelector('#hoodieModal h2').textContent,'hoodieSummary');
 });
 updateHoodie();
 
@@ -721,7 +724,7 @@ function updateZen(){
  const price=custom?0:Number(s.options[s.selectedIndex].dataset.price);
  document.getElementById('zenChosen').textContent=custom?`Zen Schildkröte · ${zenColorLabel} · Andere Grösse`:`Zen Schildkröte · ${zenColorLabel} · ${s.value} cm`;
  document.getElementById('zenSummary').textContent=custom?`${zenColorLabel} · Andere Grösse`:`${zenColorLabel} · ${s.value} cm`;
- document.getElementById('zenPrice').textContent=custom?'Preis auf Anfrage':`CHF ${price.toFixed(2)}`;
+ document.getElementById('zenPrice').textContent=custom?cartText('Preis auf Anfrage','Prix sur demande'):`CHF ${price.toFixed(2)}`;
  document.getElementById('zenAdd').style.display=custom?'none':'block';
  document.getElementById('zenRequest').style.display=custom?'block':'none';
  window.ProductOptions?.sync(4);
@@ -737,8 +740,7 @@ document.getElementById('zenAdd')?.addEventListener('click',()=>{
  zenModal.classList.remove('open');renderCart();drawer.classList.add('open');
 });
 document.getElementById('zenRequest')?.addEventListener('click',()=>{
- const d=prompt('Welche Höhe möchtest du für die Zen Schildkröte?');
- if(d&&d.trim()) alert(`Anfrage vorbereitet: Zen Schildkröte – ${d.trim()} – Farbe ${zenColorLabel}`);
+ requestSizeInLanguage(document.querySelector('#zenModal h2').textContent,'zenSummary');
 });
 updateZen();
 
@@ -762,7 +764,7 @@ function updateSimple(){
  const size=custom?'Andere Grösse':sizes[Number(s.value)], price=custom?0:simplePrices[Number(s.value)];
  document.getElementById('simpleChosen').textContent=`${simpleProduct}${simpleHasColor?' · '+simpleColor:''} · ${size}${custom?'':' cm'}`;
  document.getElementById('simpleSummary').textContent=`${simpleHasColor?simpleColor+' · ':''}${size}${custom?'':' cm'}`;
- document.getElementById('simplePrice').textContent=custom?'Preis auf Anfrage':`CHF ${price.toFixed(2)}`;
+ document.getElementById('simplePrice').textContent=custom?cartText('Preis auf Anfrage','Prix sur demande'):`CHF ${price.toFixed(2)}`;
  document.getElementById('simpleAdd').style.display=custom?'none':'block';document.getElementById('simpleRequest').style.display=custom?'block':'none';
  const selectedProduct=typeof catalogProducts==='undefined'?null:catalogProducts.find(p=>p.name===simpleProduct);if(selectedProduct)window.ProductOptions?.sync(selectedProduct.id);
 }
@@ -772,7 +774,7 @@ document.getElementById('simpleAdd').addEventListener('click',()=>{
  if (!addCatalogItem({name:simpleProduct,horse:'',horseLabel:simpleHasColor?'Farbe: '+simpleColor:'Originalfarben',base:'',baseLabel:'',size:sizes[i]+' cm',price:simplePrices[i],image:simpleImage})) return;
  simpleModal.classList.remove('open');renderCart();drawer.classList.add('open');
 });
-document.getElementById('simpleRequest').addEventListener('click',()=>{const d=prompt('Welche Höhe möchtest du?');if(d)alert(`Anfrage vorbereitet: ${simpleProduct} – ${d}`)});
+document.getElementById('simpleRequest').addEventListener('click',()=>requestSizeInLanguage(simpleProduct,'simpleSummary'));
 
 
 // Pika Urban – body and hoodie colors selectable using original model palette.
@@ -797,7 +799,7 @@ function updatePika(){
  const size=custom?'Andere Grösse':`${s.value} cm`;
  document.getElementById('pikaChosen').textContent=`Körper ${pikaBodyLabel} · Hoodie ${pikaHoodieLabel} · ${size}`;
  document.getElementById('pikaSummary').textContent=`Körper ${pikaBodyLabel} · Hoodie ${pikaHoodieLabel} · ${size}`;
- document.getElementById('pikaPrice').textContent=custom?'Preis auf Anfrage':`CHF ${p.toFixed(2)}`;
+ document.getElementById('pikaPrice').textContent=custom?cartText('Preis auf Anfrage','Prix sur demande'):`CHF ${p.toFixed(2)}`;
  document.getElementById('pikaAdd').style.display=custom?'none':'block';
  document.getElementById('pikaRequest').style.display=custom?'block':'none';
  window.ProductOptions?.sync(5);
@@ -817,14 +819,13 @@ document.getElementById('pikaAdd')?.addEventListener('click',()=>{
  pikaModal.classList.remove('open');renderCart();drawer.classList.add('open');
 });
 document.getElementById('pikaRequest')?.addEventListener('click',()=>{
- const d=prompt('Welche Höhe möchtest du für Pika Urban?');
- if(d&&d.trim())alert(`Anfrage vorbereitet: Pika Urban – ${d.trim()} – Körper ${pikaBodyLabel} – Hoodie ${pikaHoodieLabel}`);
+ requestSizeInLanguage(document.querySelector('#pikaModal h2').textContent,'pikaSummary');
 });
 
 window.addEventListener('DOMContentLoaded',()=>{
   const status=document.createElement('div');
   status.id='demoStatus';
-  status.textContent='✓ Webseite bereit';
+  status.textContent=cartText('✓ Webseite bereit','✓ Site prêt');
   document.body.appendChild(status);
   setTimeout(()=>status.classList.add('hide'),1800);
 });
@@ -833,6 +834,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 <script>
 const FR_MAP = new Map([
+ ['✓ Webseite bereit','✓ Site prêt'],['CHECKOUT','COMMANDE'],
  ['Beliebte Modelle →','Modèles populaires →'],['Mehrfarbig konfigurierbar','Couleurs personnalisables'],['Körper & Hoodie konfigurierbar','Corps et sweat à capuche personnalisables'],['Produkte werden geladen …','Chargement des produits …'],['Aktuell sind keine Produkte verfügbar.','Aucun produit disponible pour le moment.'],['Produkte konnten nicht geladen werden. Bitte versuche es erneut.','Impossible de charger les produits. Veuillez réessayer.'],
  ['Shop⌄','Boutique⌄'],['Kategorien⌄','Catégories⌄'],['Konto','Compte'],['Wunschliste','Liste de souhaits'],['⚙ Produkte verwalten','⚙ Gérer les produits'],
  ['🚚 Kostenloser Versand ab CHF 70.–','🚚 Livraison gratuite dès CHF 70.–'],['🇨🇭 Schweizer Qualität','🇨🇭 Qualité suisse'],
@@ -878,6 +880,7 @@ function translateTextNode(node,map){
  if(map.has(trim)) node.nodeValue=t.replace(trim,map.get(trim));
 }
 function translatePage(lang){
+ lang=lang==='fr'?'fr':'de';
  const map=lang==='fr'?FR_MAP:DE_MAP;
  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
  let n; const nodes=[]; while(n=walker.nextNode())nodes.push(n);
@@ -896,7 +899,7 @@ document.getElementById('langDE')?.addEventListener('click',()=>translatePage('d
 document.getElementById('langFR')?.addEventListener('click',()=>translatePage('fr'));
 window.addEventListener('DOMContentLoaded',()=>{
  let lang='de';try{lang=localStorage.getItem('favoLang')||'de'}catch(e){}
- if(lang==='fr')translatePage('fr');
+ translatePage(lang);
 });
 </script>
 </body>

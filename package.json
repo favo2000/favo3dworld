@@ -4,6 +4,6 @@
   },
   "private": true,
   "scripts": {
-    "test": "node tests/admin.test.cjs && node tests/options.test.cjs && node tests/customer-photo.test.cjs"
+    "test": "node tests/admin.test.cjs && node tests/options.test.cjs && node tests/customer-photo.test.cjs && node tests/language.test.cjs"
   }
 }
