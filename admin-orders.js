@@ -36,7 +36,7 @@
   if(!authorized)return;const token=epoch,currentView=++view;clearPhotos();selected=null;detail.replaceChildren();
   try{
    const results=await Promise.all([
-    client.from('Orders').select('id,order_number,created_at,first_name,last_name,email,street,postal_code,city,country,subtotal,shipping,total,currency,payment_method,payment_status,status,kind').eq('id',id).single(),
+    client.from('Orders').select('id,order_number,created_at,first_name,last_name,email,street,postal_code,city,country,subtotal,shipping,total,currency,payment_method,payment_status,payment_environment,status,kind').eq('id',id).single(),
     client.from('OrderItems').select('id,product_id_snapshot,product_id,product_name,size,color_details,quantity,unit_price,line_total,wish_text,customer_photo_id').eq('order_id',id).order('id')
    ]);
    if(token!==epoch||currentView!==view)return;if(results.some(r=>r.error))throw new Error('Read failed');selected=results[0].data;items=results[1].data;renderDetail();
@@ -50,6 +50,7 @@
   if(order.kind==='inquiry')detail.append(localized(node('p'),'Unverbindliche Anfrage. Beträge sind Richtwerte, kein Angebot. Keine Zahlung oder Lagerabbuchung.','Demande sans engagement. Montants indicatifs, pas une offre. Aucun paiement ni prélèvement de stock.'));
   const paymentLabels={unpaid:['Nicht bezahlt','Non payé'],pending:['Zahlung ausstehend','Paiement en attente'],paid:['Bezahlt','Payé'],failed:['Zahlung fehlgeschlagen','Paiement échoué'],refunded:['Erstattet','Remboursé']};
   detail.append(node('p',t('Zahlungsart: ','Mode de paiement : ')+(order.payment_method||'—')+' · '+t(...paymentLabels[order.payment_status])));
+  if(order.payment_environment==='sandbox')detail.append(localized(node('p'),'PayPal Sandbox – Testzahlung, kein echtes Geld.','PayPal Sandbox – paiement test, aucun argent réel.'));
   for(const item of items){
    const box=node('div',undefined,'admin-product');box.style.display='block';
    box.append(node('h4',item.product_name+' × '+item.quantity),node('p','ID: '+(item.product_id_snapshot??item.product_id)+' · '+t('Größe: ','Taille : ')+(item.size==='fixed'?t('Feste Größe','Taille fixe'):item.size+' cm')));

@@ -69,16 +69,17 @@ orderButton.onclick=async()=>{
  }
  checkoutSending=true;orderButton.disabled=true;lockCheckout(true);
  setOrderStatus(orderMessage('Bestellung wird gespeichert …','Enregistrement de la commande …'));
- const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),25000);
+ const sandbox=window.PayPalSandbox?.enabled&&pendingInvoice.payment_method==='PayPal';
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),sandbox?60000:25000);
  try{
-   const response=await fetch(window.FAVO_SUPABASE.url+'/functions/v1/place-order-work2',{method:'POST',headers:{'Content-Type':'application/json',apikey:window.FAVO_SUPABASE.publishableKey},body:JSON.stringify(pendingInvoice),signal:controller.signal});
+   const response=await fetch(window.FAVO_SUPABASE.url+'/functions/v1/'+(sandbox?'paypal-sandbox':'place-order-work2'),{method:'POST',headers:{'Content-Type':'application/json',apikey:window.FAVO_SUPABASE.publishableKey},body:JSON.stringify(sandbox?{action:'create',order:pendingInvoice}:pendingInvoice),signal:controller.signal});
    const data=await response.json();
    if(!response.ok){
      const known=checkoutErrors[data.error];
      if(known){pendingInvoice=null;lockCheckout(false);setOrderStatus(orderMessage(...known));return;}
      throw new Error('Unknown outcome');
    }
-   if(typeof data.order_number!=='string'||data.payment_method!==pendingInvoice.payment_method||data.payment_status!=='unpaid'||data.kind!=='order'||!Number.isFinite(Number(data.total)))throw new Error('Invalid receipt');
+   if(typeof data.order_number!=='string'||data.payment_method!==pendingInvoice.payment_method||!(sandbox?['unpaid','paid']:['unpaid']).includes(data.payment_status)||data.kind!=='order'||!Number.isFinite(Number(data.total))||(sandbox&&(data.sandbox!==true||!data.payment_token)))throw new Error('Invalid receipt');
    setOrderStatus(orderMessage(`Bestellung ${data.order_number} gespeichert. Gesamtbetrag: CHF ${Number(data.total).toFixed(2)}. Noch nicht bezahlt; keine Zahlung wurde ausgelöst. Bitte bewahre die Bestellnummer auf.`,`Commande ${data.order_number} enregistrée. Total : CHF ${Number(data.total).toFixed(2)}. Non payée ; aucun paiement effectué. Conservez le numéro de commande.`));
    lastOrderReceipt={subtotal:Number(data.subtotal),shipping:Number(data.shipping),total:Number(data.total)};
    pendingInvoice=null;try{sessionStorage.removeItem('favoInvoiceAttempt');}catch{}
@@ -88,6 +89,7 @@ orderButton.onclick=async()=>{
    customerFields.forEach(id=>document.getElementById(id).value='');
    // Keep confirmation visible; refresh inventory without removing the receipt.
    loadCatalog();
+   if(sandbox)window.PayPalSandbox.show(data);
  }catch{
    setOrderStatus(orderMessage('Die Bestätigung ist noch offen. Bitte klicke erneut auf „Unbezahlte Bestellung absenden“. Derselbe Auftrag wird sicher wiederholt, ohne eine zweite Bestellung anzulegen.','La confirmation est en attente. Cliquez à nouveau sur le bouton de commande : la même demande sera répétée sans créer de doublon.'));
  }finally{clearTimeout(timer);checkoutSending=false;orderButton.disabled=false;}
