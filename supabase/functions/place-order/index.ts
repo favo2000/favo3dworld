@@ -17,7 +17,7 @@ Deno.serve(async (req:Request) => {
    while(true){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>32768){await reader.cancel();return reply(413,{error:'INVALID_REQUEST'});}chunks.push(part.value);}
    const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
    let payload;try{payload=JSON.parse(new TextDecoder().decode(bytes));}catch{return reply(400,{error:'INVALID_REQUEST'});}
-   if(!payload || payload.payment_method!=='Rechnung')return reply(400,{error:'INVALID_REQUEST'});
+   if(!payload || (!['order','inquiry'].includes(payload.kind||'order') || ((payload.kind||'order')==='order' && !['PayPal','TWINT'].includes(payload.payment_method)) || (payload.kind==='inquiry' && payload.payment_method!=null) || Object.hasOwn(payload,'payment_status')))return reply(400,{error:'INVALID_REQUEST'});
    const key = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') || '{}').default || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
    if(!key) return reply(503,{error:'SERVICE_UNAVAILABLE'});
    // Only a keyed digest is stored, never the raw network address.
@@ -27,7 +27,7 @@ Deno.serve(async (req:Request) => {
    const clientHash=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join('');
    const headers:Record<string,string>={'Content-Type':'application/json',apikey:key};
    if(!key.startsWith('sb_secret_'))headers.Authorization='Bearer '+key;
-   const response=await fetch(Deno.env.get('SUPABASE_URL')+'/rest/v1/rpc/submit_invoice_order',{method:'POST',headers,body:JSON.stringify({p_request:payload,p_client_hash:clientHash}),signal:AbortSignal.timeout(20000)});
+   const response=await fetch(Deno.env.get('SUPABASE_URL')+'/rest/v1/rpc/submit_shop_order',{method:'POST',headers,body:JSON.stringify({p_request:payload,p_client_hash:clientHash}),signal:AbortSignal.timeout(20000)});
    const data=await response.json();
    if(!response.ok){
      const allowed=['INVALID_REQUEST','INVALID_CUSTOMER','INVALID_ITEMS','INVALID_OPTIONS','PRODUCT_UNAVAILABLE','OUT_OF_STOCK','PRICE_CHANGED','REQUEST_CONFLICT','RATE_LIMIT'];

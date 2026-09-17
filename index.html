@@ -11,21 +11,23 @@
   <link rel="stylesheet" href="styles.css">
   <style>#shop .product[hidden] { display:none !important; }</style>
   <script src="supabase-config.js"></script>
-  <script src="product-options.js?v=language-20260917" defer></script>
+  <script src="product-options.js?v=work2-20260917" defer></script>
   <script src="products.js?v=quantity-20260917" defer></script>
-  <script src="checkout.js?v=quantity-20260917" defer></script>
+  <script src="bulk-inquiry.js?v=work2-20260917" defer></script>
+  <script src="checkout.js?v=work2-20260917" defer></script>
   <script src="vendor/supabase-2.57.4.js" defer></script>
   <script src="admin-options.js?v=options-20260917" defer></script>
-  <script src="admin.js?v=options-20260917" defer></script>
+  <script src="admin-orders.js?v=work2-20260917" defer></script>
+  <script src="admin.js?v=work2-20260917" defer></script>
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="product-options.css?v=language-20260917">
   <link rel="stylesheet" href="language.css?v=language-20260917">
 </head>
 <body>
   <div class="topbar">
-    <span>🚚 Kostenloser Versand ab CHF 70.–</span>
+    <span>🚚 Kostenloser Versand ab CHF 80.–</span>
     <span>🇨🇭 Schweizer Qualität</span>
-    <span>🛡 Zahlung auf Rechnung</span>
+    <span>🛡 Sicher bestellen</span>
   </div>
 
   <header class="main-header">
@@ -109,7 +111,7 @@
     </section>
 <section class="order-notice">
  <b>Bestellungen sind möglich</b>
- <span>Zahlung ausschließlich auf Rechnung. Es wird keine Online-Zahlung ausgelöst.</span>
+ <span>PayPal und TWINT werden vorbereitet. Online-Zahlungen sind noch nicht verfügbar.</span>
 </section>
 
 
@@ -117,7 +119,7 @@
       <div><b>1</b><span>Modell wählen</span></div>
       <i>→</i><div><b>2</b><span>Farben konfigurieren</span></div>
       <i>→</i><div><b>3</b><span>Warenkorb</span></div>
-      <i>→</i><div><b>4</b><span>Rechnung</span></div>
+      <i>→</i><div><b>4</b><span>Bestellung</span></div>
     </section>
 
     <section id="shop" class="content-grid">
@@ -261,7 +263,7 @@
     <section class="benefits">
       <div><span><b id="qualityTitle">❤️ Mit Liebe gefertigt</b><small id="qualityText">Jedes Modell wird sorgfältig für dich gedruckt.</small></span></div>
       <div>🎨<span><b>Viele Farben</b><small>Wähle deine Lieblingsfarbe bei vielen Modellen.</small></span></div>
-      <div>🔒<span><b>Zahlung auf Rechnung</b><small>Bequem per Rechnung bezahlen.</small></span></div>
+      <div>🔒<span><b>Sicher bestellen</b><small>PayPal und TWINT in Vorbereitung.</small></span></div>
       <div>🎧<span><b>Kundensupport</b><small>Wir sind für dich da – vor und nach der Bestellung.</small></span></div>
       <div class="quote">“ <span>Top Qualität, schneller Versand und mit viel Liebe zum Detail gedruckt.<br><b>– Lukas M.</b></span> ★★★★★</div>
     </section>
@@ -326,7 +328,7 @@
  </fieldset></form>
  </section><section><h3>Online-Produkte</h3><button id="adminReload" type="button">Liste aktualisieren</button><div id="adminProducts"></div>
  <p class="small-note">Änderungen gelten sofort im Shop. Private Originaldateien bleiben geschützt.</p>
- </section></div></div></div></div>
+ </section></div><section id="adminOrders" hidden></section></div></div></div>
 
 <div class="horse-modal" id="horseModal">
     <div class="overlay" data-close-horse></div>
@@ -562,8 +564,8 @@
       <span class="eyebrow">DEINE BESTELLUNG</span>
       <h2>Warenkorb</h2>
       <div id="cartItems"><p class="empty">Dein Warenkorb ist noch leer.</p></div>
-      <p class="cart-payment"><span>Zahlungsart</span>: <strong>Rechnung</strong></p>
-      <div class="cart-total"><span>Total</span><strong id="cartTotal">CHF 0.00</strong></div>
+      <p class="cart-payment" data-option-de="Online-Zahlungen sind noch nicht verfügbar." data-option-fr="Les paiements en ligne ne sont pas encore disponibles.">Online-Zahlungen sind noch nicht verfügbar.</p>
+      <div class="cart-total"><span data-option-de="Zwischensumme" data-option-fr="Sous-total">Zwischensumme</span><strong id="cartSubtotal">CHF 0.00</strong></div><div class="cart-total"><span data-option-de="Versand" data-option-fr="Livraison">Versand</span><strong id="cartShipping">CHF 0.00</strong></div><p id="freeShipping" role="status"></p><div class="cart-total"><span data-option-de="Gesamt" data-option-fr="Total">Gesamt</span><strong id="cartTotal">CHF 0.00</strong></div>
       <button class="btn primary wide" id="toCheckout" type="button" disabled>Zur Kasse</button>
     </aside>
   </div>
@@ -586,14 +588,14 @@
         <div>
           <h3>Zahlungsart</h3>
           <div class="payments">
-            <button class="payment active" type="button" data-pay="Rechnung" aria-pressed="true"><b>Rechnung</b><span>Keine Online-Zahlung</span></button>
+            <label><span data-option-de="Gewünschte spätere Zahlungsart" data-option-fr="Mode de paiement souhaité pour plus tard">Gewünschte spätere Zahlungsart</span><select id="paymentMethod"><option value="PayPal">PayPal</option><option value="TWINT">TWINT</option></select></label>
           </div>
-          <div class="checkout-summary"><small>Deine Produkte</small><div id="checkoutItems"></div><div class="grand"><span>Total</span><strong id="checkoutTotal">CHF 0.00</strong></div></div>
+          <div class="checkout-summary"><small>Deine Produkte</small><div id="checkoutItems"></div><div class="grand"><span data-option-de="Zwischensumme" data-option-fr="Sous-total">Zwischensumme</span><strong id="checkoutSubtotal">CHF 0.00</strong></div><div class="grand"><span data-option-de="Versand" data-option-fr="Livraison">Versand</span><strong id="checkoutShipping">CHF 0.00</strong></div><div class="grand"><span data-option-de="Gesamt" data-option-fr="Total">Gesamt</span><strong id="checkoutTotal">CHF 0.00</strong></div></div>
         </div>
       </div>
-      <button class="btn primary wide place-order" id="placeOrder" type="button">Bestellung auf Rechnung absenden</button>
+      <button class="btn primary wide place-order" id="placeOrder" type="button">Unbezahlte Bestellung absenden</button>
       <p id="orderStatus" class="demo-note" role="status" aria-live="polite"></p>
-      <p class="demo-note">Zahlung auf Rechnung. Es wird keine Online-Zahlung ausgelöst.</p>
+      <p class="demo-note">Deine Bestellung wird unbezahlt gespeichert. Es wird keine Zahlung ausgelöst. PayPal und TWINT sind noch nicht angebunden.</p>
     </div>
   </div>
 
@@ -601,7 +603,7 @@
   <script>
 
 let cart=[], horse='schwarz', horseLabel='Schwarz', base='schwarz', baseLabel='Schwarz';
-const payment='Rechnung';
+
 let price=15;
 const horseModal=document.getElementById('horseModal'), drawer=document.getElementById('cartDrawer'), checkout=document.getElementById('checkoutModal'), toast=document.getElementById('toast');
 
@@ -639,11 +641,15 @@ document.getElementById('horseAdd').onclick=()=>{
 document.querySelectorAll('.cart-trigger').forEach(btn=>btn.addEventListener('click',()=>drawer.classList.add('open')));
 
 function cartText(de,fr){return document.documentElement.lang==='fr'?fr:de;}
+function cartTotals(){const subtotal=Math.round(cart.reduce((n,x)=>n+Math.round(x.price*100)*itemQuantity(x),0))/100;const shipping=cart.length&&subtotal<80?5:0;return {subtotal,shipping,total:Math.round((subtotal+shipping)*100)/100};}
 function renderCart(){
  document.querySelectorAll('.cart-count').forEach(el=>el.textContent=cart.reduce((n,x)=>n+(x.quantity||1),0));
  const wrap=document.getElementById('cartItems');
  wrap.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-line"><img src="${escapeCatalogText(x.image || `assets/cavallo-${x.horse}-${x.base}.png`)}"><div><b>${escapeCatalogText(x.name)}</b>${window.ProductOptions?window.ProductOptions.cartDetails(x):""}<small>${cartText("Grösse","Taille")}: ${escapeCatalogText(x.size==='Feste Grösse'?cartText('Feste Grösse','Taille fixe'):x.size)}</small><small>CHF ${x.price.toFixed(2)} / ${cartText('Stück','pièce')}</small><div class="quantity-control"><button type="button" aria-label="${cartText('Menge verringern','Diminuer la quantité')}" onclick="changeCartQuantity(${i},-1)" ${itemQuantity(x)<=1?'disabled':''}>−</button><output>${itemQuantity(x)}</output><button type="button" aria-label="${cartText('Menge erhöhen','Augmenter la quantité')}" onclick="changeCartQuantity(${i},1)" ${canIncreaseItem(x)?'':'disabled'}>+</button></div></div><div><b>CHF ${(x.price*itemQuantity(x)).toFixed(2)}</b><button class="remove" onclick="removeItem(${i})">${cartText("Entfernen","Retirer")}</button></div></div>`).join(''):'<p class="empty">'+cartText('Dein Warenkorb ist noch leer.','Votre panier est vide.')+'</p>';
- const total=cart.reduce((a,x)=>a+x.price*(x.quantity||1),0);
+ const {subtotal,shipping,total}=cartTotals();
+ document.getElementById('cartSubtotal').textContent='CHF '+subtotal.toFixed(2);
+ document.getElementById('cartShipping').textContent='CHF '+shipping.toFixed(2);
+ document.getElementById('freeShipping').textContent=shipping?cartText('Noch CHF ','Encore CHF ')+(80-subtotal).toFixed(2)+cartText(' bis zum kostenlosen Versand.',' pour bénéficier de la livraison gratuite.'):'';
  document.getElementById('cartTotal').textContent=`CHF ${total.toFixed(2)}`;
  document.getElementById('toCheckout').disabled=!cart.length;
  if(checkout.classList.contains('open'))renderCheckoutSummary();
@@ -655,7 +661,7 @@ document.getElementById('toCheckout').onclick=()=>{
 };
 function renderCheckoutSummary(){
  document.getElementById('checkoutItems').innerHTML=cart.map(x=>`<p><b>${escapeCatalogText(x.name)} × ${itemQuantity(x)}</b><br>${window.ProductOptions?window.ProductOptions.cartDetails(x):''} · ${escapeCatalogText(x.size==='Feste Grösse'?cartText('Feste Grösse','Taille fixe'):x.size)} · CHF ${(x.price*itemQuantity(x)).toFixed(2)}</p>`).join('');
- document.getElementById('checkoutTotal').textContent=`CHF ${cart.reduce((a,x)=>a+x.price*itemQuantity(x),0).toFixed(2)}`;
+ const totals=!cart.length&&typeof lastOrderReceipt!=='undefined'&&lastOrderReceipt?lastOrderReceipt:cartTotals();for(const key of ['subtotal','shipping','total'])document.getElementById('checkout'+key[0].toUpperCase()+key.slice(1)).textContent='CHF '+totals[key].toFixed(2);
 }
 document.getElementById('requestSize').addEventListener('click',()=>{
  requestSizeInLanguage(document.querySelector('#horseModal h2').textContent,'horseSummary');
@@ -837,7 +843,7 @@ const FR_MAP = new Map([
  ['✓ Webseite bereit','✓ Site prêt'],['CHECKOUT','COMMANDE'],
  ['Beliebte Modelle →','Modèles populaires →'],['Mehrfarbig konfigurierbar','Couleurs personnalisables'],['Körper & Hoodie konfigurierbar','Corps et sweat à capuche personnalisables'],['Produkte werden geladen …','Chargement des produits …'],['Aktuell sind keine Produkte verfügbar.','Aucun produit disponible pour le moment.'],['Produkte konnten nicht geladen werden. Bitte versuche es erneut.','Impossible de charger les produits. Veuillez réessayer.'],
  ['Shop⌄','Boutique⌄'],['Kategorien⌄','Catégories⌄'],['Konto','Compte'],['Wunschliste','Liste de souhaits'],['⚙ Produkte verwalten','⚙ Gérer les produits'],
- ['🚚 Kostenloser Versand ab CHF 70.–','🚚 Livraison gratuite dès CHF 70.–'],['🇨🇭 Schweizer Qualität','🇨🇭 Qualité suisse'],
+ ['🚚 Kostenloser Versand ab CHF 80.–','🚚 Livraison gratuite dès CHF 80.–'],['🇨🇭 Schweizer Qualität','🇨🇭 Qualité suisse'],
  ['Jetzt entdecken →','Découvrir →'],['Über den Druck','À propos de l’impression'],['◒ Hochwertiger Druck','◒ Impression de qualité'],['♡ Mit Liebe gefertigt','♡ Fabriqué avec amour'],['⬡ Sicherer Versand','⬡ Livraison sécurisée'],
  ['SOFORT VERFÜGBAR','DISPONIBLE IMMÉDIATEMENT'],['Bereits gedruckt und auf Lager.','Déjà imprimé et en stock.'],['Versand in 1–2 Werktagen.','Expédition sous 1 à 2 jours ouvrables.'],['PRINT ON DEMAND','IMPRESSION À LA DEMANDE'],['Wird nach deiner Bestellung für dich gedruckt.','Imprimé pour toi après ta commande.'],['Produktionszeit: je nach Modell.','Délai de fabrication : selon le modèle.'],
  ['Modell wählen','Choisir un modèle'],['Farben konfigurieren','Choisir les couleurs'],['Viele Farben','De nombreuses couleurs'],['Wähle deine Lieblingsfarbe bei vielen Modellen.','Choisis ta couleur préférée pour de nombreux modèles.'],['Kundensupport','Service client'],['Wir sind für dich da – vor und nach der Bestellung.','Nous sommes là pour toi, avant et après ta commande.'],
@@ -845,11 +851,11 @@ const FR_MAP = new Map([
  ['Was bedeutet Print on Demand?','Que signifie impression à la demande ?'],['Das Modell wird nach deiner Bestellung gefertigt. Du kannst je nach Produkt Farbe, Grösse und weitere Optionen auswählen.','Le modèle est fabriqué après ta commande. Selon le produit, tu peux choisir la couleur, la taille et d’autres options.'],['Was bedeutet Auf Lager?','Que signifie en stock ?'],['Das Produkt ist bereits gedruckt und kann nach der Bestellung schneller versendet werden.','Le produit est déjà imprimé et peut être expédié plus rapidement après la commande.'],['Versand','Livraison'],
  ['DEINE BESTELLUNG','TA COMMANDE'],['Zur Kasse','Passer à la caisse'],['Bestellung abschliessen','Finaliser la commande'],['Lieferadresse','Adresse de livraison'],['Vorname','Prénom'],['Nachname','Nom'],['Strasse & Nr.','Rue et numéro'],['PLZ','Code postal'],['Ort','Localité'],['Deine Produkte','Tes produits'],['🛒 Warenkorb','🛒 Panier'],['Zum Warenkorb hinzugefügt ✓','Ajouté au panier ✓'],['Erneut versuchen','Réessayer'],
  ['50 / 60 / 70 cm · Sondergrösse auf Anfrage','50 / 60 / 70 cm · Taille spéciale sur demande'],
- ['Bestellung auf Rechnung absenden','Commander sur facture'],
- ['Rechnung','Facture'],['Zahlungsart','Mode de paiement'],['Zahlung auf Rechnung','Paiement sur facture'],
- ['🛡 Zahlung auf Rechnung','🛡 Paiement sur facture'],['Keine Online-Zahlung','Aucun paiement en ligne'],
- ['Bequem per Rechnung bezahlen.','Payez facilement sur facture.'],
- ['Zahlung auf Rechnung. Es wird keine Online-Zahlung ausgelöst.','Paiement sur facture. Aucun paiement en ligne n’est déclenché.'],
+ ['Unbezahlte Bestellung absenden','Envoyer la commande non payée'],
+ ['Bestellung','Commande'],['Zahlungsart','Mode de paiement'],['Sicher bestellen','Commande sécurisée'],
+ ['🛡 Sicher bestellen','🛡 Commande sécurisée'],['Keine Online-Zahlung','Aucun paiement en ligne'],
+ ['PayPal und TWINT in Vorbereitung.','PayPal et TWINT en préparation.'],
+ ['Deine Bestellung wird unbezahlt gespeichert. Es wird keine Zahlung ausgelöst. PayPal und TWINT sind noch nicht angebunden.','Ta commande sera enregistrée comme non payée. Aucun paiement ne sera effectué. PayPal et TWINT ne sont pas encore connectés.'],
  ['Shop','Boutique'],['Über uns','À propos'],['Kontakt','Contact'],['Warenkorb','Panier'],
  ['Print on Demand','Impression à la demande'],['Auf Lager','En stock'],['Auf Lager · 5 Stück','En stock · 5 pièces'],
  ['Konfigurieren','Configurer'],['Grösse wählen','Choisir la taille'],['Größe wählen','Choisir la taille'],
@@ -866,7 +872,7 @@ const FR_MAP = new Map([
  ['Originalfarben · keine Farbauswahl','Couleurs originales · sans choix de couleur'],
  ['Eine feste Grösse','Une taille fixe'],['Eine feste Größe','Une taille fixe'],
  ['Bestellungen sind möglich','Les commandes sont possibles'],
- ['Zahlung ausschließlich auf Rechnung. Es wird keine Online-Zahlung ausgelöst.','Paiement uniquement sur facture. Aucun paiement en ligne n’est déclenché.'],
+ ['PayPal und TWINT werden vorbereitet. Online-Zahlungen sind noch nicht verfügbar.','PayPal et TWINT sont en préparation. Les paiements en ligne ne sont pas encore disponibles.'],
  ['Schwarz','Noir'],['Weiss','Blanc'],['Weiß','Blanc'],['Gold','Or'],['Rot','Rouge'],['Grün','Vert'],['Grau','Gris'],['Gelb','Jaune'],
  ['Feste Grösse','Taille fixe'],['Feste Größe','Taille fixe']
 ]);
@@ -888,6 +894,7 @@ function translatePage(lang){
  document.documentElement.lang=lang;
  currentLang=lang;
  if(window.refreshCatalogLanguage) window.refreshCatalogLanguage();
+ window.OrdersAdmin?.refresh();
  document.getElementById('langDE')?.classList.toggle('active',lang==='de');
  document.getElementById('langFR')?.classList.toggle('active',lang==='fr');
  document.getElementById('langDE')?.setAttribute('aria-pressed',String(lang==='de'));
