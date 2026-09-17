@@ -103,6 +103,12 @@
   minus.onclick=()=>{if(s.quantity>1)s.quantity--;update();};plus.onclick=()=>{if(s.quantity<20&&(catalogOnDemand(p)||s.quantity+cartProductQuantity(p.id)<Number(p.stock)))s.quantity++;update();};
   quantity.append(minus,value,plus,subtotal);host.append(quantity);s.updateQuantity=update;update();
   host.append(localized(node('small'),'Maximal 20 Exemplare je Auswahl.','20 exemplaires maximum par configuration.'));
+  if(catalogOnDemand(p)){
+   const bulk=localized(node('button'),'Mehr als 20 Stück anfragen','Demander plus de 20 pièces');bulk.type='button';bulk.className='btn secondary wide';
+   bulk.onclick=()=>{const sel=$(prefix+'Size');if(sel.value==='custom'){localized(host.querySelector('.product-option-status'),'Bitte zuerst eine verfügbare Größe wählen.','Choisis d’abord une taille disponible.');return;}
+    const size=p.id===3?'fixed':prefix==='simple'?['50','60','70'][Number(sel.value)]:sel.value;
+    window.BulkInquiry.open({product_id:p.id,size,colors:Object.fromEntries(selected(s).map(c=>[c.region_id,c.color_id])),personalization:{text:s.text||''}},p.name,()=>modal.classList.add('open'));modal.classList.remove('open');};host.append(bulk);
+  }
   host.append(node('p','','product-option-status'));paint(s);sync(p.id);
  }
  async function add(id){

@@ -1,6 +1,7 @@
-/* Invoice-only checkout. Never send prices as authoritative values. */
+/* Unpaid checkout; payment providers are not connected. Never send prices as authoritative values. */
 let checkoutSending = false;
 let pendingInvoice = null;
+let lastOrderReceipt = null;
 const orderButton = document.getElementById('placeOrder');
 const orderStatus = document.getElementById('orderStatus');
 orderStatus.style.overflowWrap = 'anywhere';
@@ -39,6 +40,7 @@ async function invoiceRequestKey(payload) {
 }
 function lockCheckout(locked) {
  customerFields.forEach(id=>document.getElementById(id).readOnly=locked);
+ document.getElementById('paymentMethod').disabled=locked;
  // Block cart/configurator changes while an outcome is unknown.
  document.querySelectorAll('#cartItems button, #horseAdd, #hoodieAdd, #zenAdd, #pikaAdd, #simpleAdd, #addScheiben').forEach(el=>el.disabled=locked);
 }
@@ -61,7 +63,7 @@ orderButton.onclick=async()=>{
    }
    checkoutSending=true;orderButton.disabled=true;
    const value=id=>document.getElementById(id).value.trim();
-   const payload={payment_method:'Rechnung',customer:{first_name:value('firstName'),last_name:value('lastName'),email:value('email'),street:value('street'),postal_code:value('zip'),city:value('city'),country:'CH'},items:invoiceItems(),expected_total:Number(cart.reduce((n,x)=>n+x.price*itemQuantity(x),0).toFixed(2))};
+   const payload={kind:'order',payment_method:document.getElementById('paymentMethod').value,customer:{first_name:value('firstName'),last_name:value('lastName'),email:value('email'),street:value('street'),postal_code:value('zip'),city:value('city'),country:'CH'},items:invoiceItems(),expected_total:cartTotals().total};
    try{payload.request_key=await invoiceRequestKey(payload);pendingInvoice=payload;}
    catch{checkoutSending=false;orderButton.disabled=false;setOrderStatus(orderMessage('Bitte öffne den Shop über die sichere HTTPS-Adresse.','Ouvrez la boutique via HTTPS.'));return;}
  }
@@ -69,24 +71,25 @@ orderButton.onclick=async()=>{
  setOrderStatus(orderMessage('Bestellung wird gespeichert …','Enregistrement de la commande …'));
  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),25000);
  try{
-   const response=await fetch(window.FAVO_SUPABASE.url+'/functions/v1/place-order',{method:'POST',headers:{'Content-Type':'application/json',apikey:window.FAVO_SUPABASE.publishableKey},body:JSON.stringify(pendingInvoice),signal:controller.signal});
+   const response=await fetch(window.FAVO_SUPABASE.url+'/functions/v1/place-order-work2',{method:'POST',headers:{'Content-Type':'application/json',apikey:window.FAVO_SUPABASE.publishableKey},body:JSON.stringify(pendingInvoice),signal:controller.signal});
    const data=await response.json();
    if(!response.ok){
      const known=checkoutErrors[data.error];
      if(known){pendingInvoice=null;lockCheckout(false);setOrderStatus(orderMessage(...known));return;}
      throw new Error('Unknown outcome');
    }
-   if(typeof data.order_number!=='string'||data.payment_method!=='Rechnung'||!Number.isFinite(Number(data.total)))throw new Error('Invalid receipt');
-   setOrderStatus(orderMessage(`Bestellung ${data.order_number} gespeichert. Gesamtbetrag: CHF ${Number(data.total).toFixed(2)}. Zahlung auf Rechnung. Bitte bewahre die Bestellnummer auf.`,`Commande ${data.order_number} enregistrée. Total : CHF ${Number(data.total).toFixed(2)}. Paiement sur facture. Conservez le numéro de commande.`));
+   if(typeof data.order_number!=='string'||data.payment_method!==pendingInvoice.payment_method||data.payment_status!=='unpaid'||data.kind!=='order'||!Number.isFinite(Number(data.total)))throw new Error('Invalid receipt');
+   setOrderStatus(orderMessage(`Bestellung ${data.order_number} gespeichert. Gesamtbetrag: CHF ${Number(data.total).toFixed(2)}. Noch nicht bezahlt; keine Zahlung wurde ausgelöst. Bitte bewahre die Bestellnummer auf.`,`Commande ${data.order_number} enregistrée. Total : CHF ${Number(data.total).toFixed(2)}. Non payée ; aucun paiement effectué. Conservez le numéro de commande.`));
+   lastOrderReceipt={subtotal:Number(data.subtotal),shipping:Number(data.shipping),total:Number(data.total)};
    pendingInvoice=null;try{sessionStorage.removeItem('favoInvoiceAttempt');}catch{}
    cart=[];renderCart();lockCheckout(false);
    document.getElementById('checkoutItems').replaceChildren();
-   document.getElementById('checkoutTotal').textContent='CHF '+Number(data.total).toFixed(2);
+   for(const key of ['subtotal','shipping','total'])document.getElementById('checkout'+key[0].toUpperCase()+key.slice(1)).textContent='CHF '+Number(data[key]).toFixed(2);
    customerFields.forEach(id=>document.getElementById(id).value='');
    // Keep confirmation visible; refresh inventory without removing the receipt.
    loadCatalog();
  }catch{
-   setOrderStatus(orderMessage('Die Bestätigung ist noch offen. Bitte klicke erneut auf „Bestellung auf Rechnung absenden“. Derselbe Auftrag wird sicher wiederholt, ohne eine zweite Bestellung anzulegen.','La confirmation est en attente. Cliquez à nouveau sur le bouton de commande : la même demande sera répétée sans créer de doublon.'));
+   setOrderStatus(orderMessage('Die Bestätigung ist noch offen. Bitte klicke erneut auf „Unbezahlte Bestellung absenden“. Derselbe Auftrag wird sicher wiederholt, ohne eine zweite Bestellung anzulegen.','La confirmation est en attente. Cliquez à nouveau sur le bouton de commande : la même demande sera répétée sans créer de doublon.'));
  }finally{clearTimeout(timer);checkoutSending=false;orderButton.disabled=false;}
 };
 // A pending request must be retried unchanged, even if a configurator was left open.
