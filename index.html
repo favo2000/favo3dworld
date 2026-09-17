@@ -11,14 +11,14 @@
   <link rel="stylesheet" href="styles.css">
   <style>#shop .product[hidden] { display:none !important; }</style>
   <script src="supabase-config.js"></script>
-  <script src="product-options.js?v=options-20260917" defer></script>
-  <script src="products.js?v=options-20260917" defer></script>
-  <script src="checkout.js?v=options-20260917" defer></script>
+  <script src="product-options.js?v=quantity-20260917" defer></script>
+  <script src="products.js?v=quantity-20260917" defer></script>
+  <script src="checkout.js?v=quantity-20260917" defer></script>
   <script src="vendor/supabase-2.57.4.js" defer></script>
   <script src="admin-options.js?v=options-20260917" defer></script>
   <script src="admin.js?v=options-20260917" defer></script>
   <link rel="stylesheet" href="admin.css">
-  <link rel="stylesheet" href="product-options.css?v=options-20260917">
+  <link rel="stylesheet" href="product-options.css?v=quantity-20260917">
 </head>
 <body>
   <div class="topbar">
@@ -53,6 +53,7 @@
   </header>
 
   <nav class="nav">
+    <div class="lang-switch" role="group" aria-label="Sprache / Langue"><button id="langDE" type="button" lang="de" aria-pressed="true">DE</button><button id="langFR" type="button" lang="fr" aria-pressed="false">FR</button></div>
     <a href="#shop">Shop⌄</a>
     <a href="#kategorien">Kategorien⌄</a>
     <a href="#lager">Auf Lager</a>
@@ -636,19 +637,23 @@ document.querySelectorAll('.cart-trigger').forEach(btn=>btn.addEventListener('cl
 
 function cartText(de,fr){return document.documentElement.lang==='fr'?fr:de;}
 function renderCart(){
- document.querySelectorAll('.cart-count').forEach(el=>el.textContent=cart.length);
+ document.querySelectorAll('.cart-count').forEach(el=>el.textContent=cart.reduce((n,x)=>n+(x.quantity||1),0));
  const wrap=document.getElementById('cartItems');
- wrap.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-line"><img src="${escapeCatalogText(x.image || `assets/cavallo-${x.horse}-${x.base}.png`)}"><div><b>${escapeCatalogText(x.name)}</b>${window.ProductOptions?window.ProductOptions.cartDetails(x):""}<small>${cartText("Grösse","Taille")}: ${escapeCatalogText(x.size)}</small></div><div><b>CHF ${x.price.toFixed(2)}</b><button class="remove" onclick="removeItem(${i})">${cartText("Entfernen","Retirer")}</button></div></div>`).join(''):'<p class="empty">'+cartText('Dein Warenkorb ist noch leer.','Votre panier est vide.')+'</p>';
- const total=cart.reduce((a,x)=>a+x.price,0);
+ wrap.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-line"><img src="${escapeCatalogText(x.image || `assets/cavallo-${x.horse}-${x.base}.png`)}"><div><b>${escapeCatalogText(x.name)}</b>${window.ProductOptions?window.ProductOptions.cartDetails(x):""}<small>${cartText("Grösse","Taille")}: ${escapeCatalogText(x.size==='Feste Grösse'?cartText('Feste Grösse','Taille fixe'):x.size)}</small><small>CHF ${x.price.toFixed(2)} / ${cartText('Stück','pièce')}</small><div class="quantity-control"><button type="button" aria-label="${cartText('Menge verringern','Diminuer la quantité')}" onclick="changeCartQuantity(${i},-1)" ${itemQuantity(x)<=1?'disabled':''}>−</button><output>${itemQuantity(x)}</output><button type="button" aria-label="${cartText('Menge erhöhen','Augmenter la quantité')}" onclick="changeCartQuantity(${i},1)" ${canIncreaseItem(x)?'':'disabled'}>+</button></div></div><div><b>CHF ${(x.price*itemQuantity(x)).toFixed(2)}</b><button class="remove" onclick="removeItem(${i})">${cartText("Entfernen","Retirer")}</button></div></div>`).join(''):'<p class="empty">'+cartText('Dein Warenkorb ist noch leer.','Votre panier est vide.')+'</p>';
+ const total=cart.reduce((a,x)=>a+x.price*(x.quantity||1),0);
  document.getElementById('cartTotal').textContent=`CHF ${total.toFixed(2)}`;
  document.getElementById('toCheckout').disabled=!cart.length;
+ if(checkout.classList.contains('open'))renderCheckoutSummary();
 }
 window.removeItem=i=>{cart.splice(i,1);renderCart()};
 document.getElementById('toCheckout').onclick=()=>{
  drawer.classList.remove('open');checkout.classList.add('open');
- document.getElementById('checkoutItems').innerHTML=cart.map(x=>`<p><b>${escapeCatalogText(x.name)}</b><br>${window.ProductOptions?window.ProductOptions.cartDetails(x):""} · ${escapeCatalogText(x.size)}</p>`).join('');
- document.getElementById('checkoutTotal').textContent=`CHF ${cart.reduce((a,x)=>a+x.price,0).toFixed(2)}`;
+ renderCheckoutSummary();
 };
+function renderCheckoutSummary(){
+ document.getElementById('checkoutItems').innerHTML=cart.map(x=>`<p><b>${escapeCatalogText(x.name)} × ${itemQuantity(x)}</b><br>${window.ProductOptions?window.ProductOptions.cartDetails(x):''} · ${escapeCatalogText(x.size==='Feste Grösse'?cartText('Feste Grösse','Taille fixe'):x.size)} · CHF ${(x.price*itemQuantity(x)).toFixed(2)}</p>`).join('');
+ document.getElementById('checkoutTotal').textContent=`CHF ${cart.reduce((a,x)=>a+x.price*itemQuantity(x),0).toFixed(2)}`;
+}
 document.getElementById('requestSize').addEventListener('click',()=>{
   const details=prompt('Welche Höhe möchtest du für das Cavallo-Modell?\nZum Beispiel: 85 cm');
   if(details && details.trim()){
@@ -828,6 +833,16 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 <script>
 const FR_MAP = new Map([
+ ['Beliebte Modelle →','Modèles populaires →'],['Mehrfarbig konfigurierbar','Couleurs personnalisables'],['Körper & Hoodie konfigurierbar','Corps et sweat à capuche personnalisables'],['Produkte werden geladen …','Chargement des produits …'],['Aktuell sind keine Produkte verfügbar.','Aucun produit disponible pour le moment.'],['Produkte konnten nicht geladen werden. Bitte versuche es erneut.','Impossible de charger les produits. Veuillez réessayer.'],
+ ['Shop⌄','Boutique⌄'],['Kategorien⌄','Catégories⌄'],['Konto','Compte'],['Wunschliste','Liste de souhaits'],['⚙ Produkte verwalten','⚙ Gérer les produits'],
+ ['🚚 Kostenloser Versand ab CHF 70.–','🚚 Livraison gratuite dès CHF 70.–'],['🇨🇭 Schweizer Qualität','🇨🇭 Qualité suisse'],
+ ['Jetzt entdecken →','Découvrir →'],['Über den Druck','À propos de l’impression'],['◒ Hochwertiger Druck','◒ Impression de qualité'],['♡ Mit Liebe gefertigt','♡ Fabriqué avec amour'],['⬡ Sicherer Versand','⬡ Livraison sécurisée'],
+ ['SOFORT VERFÜGBAR','DISPONIBLE IMMÉDIATEMENT'],['Bereits gedruckt und auf Lager.','Déjà imprimé et en stock.'],['Versand in 1–2 Werktagen.','Expédition sous 1 à 2 jours ouvrables.'],['PRINT ON DEMAND','IMPRESSION À LA DEMANDE'],['Wird nach deiner Bestellung für dich gedruckt.','Imprimé pour toi après ta commande.'],['Produktionszeit: je nach Modell.','Délai de fabrication : selon le modèle.'],
+ ['Modell wählen','Choisir un modèle'],['Farben konfigurieren','Choisir les couleurs'],['Viele Farben','De nombreuses couleurs'],['Wähle deine Lieblingsfarbe bei vielen Modellen.','Choisis ta couleur préférée pour de nombreux modèles.'],['Kundensupport','Service client'],['Wir sind für dich da – vor und nach der Bestellung.','Nous sommes là pour toi, avant et après ta commande.'],
+ ['Top Qualität, schneller Versand und mit viel Liebe zum Detail gedruckt.','Excellente qualité, livraison rapide et impression soignée dans les moindres détails.'],['ÜBER UNS','À PROPOS'],['Deine Welt. Gedruckt für dich.','Ton univers. Imprimé pour toi.'],['Ein Teil unserer Modelle ist sofort verfügbar. Andere werden nach Bestellung in deiner gewünschten Konfiguration gefertigt.','Certains modèles sont disponibles immédiatement. Les autres sont fabriqués après ta commande selon les options choisies.'],
+ ['Was bedeutet Print on Demand?','Que signifie impression à la demande ?'],['Das Modell wird nach deiner Bestellung gefertigt. Du kannst je nach Produkt Farbe, Grösse und weitere Optionen auswählen.','Le modèle est fabriqué après ta commande. Selon le produit, tu peux choisir la couleur, la taille et d’autres options.'],['Was bedeutet Auf Lager?','Que signifie en stock ?'],['Das Produkt ist bereits gedruckt und kann nach der Bestellung schneller versendet werden.','Le produit est déjà imprimé et peut être expédié plus rapidement après la commande.'],['Versand','Livraison'],
+ ['DEINE BESTELLUNG','TA COMMANDE'],['Zur Kasse','Passer à la caisse'],['Bestellung abschliessen','Finaliser la commande'],['Lieferadresse','Adresse de livraison'],['Vorname','Prénom'],['Nachname','Nom'],['Strasse & Nr.','Rue et numéro'],['PLZ','Code postal'],['Ort','Localité'],['Deine Produkte','Tes produits'],['🛒 Warenkorb','🛒 Panier'],['Zum Warenkorb hinzugefügt ✓','Ajouté au panier ✓'],['Erneut versuchen','Réessayer'],
+ ['50 / 60 / 70 cm · Sondergrösse auf Anfrage','50 / 60 / 70 cm · Taille spéciale sur demande'],
  ['Bestellung auf Rechnung absenden','Commander sur facture'],
  ['Rechnung','Facture'],['Zahlungsart','Mode de paiement'],['Zahlung auf Rechnung','Paiement sur facture'],
  ['🛡 Zahlung auf Rechnung','🛡 Paiement sur facture'],['Keine Online-Zahlung','Aucun paiement en ligne'],
@@ -857,6 +872,7 @@ const DE_MAP=new Map([...FR_MAP].map(([de,fr])=>[fr,de]));
 let currentLang='de';
 
 function translateTextNode(node,map){
+ if(node.parentElement?.closest('script,style,textarea,.product-option-fields,.catalog-description,#cartItems,#checkoutItems,#adminProductList,.product h3'))return;
  const t=node.nodeValue,trim=t.trim();
  if(!trim)return;
  if(map.has(trim)) node.nodeValue=t.replace(trim,map.get(trim));
@@ -871,6 +887,9 @@ function translatePage(lang){
  if(window.refreshCatalogLanguage) window.refreshCatalogLanguage();
  document.getElementById('langDE')?.classList.toggle('active',lang==='de');
  document.getElementById('langFR')?.classList.toggle('active',lang==='fr');
+ document.getElementById('langDE')?.setAttribute('aria-pressed',String(lang==='de'));
+ document.getElementById('langFR')?.setAttribute('aria-pressed',String(lang==='fr'));
+ document.querySelector('.search input').placeholder=lang==='fr'?'Rechercher des produits…':'Suche nach Produkten...';
  try{localStorage.setItem('favoLang',lang)}catch(e){}
 }
 document.getElementById('langDE')?.addEventListener('click',()=>translatePage('de'));

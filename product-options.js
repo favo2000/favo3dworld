@@ -58,10 +58,7 @@
   const text=[...describe({colorSelections:selected(s)}),size].join(' · ');
   if(summary)summary.textContent=text;if(chosen)chosen.textContent=text;
   const image=modal.querySelector('.horse-preview img');
-  // Cavallo keeps its original two-part preview for supported combinations.
-  const keys=['petrol','schwarz','weiss','gold','rot'];
-  if(s.p.id===1&&!s.p.image_url&&keys.includes(s.choices.primary)&&keys.includes(s.choices.secondary))image.src=`assets/cavallo-${s.choices.primary}-${s.choices.secondary}.png`;
-  else image.src=s.image;
+  image.src=s.image;
   image.onerror=()=>{image.onerror=null;image.src=s.image;};
   modal.querySelector('h2').textContent=s.p.name;
   let help=modal.querySelector('.horse-options > p');if(!help){help=node('p');modal.querySelector('.horse-options h2').after(help);}help.textContent=t('Wähle die verfügbaren Optionen. Das Foto zeigt ein Beispielmodell.','Choisis les options disponibles. La photo montre un exemple du modèle.');
@@ -95,6 +92,16 @@
    const remove=localized(node('button'),'Foto entfernen','Retirer la photo');remove.type='button';remove.onclick=()=>{input.value='';if(s.preview)URL.revokeObjectURL(s.preview);s.file=null;s.photo=null;s.preview=null;status.textContent='';};host.append(remove);
   }
   if(p.allow_wish_text){const l=node('label');l.append(localized(node('span'),'Wunschtext / Bemerkungen','Texte souhaité / remarques'));const a=node('textarea');a.maxLength=2000;a.rows=3;a.value=s.text||'';a.dataset.wishText='';a.oninput=()=>s.text=a.value;l.append(a);host.append(l);}
+  s.quantity=s.quantity||1;
+  const quantity=node('div',undefined,'quantity-control');
+  quantity.append(localized(node('span'),'Menge','Quantité'));
+  const minus=node('button','−'),value=node('output',String(s.quantity)),plus=node('button','+');
+  minus.type=plus.type='button';minus.setAttribute('aria-label',t('Menge verringern','Diminuer la quantité'));plus.setAttribute('aria-label',t('Menge erhöhen','Augmenter la quantité'));
+  const subtotal=node('span');
+  const update=()=>{value.textContent=s.quantity;minus.disabled=s.quantity<=1;plus.disabled=s.quantity>=20||(!catalogOnDemand(p)&&s.quantity+cartProductQuantity(p.id)>=Number(p.stock));const select=$(prefix+'Size');const size=p.id===3?'50':prefix==='simple'?['50','60','70'][Number(select.value)]:select.value;const price=catalogPrice(p,size);subtotal.textContent=price===null?'':t('Positionssumme: ','Sous-total : ')+'CHF '+(price*s.quantity).toFixed(2);};
+  minus.onclick=()=>{if(s.quantity>1)s.quantity--;update();};plus.onclick=()=>{if(s.quantity<20&&(catalogOnDemand(p)||s.quantity+cartProductQuantity(p.id)<Number(p.stock)))s.quantity++;update();};
+  quantity.append(minus,value,plus,subtotal);host.append(quantity);s.updateQuantity=update;update();
+  host.append(localized(node('small'),'Maximal 20 Exemplare je Auswahl.','20 exemplaires maximum par configuration.'));
   host.append(node('p','','product-option-status'));paint(s);sync(p.id);
  }
  async function add(id){
@@ -111,21 +118,23 @@
    if(s.file&&!s.photo){status.textContent=t('Foto wird privat hochgeladen …','Envoi privé de la photo …');const c=window.FAVO_SUPABASE;const url=new URL(c.url+'/functions/v1/customer-photo');url.searchParams.set('product_id',s.p.id);url.searchParams.set('cart_item_id',s.cartId);
     const response=await fetch(url,{method:'POST',headers:{apikey:c.publishableKey,'Content-Type':s.file.type},body:s.file,signal:AbortSignal.timeout(45000)});const data=await response.json();if(!response.ok||!data.id||!data.token)throw new Error(t('Foto-Upload fehlgeschlagen. Bitte erneut versuchen.','Échec de l’envoi de la photo. Réessaie.'));s.photo={id:data.id,token:data.token};
    }
-   const entry={productId:s.p.id,name:s.p.name,size,image:s.image,colorSelections:selections,cartItemId:s.cartId,personalization:{...(s.photo||{}),cart_item_id:s.cartId,text:wishText}};
+   const entry={productId:s.p.id,name:s.p.name,size,image:s.image,quantity:s.quantity,colorSelections:selections,cartItemId:s.cartId,personalization:{...(s.photo||{}),cart_item_id:s.cartId,text:wishText}};
    if(!addCatalogItem(entry))return;
    // Cart metadata is copied, never shared with a later selection.
-   s.file=null;s.photo=null;s.text='';s.cartId=crypto.randomUUID();if(s.preview){URL.revokeObjectURL(s.preview);s.preview=null;}
+   s.quantity=1;s.file=null;s.photo=null;s.text='';s.cartId=crypto.randomUUID();if(s.preview){URL.revokeObjectURL(s.preview);s.preview=null;}
    $(prefix+'Modal').classList.remove('open');renderCart();$('cartDrawer').classList.add('open');mount(s.p,s.image);
   }catch(e){status.textContent=e.message;}finally{s.busy=false;button.disabled=false;sel.disabled=false;inputs.forEach(i=>i.disabled=false);}
  }
  document.addEventListener('click',event=>{
+  if(event.target.closest('#openHorseConfig,#openHoodieConfig,#openZenConfig,#openPikaConfig'))for(const s of states.values())s.updateQuantity?.();
   const b=event.target.closest('#horseAdd,#hoodieAdd,#zenAdd,#pikaAdd,#simpleAdd');if(!b)return;
   const id={horseAdd:1,hoodieAdd:2,zenAdd:4,pikaAdd:5,simpleAdd:simpleId}[b.id];if(!states.has(Number(id)))return;
   event.preventDefault();event.stopImmediatePropagation();if(typeof pendingInvoice!=='undefined'&&pendingInvoice)return;add(id);
  },true);
+ document.addEventListener('change',event=>{if(event.target.matches('select[id$="Size"]'))for(const s of states.values())s.updateQuantity?.();});
  function refresh(){
   document.querySelectorAll('[data-option-de]').forEach(n=>n.textContent=t(n.dataset.optionDe,n.dataset.optionFr));
-  for(const s of states.values()){if(s.host?.isConnected){paint(s);sync(s.p.id);}}
+  for(const s of states.values()){if(s.host?.isConnected){paint(s);sync(s.p.id);s.updateQuantity?.();const sel=$(modalFor(s.p)+'Size');if(s.p.id===3)sel.options[0].textContent=t('Feste Grösse','Taille fixe')+' — CHF '+Number(s.p.price_50).toFixed(2);}}
   categoryRefresh();if(typeof renderCart==='function')renderCart();
   const h=document.querySelector('.hero h1'),p=document.querySelector('.hero-copy > p');h.textContent=t('3D-Druck mit Leidenschaft.','Impression 3D avec passion.');p.textContent=t('Entdecke unsere fertig gedruckten 3D-Modelle. Wähle bei vielen Produkten deine Wunschfarbe und Größe – wir fertigen dein Modell für dich an.','Découvre nos modèles imprimés en 3D. Pour de nombreux produits, choisis ta couleur et ta taille préférées : nous fabriquons ton modèle pour toi.');
   $('qualityTitle').textContent=t('❤️ Mit Liebe gefertigt','❤️ Fabriqué avec amour');$('qualityText').textContent=t('Jedes Modell wird sorgfältig für dich gedruckt.','Chaque modèle est imprimé avec soin pour toi.');

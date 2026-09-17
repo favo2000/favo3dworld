@@ -5,8 +5,9 @@ const orderButton = document.getElementById('placeOrder');
 const orderStatus = document.getElementById('orderStatus');
 orderStatus.style.overflowWrap = 'anywhere';
 const customerFields = ['firstName','lastName','email','street','zip','city'];
-const orderMessage = (de,fr) => document.documentElement.lang==='fr'?fr:de;
-function setOrderStatus(message) { orderStatus.textContent=message; }
+let lastOrderMessage=null;
+const orderMessage = (de,fr) => {lastOrderMessage={de,fr};return document.documentElement.lang==='fr'?fr:de;};
+function setOrderStatus(message) { orderStatus.textContent=message;if(message&&lastOrderMessage){orderStatus.dataset.optionDe=lastOrderMessage.de;orderStatus.dataset.optionFr=lastOrderMessage.fr;}else{delete orderStatus.dataset.optionDe;delete orderStatus.dataset.optionFr;} }
 function invoiceColors(item) {
  if(item.colorSelections)return Object.fromEntries(item.colorSelections.map(c=>[c.region_id,c.color_id]));
  const normalize = value => String(value || '').toLowerCase().replace('grün','gruen').replace('weiß','weiss');
@@ -18,9 +19,9 @@ function invoiceColors(item) {
 function invoiceItems() {
  const grouped = new Map();
  for (const item of cart) {
-   const data={product_id:item.productId,size:item.size==='Feste Grösse'?'fixed':item.size.split(' ')[0],colors:invoiceColors(item),quantity:1,personalization:item.personalization||null};
-   const key=JSON.stringify([data.product_id,data.size,data.colors,data.personalization]);
-   if(grouped.has(key))grouped.get(key).quantity++;else grouped.set(key,data);
+   const data={product_id:item.productId,size:item.size==='Feste Grösse'?'fixed':item.size.split(' ')[0],colors:invoiceColors(item),quantity:itemQuantity(item),personalization:item.personalization||null};
+   const key=cartConfigurationKey(item);
+   if(grouped.has(key))grouped.get(key).quantity+=data.quantity;else grouped.set(key,data);
  }
  return [...grouped.values()];
 }
@@ -60,7 +61,7 @@ orderButton.onclick=async()=>{
    }
    checkoutSending=true;orderButton.disabled=true;
    const value=id=>document.getElementById(id).value.trim();
-   const payload={payment_method:'Rechnung',customer:{first_name:value('firstName'),last_name:value('lastName'),email:value('email'),street:value('street'),postal_code:value('zip'),city:value('city'),country:'CH'},items:invoiceItems(),expected_total:Number(cart.reduce((n,x)=>n+x.price,0).toFixed(2))};
+   const payload={payment_method:'Rechnung',customer:{first_name:value('firstName'),last_name:value('lastName'),email:value('email'),street:value('street'),postal_code:value('zip'),city:value('city'),country:'CH'},items:invoiceItems(),expected_total:Number(cart.reduce((n,x)=>n+x.price*itemQuantity(x),0).toFixed(2))};
    try{payload.request_key=await invoiceRequestKey(payload);pendingInvoice=payload;}
    catch{checkoutSending=false;orderButton.disabled=false;setOrderStatus(orderMessage('Bitte öffne den Shop über die sichere HTTPS-Adresse.','Ouvrez la boutique via HTTPS.'));return;}
  }
