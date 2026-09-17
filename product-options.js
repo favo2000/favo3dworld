@@ -98,8 +98,8 @@
   const minus=node('button','−'),value=node('output',String(s.quantity)),plus=node('button','+');
   minus.type=plus.type='button';minus.setAttribute('aria-label',t('Menge verringern','Diminuer la quantité'));plus.setAttribute('aria-label',t('Menge erhöhen','Augmenter la quantité'));
   const subtotal=node('span');
-  const update=()=>{value.textContent=s.quantity;minus.disabled=s.quantity<=1;plus.disabled=s.quantity>=20||(p.stock!==null&&s.quantity+cartProductQuantity(p.id)>=Number(p.stock));const select=$(prefix+'Size');const size=p.id===3?'50':prefix==='simple'?['50','60','70'][Number(select.value)]:select.value;const price=catalogPrice(p,size);subtotal.textContent=price===null?'':t('Positionssumme: ','Sous-total : ')+'CHF '+(price*s.quantity).toFixed(2);};
-  minus.onclick=()=>{if(s.quantity>1)s.quantity--;update();};plus.onclick=()=>{if(s.quantity<20&&(p.stock===null||s.quantity+cartProductQuantity(p.id)<Number(p.stock)))s.quantity++;update();};
+  const update=()=>{value.textContent=s.quantity;minus.disabled=s.quantity<=1;plus.disabled=s.quantity>=20||(!catalogOnDemand(p)&&s.quantity+cartProductQuantity(p.id)>=Number(p.stock));const select=$(prefix+'Size');const size=p.id===3?'50':prefix==='simple'?['50','60','70'][Number(select.value)]:select.value;const price=catalogPrice(p,size);subtotal.textContent=price===null?'':t('Positionssumme: ','Sous-total : ')+'CHF '+(price*s.quantity).toFixed(2);};
+  minus.onclick=()=>{if(s.quantity>1)s.quantity--;update();};plus.onclick=()=>{if(s.quantity<20&&(catalogOnDemand(p)||s.quantity+cartProductQuantity(p.id)<Number(p.stock)))s.quantity++;update();};
   quantity.append(minus,value,plus,subtotal);host.append(quantity);s.updateQuantity=update;update();
   host.append(localized(node('small'),'Maximal 20 Exemplare je Auswahl.','20 exemplaires maximum par configuration.'));
   host.append(node('p','','product-option-status'));paint(s);sync(p.id);

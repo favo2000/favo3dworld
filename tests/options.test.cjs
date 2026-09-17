@@ -43,6 +43,14 @@ async function run(){
  w.openCatalogSimple(discs,'assets/logo-reference.png');$('simpleAdd').click();await tick();assert.equal(w.testCart().length,1);assert.equal(w.testCart()[0].quantity,3);assert.equal($('cartTotal').textContent,'CHF 30.00');
  w.changeCartQuantity(0,1);w.changeCartQuantity(0,1);w.changeCartQuantity(0,1);assert.equal(w.testCart()[0].quantity,5);assert.equal($('cartTotal').textContent,'CHF 50.00');assert.equal(w.addCatalogItem({...w.testCart()[0],quantity:1}),false);
  w.changeCartQuantity(0,-1);assert.equal(w.testCart()[0].quantity,4);
+ // Zero-stock Scheiben is made-to-order; zero-stock ordinary products stay unavailable.
+ w.resetTestCart();discs.stock=0;await w.loadCatalog();
+ const discCard=w.document.querySelector('[data-catalog-id="3"]');assert.equal(discCard.querySelector('.badge').textContent,'Auf Bestellung');assert.equal(discCard.querySelector('button:not(.heart)').disabled,false);
+ $('langFR').click();assert.equal(discCard.querySelector('.badge').textContent,'Sur commande');
+ discCard.querySelector('button:not(.heart)').click();assert.match($('simpleSize').textContent,/Taille fixe/);const more=$('simpleModal').querySelector('.quantity-control button:last-of-type');more.click();more.click();$('simpleAdd').click();await tick();assert.equal(w.testCart()[0].quantity,3);assert.equal($('cartTotal').textContent,'CHF 30.00');w.changeCartQuantity(0,1);assert.equal(w.testCart()[0].quantity,4);
+ const ordinary=rows.find(p=>p.id===6);ordinary.stock=0;await w.loadCatalog();assert.equal(w.document.querySelector('[data-catalog-id="6"] button:not(.heart)').disabled,true);ordinary.stock=null;
+ // Replenishing stock re-enables the limit, including amounts already in the cart.
+ discs.stock=5;await w.loadCatalog();assert.match(w.document.querySelector('[data-catalog-id="3"] .badge').textContent,/En stock/);w.changeCartQuantity(0,1);w.changeCartQuantity(0,1);assert.equal(w.testCart()[0].quantity,5);$('langDE').click();
  w.resetTestCart();const frugo=rows.find(p=>p.id===6);frugo.stock=3;
  const entry={productId:6,name:'Frugo',size:'50 cm',image:'assets/frugo-real.jpg',colorSelections:[{region_id:'primary',color_id:'petrol',region_de:'Modell',region_fr:'Modèle',name_de:'Petrol',name_fr:'Bleu pétrole'}],personalization:{text:'A',cart_item_id:'ignored'}};
  assert.equal(w.addCatalogItem(entry),true);assert.equal(w.addCatalogItem({...entry,personalization:{text:'A',cart_item_id:'different'}}),true);assert.equal(w.testCart().length,1);assert.equal(w.testCart()[0].quantity,2);

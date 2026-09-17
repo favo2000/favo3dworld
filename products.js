@@ -29,6 +29,8 @@ function catalogImage(value, fallback = '') {
 }
 function catalogText(de, fr) { return document.documentElement.lang === 'fr' ? fr : de; }
 function itemQuantity(item){return item.quantity===undefined?1:item.quantity;}
+// Scheiben uses stock while available, then switches to made-to-order at zero.
+function catalogOnDemand(p){return p.stock===null || (p.id===3 && Number(p.stock)===0);}
 function cartConfigurationKey(item){
   const colors=(item.colorSelections||[]).map(c=>[c.region_id,c.color_id]).sort((a,b)=>a[0].localeCompare(b[0]));
   const personal=item.personalization||{};
@@ -37,7 +39,7 @@ function cartConfigurationKey(item){
 function cartProductQuantity(id){return cart.filter(x=>x.productId===id).reduce((n,x)=>n+itemQuantity(x),0);}
 function canIncreaseItem(item,amount=1){
  const p=catalogProducts.find(p=>p.id===item.productId);
- return !!p && itemQuantity(item)+amount<=20 && (p.stock===null || cartProductQuantity(p.id)+amount<=Number(p.stock));
+ return !!p && itemQuantity(item)+amount<=20 && (catalogOnDemand(p) || cartProductQuantity(p.id)+amount<=Number(p.stock));
 }
 window.changeCartQuantity=(index,delta)=>{
  if(typeof pendingInvoice!=='undefined'&&pendingInvoice)return;
@@ -51,7 +53,7 @@ function addCatalogItem(item) {
   const amount = p && catalogPrice(p, size);
   const quantity=itemQuantity(item);
   const count = p ? cartProductQuantity(p.id) : 0;
-  if (!catalogReady || !p || amount === null || !Number.isInteger(quantity)||quantity<1||quantity>20 || (p.stock !== null && count+quantity > Number(p.stock))) {
+  if (!catalogReady || !p || amount === null || !Number.isInteger(quantity)||quantity<1||quantity>20 || (!catalogOnDemand(p) && count+quantity > Number(p.stock))) {
     alert(catalogText('Dieses Produkt ist in dieser Auswahl nicht verfügbar.', 'Ce produit n’est pas disponible dans cette configuration.'));
     return false;
   }
@@ -107,7 +109,7 @@ function refreshCatalogLanguage() {
     card.querySelector('.catalog-description').textContent = document.documentElement.lang === 'fr'
       ? p.description_fr || p.description_de || '' : p.description_de || '';
     const badge = card.querySelector('.badge');
-    badge.textContent = p.stock === null ? catalogText('Auf Bestellung','Sur commande')
+    badge.textContent = catalogOnDemand(p) ? catalogText('Auf Bestellung','Sur commande')
       : Number(p.stock) > 0 ? catalogText('Auf Lager · ','En stock · ') + p.stock
       : catalogText('Ausverkauft','Épuisé');
     card.querySelector('button:not(.heart)').textContent=catalogText('Konfigurieren','Configurer');
@@ -149,10 +151,10 @@ function renderCatalog() {
       description.className = 'catalog-description';
       card.querySelector('h3').after(description);
     }
-    card.querySelector('.badge').className = 'badge ' + (p.stock === null ? 'demand' : 'stock');
+    card.querySelector('.badge').className = 'badge ' + (catalogOnDemand(p) ? 'demand' : 'stock');
     configureCatalogSizes(p);
     const button = card.querySelector('button:not(.heart)');
-    button.disabled = p.stock !== null && Number(p.stock) <= 0;
+    button.disabled = !catalogOnDemand(p) && Number(p.stock) <= 0;
     if (!catalogBindings[catalogOriginalNames[p.id]]) {
       // Replace the legacy button to remove its hard-coded price listener.
       const replacement = button.cloneNode(true);

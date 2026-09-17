@@ -7,7 +7,7 @@ declare
  v_customer jsonb; v_item jsonb; v_product public."Products"%rowtype;
  v_items jsonb := '[]'::jsonb; v_qty integer; v_size text; v_colors jsonb;
  v_price numeric; v_total numeric := 0; v_field text; v_email text; v_palette text[];
- v_number text; v_created timestamptz;
+ v_number text; v_created timestamptz; v_scheiben_on_demand boolean := false;
  v_region jsonb; v_color jsonb; v_details jsonb; v_personal jsonb; v_text text; v_photo public."CustomerPhotos"%rowtype; v_photo_id uuid; v_photo_ids uuid[]:='{}';
 begin
  if jsonb_typeof(p_request) is distinct from 'object' or p_request->>'payment_method' is distinct from 'Rechnung'
@@ -38,6 +38,9 @@ begin
  or (select count(*) from public."Orders" where email=v_email and created_at>now()-interval '1 hour') >= 3 then raise exception 'RATE_LIMIT'; end if;
  -- Lock in a stable order, including products repeated with different colors.
  perform id from public."Products" where id in (select (x->>'product_id')::bigint from jsonb_array_elements(p_request->'items') x) order by id for update;
+ -- Freeze fulfillment mode after the product lock. Exhausting positive stock
+ -- in an earlier line of this request must not enable extra made-to-order units.
+ select coalesce((select stock=0 from public."Products" where id=3),false) into v_scheiben_on_demand;
  for v_item in select value from jsonb_array_elements(p_request->'items') loop
    if jsonb_typeof(v_item) is distinct from 'object' or (v_item->>'quantity') !~ '^[0-9]{1,2}$' then raise exception 'INVALID_ITEMS'; end if;
    v_qty := (v_item->>'quantity')::integer;
@@ -78,7 +81,7 @@ begin
      v_photo_ids:=array_append(v_photo_ids,v_photo_id);
    elsif v_product.photo_mode='required' then raise exception 'INVALID_OPTIONS';end if;
    if v_price is null or v_price < 0 then raise exception 'PRODUCT_UNAVAILABLE'; end if;
-   if v_product.stock is not null then
+   if v_product.stock is not null and not (v_product.id=3 and v_scheiben_on_demand) then
      if v_product.stock < v_qty then raise exception 'OUT_OF_STOCK'; end if;
      update public."Products" set stock=stock-v_qty where id=v_product.id;
    end if;
