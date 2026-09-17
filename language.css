@@ -1,0 +1,8 @@
+/* Keep language controls outside the clipped, horizontally scrolling navigation. */
+.shop-navigation{display:flex;align-items:center;background:#fff}
+.shop-navigation>.lang-switch{order:0;flex:0 0 auto;margin:0 12px 0 4vw;white-space:nowrap}
+.shop-navigation>.nav{flex:1;min-width:0;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;padding-left:0}
+.shop-navigation .lang-switch button{min-width:44px;min-height:44px;font-size:.88rem;font-weight:700;cursor:pointer}
+.shop-navigation .lang-switch button[aria-pressed=true]{background:var(--teal);color:#fff;text-decoration:underline;text-underline-offset:3px}
+.shop-navigation .lang-switch button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.shop-navigation .lang-switch span{color:var(--muted);font-size:1rem}
