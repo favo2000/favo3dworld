@@ -8,6 +8,7 @@ const customerFields = ['firstName','lastName','email','street','zip','city'];
 const orderMessage = (de,fr) => document.documentElement.lang==='fr'?fr:de;
 function setOrderStatus(message) { orderStatus.textContent=message; }
 function invoiceColors(item) {
+ if(item.colorSelections)return Object.fromEntries(item.colorSelections.map(c=>[c.region_id,c.color_id]));
  const normalize = value => String(value || '').toLowerCase().replace('grün','gruen').replace('weiß','weiss');
  if (['Cavallo','Hoodie Drache','Pika Urban'].includes(item.name)) return {primary:normalize(item.horse),secondary:normalize(item.base)};
  if (item.name==='Zen Schildkröte') return {primary:normalize(item.horse)};
@@ -17,8 +18,8 @@ function invoiceColors(item) {
 function invoiceItems() {
  const grouped = new Map();
  for (const item of cart) {
-   const data={product_id:item.productId,size:item.size==='Feste Grösse'?'fixed':item.size.split(' ')[0],colors:invoiceColors(item),quantity:1};
-   const key=JSON.stringify([data.product_id,data.size,data.colors]);
+   const data={product_id:item.productId,size:item.size==='Feste Grösse'?'fixed':item.size.split(' ')[0],colors:invoiceColors(item),quantity:1,personalization:item.personalization||null};
+   const key=JSON.stringify([data.product_id,data.size,data.colors,data.personalization]);
    if(grouped.has(key))grouped.get(key).quantity++;else grouped.set(key,data);
  }
  return [...grouped.values()];

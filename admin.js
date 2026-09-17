@@ -1,7 +1,7 @@
 /* Only the publishable key is used. RLS is the authoritative access check. */
 (() => {
   'use strict';
-  const COLUMNS = 'id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active,glb_path';
+  const COLUMNS = 'id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active,color_regions,category,seasons,photo_mode,allow_wish_text';
   const $ = id => document.getElementById(id);
   const config = window.FAVO_SUPABASE;
   let client, authorized = false, busy = false, editing = null, rows = [], previewURL;
@@ -32,8 +32,7 @@
     editing = null; $('adminProductForm').reset(); $('adminEditTitle').textContent = 'Neues Produkt';
     if (previewURL) URL.revokeObjectURL(previewURL);
     previewURL = null; preview(null);
-    $('adminGlbStatus').textContent = 'Noch keine GLB-Datei zugeordnet.';
-    $('adminGlbPreview').hidden = true;
+    window.OptionsAdmin.load();
   }
   async function requireAdmin() {
     const { data, error } = await client.auth.getUser();
@@ -58,8 +57,7 @@
     $('adminActive').checked = p.active === true;
     $('adminColorMode').value = p.color_mode;
     preview(p.image_url);
-    $('adminGlbStatus').textContent = p.glb_path ? 'GLB gespeichert. Neue Datei auswählen, um die 3D-Ansicht zu ersetzen.' : 'Noch keine GLB-Datei zugeordnet.';
-    $('adminGlbPreview').hidden = !window.Favo3D?.url(p.glb_path);
+    window.OptionsAdmin.load(p);
     $('adminName').focus();
   }
   function render() {
@@ -107,13 +105,6 @@
       $('adminRemoveImage').checked = false; preview(previewURL || editing?.image_url);
     } catch (e) { $('adminImage').value = ''; status(e.message, true); }
   });
-  $('adminGlb').addEventListener('change', () => {
-    const file = $('adminGlb').files[0];
-    $('adminGlbStatus').textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB · wird beim Speichern geprüft und hochgeladen` : editing?.glb_path ? 'Die gespeicherte GLB-Datei bleibt erhalten.' : 'Noch keine GLB-Datei zugeordnet.';
-  });
-  $('adminGlbPreview').onclick = () => {
-    if (!busy && editing) window.Favo3D.open(editing, editing.image_url, $('adminGlbPreview'));
-  };
   $('adminProductForm').addEventListener('submit', async event => {
     event.preventDefault(); if (busy || !authorized) return;
     locked(true); let uploaded = null, saved = false;
@@ -124,12 +115,10 @@
         description_fr: $('adminDescriptionFr').value.trim() || null,
         price_50: number('adminPrice50'), price_60: number('adminPrice60'), price_70: number('adminPrice70'),
         stock: number('adminStock', true), active: $('adminActive').checked, color_mode: $('adminColorMode').value,
-        image_url: $('adminRemoveImage').checked ? null : editing?.image_url || null
+        image_url: $('adminRemoveImage').checked ? null : editing?.image_url || null,
+        ...window.OptionsAdmin.read()
       };
       if (!values.name || !values.description_de) throw new Error('Produktname und deutsche Beschreibung sind erforderlich.');
-      const glbFile = $('adminGlb').files[0];
-      // Validate before either upload. Never reinterpret private model_url as a GLB.
-      if (glbFile) await window.Favo3D.validateFile(glbFile);
       const file = $('adminImage').files[0]; validateFile(file);
       if (file && !$('adminRemoveImage').checked) {
         const extension = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
@@ -139,14 +128,6 @@
         if (error) throw error;
         uploaded = path;
         values.image_url = client.storage.from('product-images').getPublicUrl(path).data.publicUrl;
-      }
-      if (glbFile) {
-        const glbPath = `${crypto.randomUUID()}.glb`;
-        status('GLB-Datei wird hochgeladen …');
-        const {error} = await client.storage.from('product-glb').upload(glbPath, glbFile, {contentType:'model/gltf-binary', upsert:false});
-        if (error) throw error;
-        uploaded = glbPath;
-        values.glb_path = glbPath;
       }
       status('Produkt wird gespeichert …');
       const query = editing ? client.from('Products').update(values).eq('id', editing.id) : client.from('Products').insert(values);
@@ -164,7 +145,7 @@
   $('adminReload').onclick = async () => { if (busy) return; locked(true); try { await load(); status('Liste aktualisiert.'); } catch(e) { status(e.message,true); } finally { locked(false); } };
   $('openAdmin').onclick = () => { $('adminModal').classList.add('open'); (authorized ? $('adminName') : $('adminEmail')).focus(); };
   document.querySelectorAll('[data-close-admin]').forEach(b => b.onclick = () => { $('adminModal').classList.remove('open'); $('openAdmin').focus(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !busy && !document.querySelector('.product-3d-dialog[open]')) $('adminModal').classList.remove('open'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !busy) $('adminModal').classList.remove('open'); });
   $('adminLogin').addEventListener('submit', async event => {
     event.preventDefault(); if (busy || !client) return;
     const button = $('adminLogin').querySelector('button'); button.disabled = true; busy = true;

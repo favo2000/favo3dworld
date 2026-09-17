@@ -29,7 +29,7 @@ function catalogImage(value, fallback = '') {
 }
 function catalogText(de, fr) { return document.documentElement.lang === 'fr' ? fr : de; }
 function addCatalogItem(item) {
-  const p = catalogProducts.find(p => p.name === item.name || catalogOriginalNames[p.id] === item.name);
+  const p = catalogProducts.find(p => item.productId ? p.id === item.productId : p.name === item.name || catalogOriginalNames[p.id] === item.name);
   const size = item.size === 'Feste Grösse' ? '50' : item.size.split(' ')[0];
   const amount = p && catalogPrice(p, size);
   const count = p ? cart.filter(x => x.productId === p.id).length : 0;
@@ -37,7 +37,7 @@ function addCatalogItem(item) {
     alert(catalogText('Dieses Produkt ist in dieser Auswahl nicht verfügbar.', 'Ce produit n’est pas disponible dans cette configuration.'));
     return false;
   }
-  cart.push({...item, name:p.name, productId:p.id, price:amount});
+  cart.push({...JSON.parse(JSON.stringify(item)), name:p.name, productId:p.id, price:amount});
   return true;
 }
 function configureCatalogSizes(p) {
@@ -77,6 +77,7 @@ function openCatalogSimple(p, image) {
   document.querySelectorAll('#simpleColors button').forEach((x,i) => x.classList.toggle('active',i===0));
   updateSimple();
   simpleModal.classList.add('open');
+  window.ProductOptions.mount(p,image);
 }
 function refreshCatalogLanguage() {
   for (const card of document.querySelectorAll('[data-catalog-id]')) {
@@ -89,7 +90,7 @@ function refreshCatalogLanguage() {
       : Number(p.stock) > 0 ? catalogText('Auf Lager · ','En stock · ') + p.stock
       : catalogText('Ausverkauft','Épuisé');
   }
-  window.Favo3D?.refreshLanguage();
+  window.ProductOptions.refresh();
 }
 function renderCatalog() {
   const grid = document.getElementById('productGrid');
@@ -126,15 +127,16 @@ function renderCatalog() {
     }
     card.querySelector('.badge').className = 'badge ' + (p.stock === null ? 'demand' : 'stock');
     configureCatalogSizes(p);
-    const button = card.querySelector('button:not(.heart):not(.product-3d-open)');
+    const button = card.querySelector('button:not(.heart)');
     button.disabled = p.stock !== null && Number(p.stock) <= 0;
-    if (!catalogBindings[catalogOriginalNames[p.id]] && catalogOriginalNames[p.id] !== 'Scheiben') {
+    if (!catalogBindings[catalogOriginalNames[p.id]]) {
       // Replace the legacy button to remove its hard-coded price listener.
       const replacement = button.cloneNode(true);
       button.replaceWith(replacement);
       replacement.addEventListener('click', () => openCatalogSimple(p, src));
+      if(p.id===3)replacement.textContent=catalogText('Konfigurieren','Configurer');
     }
-    window.Favo3D?.attachButton(card, p, src);
+    if(catalogBindings[catalogOriginalNames[p.id]])window.ProductOptions.mount(p,src);
     card.hidden = false;
   }
   refreshCatalogLanguage();
@@ -156,7 +158,7 @@ async function loadCatalog() {
     const config = window.FAVO_SUPABASE;
     const url = new URL('/rest/v1/Products', config.url);
     // Production model URLs are deliberately never requested by the storefront.
-    url.searchParams.set('select','id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active,glb_path');
+    url.searchParams.set('select','id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active,color_regions,category,seasons,photo_mode,allow_wish_text');
     url.searchParams.set('active','eq.true');
     url.searchParams.set('order','id.asc');
     const response = await fetch(url, {headers:{apikey:config.publishableKey}, signal:controller.signal, cache:'no-store'});

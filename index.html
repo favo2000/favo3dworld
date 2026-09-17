@@ -11,13 +11,14 @@
   <link rel="stylesheet" href="styles.css">
   <style>#shop .product[hidden] { display:none !important; }</style>
   <script src="supabase-config.js"></script>
-  <script src="product-3d.js?v=glb-20260916" defer></script>
-  <script src="products.js?v=glb-20260916" defer></script>
-  <script src="checkout.js" defer></script>
+  <script src="product-options.js?v=options-20260917" defer></script>
+  <script src="products.js?v=options-20260917" defer></script>
+  <script src="checkout.js?v=options-20260917" defer></script>
   <script src="vendor/supabase-2.57.4.js" defer></script>
-  <script src="admin.js?v=glb-20260916" defer></script>
+  <script src="admin-options.js?v=options-20260917" defer></script>
+  <script src="admin.js?v=options-20260917" defer></script>
   <link rel="stylesheet" href="admin.css">
-  <link rel="stylesheet" href="product-3d.css?v=glb-20260916">
+  <link rel="stylesheet" href="product-options.css?v=options-20260917">
 </head>
 <body>
   <div class="topbar">
@@ -65,8 +66,8 @@
     <section class="hero">
       <div class="hero-copy">
         <span class="eyebrow">PRINTED INTO REALITY</span>
-        <h1>Deine Ideen.<br>Unsere<br><span>Leidenschaft.</span></h1>
-        <p>Besondere 3D-gedruckte Modelle für Sammler, Deko-Liebhaber, Gamer und kreative Köpfe.</p>
+        <h1>3D-Druck mit Leidenschaft.</h1>
+        <p>Entdecke unsere fertig gedruckten 3D-Modelle. Wähle bei vielen Produkten deine Wunschfarbe und Größe – wir fertigen dein Modell für dich an.</p>
         <div class="cta-row">
           <a href="#shop" class="btn primary">Jetzt entdecken →</a>
           <a href="#ueber" class="btn secondary">Über den Druck</a>
@@ -254,7 +255,7 @@
 </section>
 
     <section class="benefits">
-      <div>🏅<span><b>Top Qualität</b><small>Präzise Details und saubere Oberflächen.</small></span></div>
+      <div><span><b id="qualityTitle">❤️ Mit Liebe gefertigt</b><small id="qualityText">Jedes Modell wird sorgfältig für dich gedruckt.</small></span></div>
       <div>🎨<span><b>Viele Farben</b><small>Wähle deine Lieblingsfarbe bei vielen Modellen.</small></span></div>
       <div>🔒<span><b>Zahlung auf Rechnung</b><small>Bequem per Rechnung bezahlen.</small></span></div>
       <div>🎧<span><b>Kundensupport</b><small>Wir sind für dich da – vor und nach der Bestellung.</small></span></div>
@@ -316,15 +317,11 @@
  <p class="field-help">JPG, PNG oder WebP, maximal 5 MB. Das Bild wird beim Speichern hochgeladen.</p>
  <div id="adminImagePreview" class="image-preview"></div>
  <label class="check"><input id="adminRemoveImage" type="checkbox"> Bildzuordnung entfernen</label>
- <label>Öffentliche 3D-Ansicht (.glb)<input id="adminGlb" type="file" accept=".glb,model/gltf-binary"></label>
- <p class="field-help">GLB mit eingebetteten Texturen, maximal 25 MB (empfohlen unter 10 MB). Beim Speichern wird nur die 3D-Ansicht ersetzt; Produktbilder bleiben erhalten. Diese GLB-Datei ist öffentlich abrufbar. Keine 3MF-Originale auswählen.</p>
- <p id="adminGlbStatus" class="file-status">Noch keine GLB-Datei zugeordnet.</p>
- <button id="adminGlbPreview" class="btn secondary" type="button" hidden>Gespeicherte 3D-Ansicht prüfen</button>
  <button class="btn primary wide" type="submit">Produkt speichern</button>
  <button class="btn secondary wide" id="adminNew" type="button">Neues Produkt / Bearbeiten abbrechen</button>
  </fieldset></form>
  </section><section><h3>Online-Produkte</h3><button id="adminReload" type="button">Liste aktualisieren</button><div id="adminProducts"></div>
- <p class="small-note">Änderungen gelten sofort im Shop. Nur ausdrücklich hochgeladene GLB-Vorschauen sind öffentlich. Der Speicher für 3MF-Originale bleibt privat.</p>
+ <p class="small-note">Änderungen gelten sofort im Shop. Private Originaldateien bleiben geschützt.</p>
  </section></div></div></div></div>
 
 <div class="horse-modal" id="horseModal">
@@ -625,6 +622,7 @@ function updateHorse(){
  document.getElementById('horsePrice').textContent=custom?'Preis auf Anfrage':`CHF ${price.toFixed(2)}`;
  document.getElementById('horseAdd').style.display=custom?'none':'block';
  document.getElementById('requestSize').style.display=custom?'block':'none';
+ window.ProductOptions?.sync(1);
 }
 document.querySelectorAll('#horseColors button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#horseColors button').forEach(x=>x.classList.remove('active'));b.classList.add('active');horse=b.dataset.key;horseLabel=b.dataset.label;updateHorse()});
 document.querySelectorAll('#baseColors button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#baseColors button').forEach(x=>x.classList.remove('active'));b.classList.add('active');base=b.dataset.key;baseLabel=b.dataset.label;updateHorse()});
@@ -636,10 +634,11 @@ document.getElementById('horseAdd').onclick=()=>{
 };
 document.querySelectorAll('.cart-trigger').forEach(btn=>btn.addEventListener('click',()=>drawer.classList.add('open')));
 
+function cartText(de,fr){return document.documentElement.lang==='fr'?fr:de;}
 function renderCart(){
  document.querySelectorAll('.cart-count').forEach(el=>el.textContent=cart.length);
  const wrap=document.getElementById('cartItems');
- wrap.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-line"><img src="${escapeCatalogText(x.image || `assets/cavallo-${x.horse}-${x.base}.png`)}"><div><b>${escapeCatalogText(x.name)}</b><small>${x.name==="Hoodie Drache"?x.horseLabel:"Pferd: "+x.horseLabel}</small><small>${x.name==="Hoodie Drache"?x.baseLabel:"Sockel: "+x.baseLabel}</small><small>Grösse: ${escapeCatalogText(x.size)}</small></div><div><b>CHF ${x.price.toFixed(2)}</b><button class="remove" onclick="removeItem(${i})">Entfernen</button></div></div>`).join(''):'<p class="empty">Dein Warenkorb ist noch leer.</p>';
+ wrap.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-line"><img src="${escapeCatalogText(x.image || `assets/cavallo-${x.horse}-${x.base}.png`)}"><div><b>${escapeCatalogText(x.name)}</b>${window.ProductOptions?window.ProductOptions.cartDetails(x):""}<small>${cartText("Grösse","Taille")}: ${escapeCatalogText(x.size)}</small></div><div><b>CHF ${x.price.toFixed(2)}</b><button class="remove" onclick="removeItem(${i})">${cartText("Entfernen","Retirer")}</button></div></div>`).join(''):'<p class="empty">'+cartText('Dein Warenkorb ist noch leer.','Votre panier est vide.')+'</p>';
  const total=cart.reduce((a,x)=>a+x.price,0);
  document.getElementById('cartTotal').textContent=`CHF ${total.toFixed(2)}`;
  document.getElementById('toCheckout').disabled=!cart.length;
@@ -647,7 +646,7 @@ function renderCart(){
 window.removeItem=i=>{cart.splice(i,1);renderCart()};
 document.getElementById('toCheckout').onclick=()=>{
  drawer.classList.remove('open');checkout.classList.add('open');
- document.getElementById('checkoutItems').innerHTML=cart.map(x=>`<p><b>${escapeCatalogText(x.name)}</b><br>${x.name==="Hoodie Drache"?x.horseLabel+" · "+x.baseLabel:"Pferd "+x.horseLabel+" · Sockel "+x.baseLabel} · ${escapeCatalogText(x.size)}</p>`).join('');
+ document.getElementById('checkoutItems').innerHTML=cart.map(x=>`<p><b>${escapeCatalogText(x.name)}</b><br>${window.ProductOptions?window.ProductOptions.cartDetails(x):""} · ${escapeCatalogText(x.size)}</p>`).join('');
  document.getElementById('checkoutTotal').textContent=`CHF ${cart.reduce((a,x)=>a+x.price,0).toFixed(2)}`;
 };
 document.getElementById('requestSize').addEventListener('click',()=>{
@@ -673,6 +672,7 @@ function updateHoodie(){
  document.getElementById('hoodiePrice').textContent=custom?'Preis auf Anfrage':`CHF ${hoodiePrice.toFixed(2)}`;
  document.getElementById('hoodieAdd').style.display=custom?'none':'block';
  document.getElementById('hoodieRequest').style.display=custom?'block':'none';
+ window.ProductOptions?.sync(2);
 }
 document.querySelectorAll('#bodyColors button').forEach(b=>b.addEventListener('click',()=>{
  document.querySelectorAll('#bodyColors button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
@@ -719,6 +719,7 @@ function updateZen(){
  document.getElementById('zenPrice').textContent=custom?'Preis auf Anfrage':`CHF ${price.toFixed(2)}`;
  document.getElementById('zenAdd').style.display=custom?'none':'block';
  document.getElementById('zenRequest').style.display=custom?'block':'none';
+ window.ProductOptions?.sync(4);
 }
 document.querySelectorAll('#zenColors button').forEach(b=>b.addEventListener('click',()=>{
  document.querySelectorAll('#zenColors button').forEach(x=>x.classList.remove('active'));
@@ -758,6 +759,7 @@ function updateSimple(){
  document.getElementById('simpleSummary').textContent=`${simpleHasColor?simpleColor+' · ':''}${size}${custom?'':' cm'}`;
  document.getElementById('simplePrice').textContent=custom?'Preis auf Anfrage':`CHF ${price.toFixed(2)}`;
  document.getElementById('simpleAdd').style.display=custom?'none':'block';document.getElementById('simpleRequest').style.display=custom?'block':'none';
+ const selectedProduct=typeof catalogProducts==='undefined'?null:catalogProducts.find(p=>p.name===simpleProduct);if(selectedProduct)window.ProductOptions?.sync(selectedProduct.id);
 }
 document.getElementById('simpleSize').addEventListener('change',updateSimple);
 document.getElementById('simpleAdd').addEventListener('click',()=>{
@@ -793,6 +795,7 @@ function updatePika(){
  document.getElementById('pikaPrice').textContent=custom?'Preis auf Anfrage':`CHF ${p.toFixed(2)}`;
  document.getElementById('pikaAdd').style.display=custom?'none':'block';
  document.getElementById('pikaRequest').style.display=custom?'block':'none';
+ window.ProductOptions?.sync(5);
 }
 document.querySelectorAll('#pikaBodyColors button').forEach(b=>b.addEventListener('click',()=>{
  document.querySelectorAll('#pikaBodyColors button').forEach(x=>x.classList.remove('active'));

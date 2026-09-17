@@ -1,0 +1,387 @@
+[
+  {
+    "id": 1,
+    "category": "animals",
+    "color_regions": [
+      {
+        "id": "primary",
+        "name_de": "Pferd",
+        "name_fr": "Cheval",
+        "colors": [
+          {
+            "id": "schwarz",
+            "name_de": "Schwarz",
+            "name_fr": "Noir",
+            "hex": "#252525"
+          },
+          {
+            "id": "petrol",
+            "name_de": "Petrol",
+            "name_fr": "Bleu pétrole",
+            "hex": "#2e9190"
+          },
+          {
+            "id": "weiss",
+            "name_de": "Weiss",
+            "name_fr": "Blanc",
+            "hex": "#ecebe7"
+          },
+          {
+            "id": "gold",
+            "name_de": "Gold",
+            "name_fr": "Or",
+            "hex": "#c89b4b"
+          },
+          {
+            "id": "rot",
+            "name_de": "Rot",
+            "name_fr": "Rouge",
+            "hex": "#a94e49"
+          }
+        ]
+      },
+      {
+        "id": "secondary",
+        "name_de": "Sockel",
+        "name_fr": "Socle",
+        "colors": [
+          {
+            "id": "schwarz",
+            "name_de": "Schwarz",
+            "name_fr": "Noir",
+            "hex": "#252525"
+          },
+          {
+            "id": "petrol",
+            "name_de": "Petrol",
+            "name_fr": "Bleu pétrole",
+            "hex": "#2e9190"
+          },
+          {
+            "id": "weiss",
+            "name_de": "Weiss",
+            "name_fr": "Blanc",
+            "hex": "#ecebe7"
+          },
+          {
+            "id": "gold",
+            "name_de": "Gold",
+            "name_fr": "Or",
+            "hex": "#c89b4b"
+          },
+          {
+            "id": "rot",
+            "name_de": "Rot",
+            "name_fr": "Rouge",
+            "hex": "#a94e49"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "category": "fantasy",
+    "color_regions": [
+      {
+        "id": "primary",
+        "name_de": "Körper",
+        "name_fr": "Corps",
+        "colors": [
+          {
+            "id": "schwarz",
+            "name_de": "Schwarz",
+            "name_fr": "Noir",
+            "hex": "#252525"
+          },
+          {
+            "id": "petrol",
+            "name_de": "Petrol",
+            "name_fr": "Bleu pétrole",
+            "hex": "#2e9190"
+          },
+          {
+            "id": "weiss",
+            "name_de": "Weiss",
+            "name_fr": "Blanc",
+            "hex": "#ecebe7"
+          },
+          {
+            "id": "gold",
+            "name_de": "Gold",
+            "name_fr": "Or",
+            "hex": "#c89b4b"
+          },
+          {
+            "id": "rot",
+            "name_de": "Rot",
+            "name_fr": "Rouge",
+            "hex": "#a94e49"
+          }
+        ]
+      },
+      {
+        "id": "secondary",
+        "name_de": "Hoodie",
+        "name_fr": "Sweat à capuche",
+        "colors": [
+          {
+            "id": "schwarz",
+            "name_de": "Schwarz",
+            "name_fr": "Noir",
+            "hex": "#252525"
+          },
+          {
+            "id": "petrol",
+            "name_de": "Petrol",
+            "name_fr": "Bleu pétrole",
+            "hex": "#2e9190"
+          },
+          {
+            "id": "weiss",
+            "name_de": "Weiss",
+            "name_fr": "Blanc",
+            "hex": "#ecebe7"
+          },
+          {
+            "id": "gold",
+            "name_de": "Gold",
+            "name_fr": "Or",
+            "hex": "#c89b4b"
+          },
+          {
+            "id": "rot",
+            "name_de": "Rot",
+            "name_fr": "Rouge",
+            "hex": "#a94e49"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "category": "decor",
+    "color_regions": []
+  },
+  {
+    "id": 4,
+    "category": "animals",
+    "color_regions": [
+      {
+        "id": "primary",
+        "name_de": "Ganzes Modell",
+        "name_fr": "Modèle entier",
+        "colors": [
+          {
+            "id": "gruen",
+            "name_de": "Grün",
+            "name_fr": "Vert",
+            "hex": "#379655"
+          },
+          {
+            "id": "petrol",
+            "name_de": "Petrol",
+            "name_fr": "Bleu pétrole",
+            "hex": "#2e9190"
+          },
+          {
+            "id": "schwarz",
+            "name_de": "Schwarz",
+            "name_fr": "Noir",
+            "hex": "#282828"
+          },
+          {
+            "id": "weiss",
+            "name_de": "Weiss",
+            "name_fr": "Blanc",
+            "hex": "#ebeae6"
+          },
+          {
+            "id": "gold",
+            "name_de": "Gold",
+            "name_fr": "Or",
+            "hex": "#c89b4b"
+          },
+          {
+            "id": "rot",
+            "name_de": "Rot",
+            "name_fr": "Rouge",
+            "hex": "#aa4641"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "category": "fantasy",
+    "color_regions": [
+      {
+        "id": "primary",
+        "name_de": "Körper",
+        "name_fr": "Corps",
+        "colors": [
+          {
+            "id": "gelb",
+            "name_de": "Gelb",
+            "name_fr": "Jaune",
+            "hex": "#f0cd19"
+          },
+          {
+            "id": "grau",
+            "name_de": "Grau",
+            "name_fr": "Gris",
+            "hex": "#91969b"
+          },
+          {
+            "id": "schwarz",
+            "name_de": "Schwarz",
+            "name_fr": "Noir",
+            "hex": "#232323"
+          },
+          {
+            "id": "rot",
+            "name_de": "Rot",
+            "name_fr": "Rouge",
+            "hex": "#cd322d"
+          }
+        ]
+      },
+      {
+        "id": "secondary",
+        "name_de": "Hoodie",
+        "name_fr": "Sweat à capuche",
+        "colors": [
+          {
+            "id": "grau",
+            "name_de": "Grau",
+            "name_fr": "Gris",
+            "hex": "#91969b"
+          },
+          {
+            "id": "gelb",
+            "name_de": "Gelb",
+            "name_fr": "Jaune",
+            "hex": "#f0cd19"
+          },
+          {
+            "id": "schwarz",
+            "name_de": "Schwarz",
+            "name_fr": "Noir",
+            "hex": "#232323"
+          },
+          {
+            "id": "rot",
+            "name_de": "Rot",
+            "name_fr": "Rouge",
+            "hex": "#cd322d"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "category": "fantasy",
+    "color_regions": [
+      {
+        "id": "primary",
+        "name_de": "Ganzes Modell",
+        "name_fr": "Modèle entier",
+        "colors": [
+          {
+            "id": "petrol",
+            "name_de": "Petrol",
+            "name_fr": "Bleu pétrole",
+            "hex": "#2e9190"
+          },
+          {
+            "id": "schwarz",
+            "name_de": "Schwarz",
+            "name_fr": "Noir",
+            "hex": "#282828"
+          },
+          {
+            "id": "weiss",
+            "name_de": "Weiss",
+            "name_fr": "Blanc",
+            "hex": "#ebeae6"
+          },
+          {
+            "id": "gold",
+            "name_de": "Gold",
+            "name_fr": "Or",
+            "hex": "#c89b4b"
+          },
+          {
+            "id": "rot",
+            "name_de": "Rot",
+            "name_fr": "Rouge",
+            "hex": "#aa4641"
+          },
+          {
+            "id": "gruen",
+            "name_de": "Grün",
+            "name_fr": "Vert",
+            "hex": "#379655"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "category": null,
+    "color_regions": [
+      {
+        "id": "primary",
+        "name_de": "Ganzes Modell",
+        "name_fr": "Modèle entier",
+        "colors": [
+          {
+            "id": "petrol",
+            "name_de": "Petrol",
+            "name_fr": "Bleu pétrole",
+            "hex": "#2e9190"
+          },
+          {
+            "id": "schwarz",
+            "name_de": "Schwarz",
+            "name_fr": "Noir",
+            "hex": "#282828"
+          },
+          {
+            "id": "weiss",
+            "name_de": "Weiss",
+            "name_fr": "Blanc",
+            "hex": "#ebeae6"
+          },
+          {
+            "id": "gold",
+            "name_de": "Gold",
+            "name_fr": "Or",
+            "hex": "#c89b4b"
+          },
+          {
+            "id": "rot",
+            "name_de": "Rot",
+            "name_fr": "Rouge",
+            "hex": "#aa4641"
+          },
+          {
+            "id": "gruen",
+            "name_de": "Grün",
+            "name_fr": "Vert",
+            "hex": "#379655"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "category": "fantasy",
+    "color_regions": []
+  }
+]
