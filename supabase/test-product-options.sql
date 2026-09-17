@@ -13,12 +13,15 @@ begin
  begin perform public.submit_invoice_order(jsonb_set(payload,'{items,0,personalization,token}',to_jsonb(repeat('c',64))),repeat('b',64));raise exception 'FAIL wrong token accepted';exception when others then if sqlerrm<>'INVALID_OPTIONS' then raise;end if;end;
  begin perform public.submit_invoice_order(jsonb_set(payload,'{items,0,colors,hair}','"invalid"'),repeat('b',64));raise exception 'FAIL invalid color accepted';exception when others then if sqlerrm<>'INVALID_OPTIONS' then raise;end if;end;
  begin perform public.submit_invoice_order(payload #- '{items,0,personalization,id}',repeat('b',64));raise exception 'FAIL missing photo accepted';exception when others then if sqlerrm<>'INVALID_OPTIONS' then raise;end if;end;
+ payload:=jsonb_set(jsonb_set(payload,'{items,0,quantity}','2'),'{expected_total}','20');
+ begin perform public.submit_invoice_order(jsonb_set(payload,'{items,0,quantity}','4'),repeat('b',64));raise exception 'FAIL inventory exceeded';exception when others then if sqlerrm<>'OUT_OF_STOCK' then raise;end if;end;
  receipt:=public.submit_invoice_order(payload,repeat('b',64));
- if (select stock from public."Products" where id=p)<>2 then raise exception 'FAIL inventory';end if;
+ if (select stock from public."Products" where id=p)<>1 then raise exception 'FAIL inventory';end if;
+ if not exists(select 1 from public."OrderItems" where product_id=p and quantity=2 and line_total=20) then raise exception 'FAIL quantity total';end if;
  if not exists(select 1 from public."OrderItems" where product_id=p and customer_photo_id=photo and wish_text='Marie & Alex' and color_details->0->>'region_fr'='Cheveux') then raise exception 'FAIL snapshot';end if;
  if (select status from public."CustomerPhotos" where id=photo)<>'attached' then raise exception 'FAIL association';end if;
  perform public.submit_invoice_order(payload,repeat('b',64));
- if (select stock from public."Products" where id=p)<>2 then raise exception 'FAIL duplicate';end if;
+ if (select stock from public."Products" where id=p)<>1 then raise exception 'FAIL duplicate';end if;
  -- Preserve legacy Cavallo payloads and protect previous order flow.
  payload:=jsonb_set(payload,'{request_key}',to_jsonb(gen_random_uuid()));
  payload:=jsonb_set(payload,'{items}',jsonb_build_array(jsonb_build_object('product_id',1,'size','60','colors',jsonb_build_object('primary','schwarz','secondary','rot'),'quantity',1)));

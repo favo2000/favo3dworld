@@ -65,7 +65,8 @@ begin
    if (v_personal ? 'text' and jsonb_typeof(v_personal->'text') is distinct from 'string') or length(v_text)>2000 or (not v_product.allow_wish_text and v_text<>'') then raise exception 'INVALID_OPTIONS';end if;
    v_photo_id:=null;
    if v_personal ? 'id' then
-     if v_product.photo_mode='none' or v_qty<>1 then raise exception 'INVALID_OPTIONS';end if;
+     -- One photo belongs to one configured line, which may contain multiple copies.
+     if v_product.photo_mode='none' then raise exception 'INVALID_OPTIONS';end if;
      begin v_photo_id:=(v_personal->>'id')::uuid;exception when others then raise exception 'INVALID_OPTIONS';end;
      select * into v_photo from public."CustomerPhotos" where id=v_photo_id for update;
      if not found then raise exception 'INVALID_OPTIONS';end if;

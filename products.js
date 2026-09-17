@@ -28,16 +28,37 @@ function catalogImage(value, fallback = '') {
   } catch { return fallback; }
 }
 function catalogText(de, fr) { return document.documentElement.lang === 'fr' ? fr : de; }
+function itemQuantity(item){return item.quantity===undefined?1:item.quantity;}
+function cartConfigurationKey(item){
+  const colors=(item.colorSelections||[]).map(c=>[c.region_id,c.color_id]).sort((a,b)=>a[0].localeCompare(b[0]));
+  const personal=item.personalization||{};
+  return JSON.stringify([item.productId,item.size,colors,item.colorSelections?null:[item.horse||'',item.base||'',item.horseLabel||'',item.baseLabel||''],personal.text||'',personal.id||null,personal.id?personal.cart_item_id:null]);
+}
+function cartProductQuantity(id){return cart.filter(x=>x.productId===id).reduce((n,x)=>n+itemQuantity(x),0);}
+function canIncreaseItem(item,amount=1){
+ const p=catalogProducts.find(p=>p.id===item.productId);
+ return !!p && itemQuantity(item)+amount<=20 && (p.stock===null || cartProductQuantity(p.id)+amount<=Number(p.stock));
+}
+window.changeCartQuantity=(index,delta)=>{
+ if(typeof pendingInvoice!=='undefined'&&pendingInvoice)return;
+ const item=cart[index];if(!item)return;
+ if(delta>0&&!canIncreaseItem(item,delta)||itemQuantity(item)+delta<1)return;
+ item.quantity=itemQuantity(item)+delta;renderCart();
+};
 function addCatalogItem(item) {
   const p = catalogProducts.find(p => item.productId ? p.id === item.productId : p.name === item.name || catalogOriginalNames[p.id] === item.name);
   const size = item.size === 'Feste Grösse' ? '50' : item.size.split(' ')[0];
   const amount = p && catalogPrice(p, size);
-  const count = p ? cart.filter(x => x.productId === p.id).length : 0;
-  if (!catalogReady || !p || amount === null || (p.stock !== null && count >= Number(p.stock))) {
+  const quantity=itemQuantity(item);
+  const count = p ? cartProductQuantity(p.id) : 0;
+  if (!catalogReady || !p || amount === null || !Number.isInteger(quantity)||quantity<1||quantity>20 || (p.stock !== null && count+quantity > Number(p.stock))) {
     alert(catalogText('Dieses Produkt ist in dieser Auswahl nicht verfügbar.', 'Ce produit n’est pas disponible dans cette configuration.'));
     return false;
   }
-  cart.push({...JSON.parse(JSON.stringify(item)), name:p.name, productId:p.id, price:amount});
+  const entry={...JSON.parse(JSON.stringify(item)), name:p.name, productId:p.id, price:amount,quantity};
+  const existing=cart.find(x=>cartConfigurationKey(x)===cartConfigurationKey(entry));
+  if(existing){if(itemQuantity(existing)+quantity>20){alert(catalogText('Maximal 20 Exemplare je Auswahl.','20 exemplaires maximum par configuration.'));return false;}existing.quantity=itemQuantity(existing)+quantity;}
+  else cart.push(entry);
   return true;
 }
 function configureCatalogSizes(p) {
@@ -86,9 +107,12 @@ function refreshCatalogLanguage() {
     card.querySelector('.catalog-description').textContent = document.documentElement.lang === 'fr'
       ? p.description_fr || p.description_de || '' : p.description_de || '';
     const badge = card.querySelector('.badge');
-    badge.textContent = p.stock === null ? catalogText('Print on Demand','Impression à la demande')
+    badge.textContent = p.stock === null ? catalogText('Auf Bestellung','Sur commande')
       : Number(p.stock) > 0 ? catalogText('Auf Lager · ','En stock · ') + p.stock
       : catalogText('Ausverkauft','Épuisé');
+    card.querySelector('button:not(.heart)').textContent=catalogText('Konfigurieren','Configurer');
+    const prices=catalogSizes.map(size=>catalogPrice(p,size)).filter(n=>n!==null);
+    card.querySelector('strong').textContent=prices.length?(prices.length>1?catalogText('ab ','dès '):'')+'CHF '+Math.min(...prices).toFixed(2):catalogText('Preis auf Anfrage','Prix sur demande');
   }
   window.ProductOptions.refresh();
 }
