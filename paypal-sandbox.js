@@ -17,30 +17,62 @@
  const open=localized(node('a',undefined,'btn primary wide'),sandbox?'PayPal Sandbox öffnen':'PayPal öffnen',sandbox?'Ouvrir PayPal Sandbox':'Ouvrir PayPal');open.referrerPolicy='no-referrer';
  const check=localized(node('button',undefined,'btn secondary wide'),sandbox?'Sandbox-Zahlung prüfen':'PayPal-Zahlung prüfen',sandbox?'Vérifier le paiement Sandbox':'Vérifier le paiement PayPal');check.type='button';
  box.append(status,open,check);document.getElementById('orderStatus').after(box);
+ const card=document.querySelector('#checkoutModal > .checkout-card');
+ const confirmation=node('section');confirmation.id='paypalConfirmation';confirmation.hidden=true;
+ confirmation.setAttribute('role','status');confirmation.setAttribute('aria-live','polite');confirmation.tabIndex=-1;
+ card.prepend(confirmation);
+ let completed=false,verifying=false;
+ function showConfirmation(data){
+  if(completed)return;
+  completed=true;
+  const amount=Number(data.total).toFixed(2);
+  const title=localized(node('h2'),'🎉 Vielen Dank für deine Bestellung!','🎉 Merci pour ta commande !');
+  const intro=localized(node('p'),'Deine Bestellung ist erfolgreich bei uns eingegangen.','Nous avons bien reçu ta commande.');
+  const payment=localized(node('strong'),`Deine PayPal-Zahlung über CHF ${amount} wurde bestätigt.`,`Ton paiement PayPal de CHF ${amount} a été confirmé.`);
+  const number=node('p');number.append(localized(node('strong'),'Deine Bestellnummer: ','Ton numéro de commande : '),node('span',data.order_number));
+  const work=localized(node('p'),'Wir machen uns nun an die Arbeit und fertigen deine Bestellung mit Sorgfalt für dich an. ❤️','Nous nous mettons maintenant au travail pour réaliser ta commande avec soin. ❤️');
+  const joy=localized(node('strong'),'Viel Freude mit deinem Favo3DWorld-Modell!','Profite bien de ton modèle Favo3DWorld !');
+  confirmation.replaceChildren(title);
+  if(sandbox)confirmation.append(localized(node('strong'),'SANDBOX / TESTZAHLUNG – Kein echtes Geld.','SANDBOX / PAIEMENT TEST – Aucun argent réel.'));
+  confirmation.append(intro,payment,number,work,joy);
+  confirmation.hidden=false;card.classList.add('paypal-confirmed');
+  document.getElementById('placeOrder').disabled=true;
+  // Clear the completed cart using the existing renderer; no order/stock mutation.
+  cart=[];pendingInvoice=null;renderCart();
+  document.getElementById('checkoutModal').classList.add('open');
+  card.scrollTop=0;confirmation.focus({preventScroll:true});
+ }
+ document.getElementById('toCheckout')?.addEventListener('click',()=>{
+  if(!completed||!cart.length)return;
+  completed=false;confirmation.hidden=true;card.classList.remove('paypal-confirmed');box.hidden=true;
+  document.getElementById('placeOrder').disabled=false;
+ },true);
  function approval(value){try{const u=new URL(value);return u.protocol==='https:'&&u.hostname===(sandbox?'www.sandbox.paypal.com':'www.paypal.com')&&!u.username&&!u.password?u.href:null;}catch{return null;}}
- function render(data){
+ function render(data,serverConfirmed=false){
   if(!valid(data)&&!(sandbox&&data.sandbox===true&&!data.payment_environment))return;
   saved=data;box.hidden=false;
   try{sessionStorage.setItem(storageKey,JSON.stringify(data));}catch{}
-  const paid=data.payment_status==='paid';const url=approval(data.approval_url);open.hidden=paid||!url;if(url)open.href=url;else open.removeAttribute('href');check.hidden=paid;
+  const paid=serverConfirmed&&data.payment_status==='paid'&&data.currency==='CHF'&&typeof data.order_number==='string'&&data.order_number.length>0&&Number.isFinite(Number(data.total))&&Number(data.total)>0;const url=approval(data.approval_url);open.hidden=paid||!url;if(url)open.href=url;else open.removeAttribute('href');check.hidden=paid;
   if(sandbox)localized(status,paid?'PayPal-Sandbox-Testzahlung bestätigt. Kein echtes Geld.':'PayPal Sandbox: Nur Testgeld. Die Bestellung bleibt bis zur bestätigten Zahlung unbezahlt.',paid?'Paiement test PayPal Sandbox confirmé. Aucun argent réel.':'PayPal Sandbox : argent fictif uniquement. La commande reste non payée jusqu’à la confirmation du paiement.');
   else localized(status,paid?'PayPal-Zahlung bestätigt.':'Die Bestellung ist noch unbezahlt. Öffne PayPal, um sicher zu bezahlen.',paid?'Paiement PayPal confirmé.':'La commande n’est pas encore payée. Ouvre PayPal pour payer en toute sécurité.');
   if(paid&&sandbox)setOrderStatus(orderMessage(`Bestellung ${data.order_number}: Sandbox-Testzahlung bestätigt, CHF ${Number(data.total).toFixed(2)}.`,`Commande ${data.order_number} : paiement test Sandbox confirmé, CHF ${Number(data.total).toFixed(2)}.`));
+  if(paid)showConfirmation(data);
   if(paid&&!sandbox)setOrderStatus(orderMessage(`Bestellung ${data.order_number}: PayPal-Zahlung bestätigt, CHF ${Number(data.total).toFixed(2)}.`,`Commande ${data.order_number} : paiement PayPal confirmé, CHF ${Number(data.total).toFixed(2)}.`));
  }
  async function verify(){
-  if(!saved?.request_key||!saved?.payment_token)return;
+  if(completed||verifying||!saved?.request_key||!saved?.payment_token)return;
+  verifying=true;
   check.disabled=true;localized(status,'PayPal-Zahlung wird serverseitig geprüft …','Vérification du paiement PayPal sur le serveur …');
   try{
    const c=window.FAVO_SUPABASE;
    const res=await fetch(c.url+'/functions/v1/'+endpoint,{method:'POST',headers:{apikey:c.publishableKey,'Content-Type':'application/json'},body:JSON.stringify({action:'capture',request_key:saved.request_key,payment_token:saved.payment_token}),signal:AbortSignal.timeout(60000)});
    const data=await res.json();if(!res.ok||!valid(data)||!['paid','unpaid'].includes(data.payment_status))throw new Error('Not confirmed');
-   render(data);
+   render(data,true);
   }catch{localized(status,'Zahlung noch nicht bestätigt. Bitte erneut prüfen; keine zweite Bestellung anlegen.','Paiement non confirmé. Vérifie à nouveau sans créer une deuxième commande.');}
-  finally{check.disabled=false;}
+  finally{verifying=false;check.disabled=completed;}
  }
  check.onclick=verify;
- window.PayPalSandbox={enabled,environment,endpoint,valid,show:render};
+ window.PayPalSandbox={enabled,environment,endpoint,valid,get completed(){return completed;},show:data=>render(data,true)};
  if(enabled){
   const button=document.getElementById('placeOrder');
   const note=document.querySelector('#checkoutModal > .checkout-card > .demo-note:last-child');

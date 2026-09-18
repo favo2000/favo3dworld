@@ -52,7 +52,7 @@ async function storefront(environment){
  Object.defineProperty(w,'crypto',{value:webcrypto});w.TextEncoder=TextEncoder;w.AbortSignal=AbortSignal;w.HTMLElement.prototype.scrollIntoView=()=>{};w.alert=()=>{};
  let calls=[],paid=false;
  w.fetch=async(url,options)=>{
-  if(String(url).includes('/functions/')){assert.ok(url.endsWith('/paypal-'+environment));const body=JSON.parse(options.body);calls.push(body);return {ok:true,json:async()=>({sandbox,payment_environment:environment,kind:'order',order_number:'FW-SANDBOX',payment_method:'PayPal',payment_status:paid?'paid':'unpaid',subtotal:15,shipping:5,total:20,request_key:'22222222-2222-4222-8222-222222222222',payment_token:'a'.repeat(64),approval_url:'https://'+host+'/checkoutnow?token=TEST'})};}
+  if(String(url).includes('/functions/')){assert.ok(url.endsWith('/paypal-'+environment));const body=JSON.parse(options.body);calls.push(body);return {ok:true,json:async()=>({sandbox,payment_environment:environment,kind:'order',order_number:'FW-SANDBOX',payment_method:'PayPal',payment_status:paid?'paid':'unpaid',currency:'CHF',subtotal:15,shipping:5,total:20,request_key:'22222222-2222-4222-8222-222222222222',payment_token:'a'.repeat(64),approval_url:'https://'+host+'/checkoutnow?token=TEST'})};}
   return {ok:true,json:async()=>[{id:6,name:'Frugo',active:true,price_50:15,price_60:null,price_70:null,stock:null,color_regions:[],category:'gifts',seasons:[],photo_mode:'none',allow_wish_text:false}]};
  };
  const inline=[...w.document.querySelectorAll('script:not([src])')].map(n=>n.textContent).join('\n');
@@ -62,8 +62,15 @@ async function storefront(environment){
  $('placeOrder').click();await tick();assert.equal(calls[0].action,'create');assert.equal(calls[0].order.expected_total,20);
  const panel=$('paypalSandboxStatus');assert.equal(panel.hidden,false);assert.match(panel.textContent,sandbox?/Nur Testgeld/:/noch unbezahlt/);assert.equal(new URL(panel.querySelector('a').href).hostname,host);
  $('langFR').click();assert.match(panel.textContent,sandbox?/argent fictif/:/pas encore payée/);assert.match($('placeOrder').textContent,sandbox?/Tester avec/:/Payer avec/);
- paid=true;panel.querySelector('button').click();await tick();assert.equal(calls.at(-1).action,'capture');assert.equal(calls.at(-1).payment_token,'a'.repeat(64));assert.equal(calls.at(-1).total,undefined);assert.match(panel.textContent,/confirmé/);assert.match($('orderStatus').textContent,sandbox?/paiement test Sandbox confirmé/:/paiement PayPal confirmé/);
- $('langDE').click();assert.match($('orderStatus').textContent,sandbox?/Sandbox-Testzahlung bestätigt/:/PayPal-Zahlung bestätigt/);
+ assert.equal($('paypalConfirmation').hidden,true);
+ w.seed();paid=true;panel.querySelector('button').click();await tick();assert.equal(calls.at(-1).action,'capture');assert.equal(calls.at(-1).payment_token,'a'.repeat(64));assert.equal(calls.at(-1).total,undefined);assert.match(panel.textContent,/confirmé/);assert.match($('orderStatus').textContent,sandbox?/paiement test Sandbox confirmé/:/paiement PayPal confirmé/);
+ assert.equal($('paypalConfirmation').hidden,false);assert.match($('paypalConfirmation').textContent,/Merci pour ta commande/);assert.match($('paypalConfirmation').textContent,/CHF 20.00/);assert.match($('paypalConfirmation').textContent,/FW-SANDBOX/);
+ assert.equal(w.PayPalSandbox.completed,true);assert.equal($('placeOrder').disabled,true);assert.equal($('toCheckout').disabled,true);assert.equal(panel.querySelector('a').hidden,true);assert.equal(panel.querySelector('button').hidden,true);assert.ok(w.document.querySelector('.checkout-card').classList.contains('paypal-confirmed'));
+ assert.equal(w.getComputedStyle($('placeOrder')).display,'none');assert.equal(w.getComputedStyle(w.document.querySelector('.checkout-grid')).display,'none');assert.equal(w.getComputedStyle(panel).display,'none');assert.notEqual(w.getComputedStyle($('paypalConfirmation')).display,'none');
+ assert.equal($('paypalConfirmation').textContent.includes('SANDBOX / PAIEMENT TEST'),sandbox);
+ const before=calls.length;panel.querySelector('button').click();await $('placeOrder').onclick();await tick();assert.equal(calls.length,before);
+ $('langDE').click();assert.match($('paypalConfirmation').textContent,/Vielen Dank für deine Bestellung/);assert.match($('orderStatus').textContent,sandbox?/Sandbox-Testzahlung bestätigt/:/PayPal-Zahlung bestätigt/);
+ w.seed();$('toCheckout').click();assert.equal(w.PayPalSandbox.completed,false);assert.equal($('placeOrder').disabled,false);assert.equal($('paypalConfirmation').hidden,true);assert.ok(!w.document.querySelector('.checkout-card').classList.contains('paypal-confirmed'));
  dom.window.close();console.log('PASS PayPal '+environment+' DOM: selected mode, existing server order payload/totals, Sandbox link, capability-only capture, paid confirmation and DE/FR.');
 }
 async function returnModes(){
@@ -73,7 +80,7 @@ async function returnModes(){
   const dom=new JSDOM('<div id="orderStatus"></div><div id="checkoutModal"><div class="checkout-card"><p class="demo-note"></p></div></div><button id="placeOrder"></button><select id="paymentMethod"><option>PayPal</option></select>',{url:'https://favo2000.github.io/favo3dworld/?paypal='+mode,runScripts:'outside-only'}),w=dom.window;
   let calls=0;
   const data={sandbox,payment_environment:environment,request_key:'22222222-2222-4222-8222-222222222222',payment_token:'a'.repeat(64),payment_status:'unpaid',total:15,subtotal:10,shipping:5};
-  w.sessionStorage.setItem(sandbox?'favoPayPalSandbox':'favoPayPalLive',JSON.stringify(data));
+  w.sessionStorage.setItem(sandbox?'favoPayPalSandbox':'favoPayPalLive',JSON.stringify({...data,payment_status:'paid',currency:'CHF',order_number:'UNTRUSTED-CACHE'}));
   w.sessionStorage.setItem(sandbox?'favoPayPalLive':'favoPayPalSandbox',JSON.stringify({...data,payment_token:'wrong-other-mode'}));
   w.ProductOptions={node:tag=>w.document.createElement(tag),localized:(el,de,fr)=>{el.textContent=de;return el;}};
   w.FAVO_SUPABASE={url:'https://db.example',publishableKey:'public'};w.AbortSignal=AbortSignal;
@@ -81,6 +88,7 @@ async function returnModes(){
   w.fetch=async(url,opts)=>{calls++;assert.ok(url.endsWith('/paypal-'+environment));assert.equal(JSON.parse(opts.body).payment_token,data.payment_token);return {ok:true,json:async()=>data};};
   w.eval('let lastOrderReceipt=null;'+fs.readFileSync('paypal-sandbox.js','utf8'));
   await new Promise(r=>setTimeout(r,10));
+  assert.equal(w.document.getElementById('paypalConfirmation').hidden,true);assert.equal(w.PayPalSandbox.completed,false);
   assert.equal(calls,mode.endsWith('return')?1:0); // Cancellation never captures.
   assert.ok(w.document.getElementById('checkoutModal').classList.contains('open'));
   assert.equal(w.location.search,sandbox?'?paypal=sandbox':'');

@@ -55,7 +55,7 @@ const checkoutErrors={
  INVALID_REQUEST:['Die Bestellung konnte nicht verarbeitet werden. Bitte prüfe deine Angaben.','Impossible de traiter la commande. Vérifiez vos informations.']
 };
 orderButton.onclick=async()=>{
- if(checkoutSending)return;
+ if(checkoutSending||window.PayPalSandbox?.completed)return;
  if(!pendingInvoice){
    if(!cart.length){setOrderStatus(orderMessage('Dein Warenkorb ist leer.','Votre panier est vide.'));return;}
    if(customerFields.some(id=>!document.getElementById(id).value.trim()) || !document.getElementById('email').checkValidity()){
@@ -92,7 +92,7 @@ orderButton.onclick=async()=>{
    if(paypal)window.PayPalSandbox.show(data);
  }catch{
    setOrderStatus(orderMessage('Die Bestätigung ist noch offen. Bitte klicke erneut auf den Bestellbutton. Derselbe Auftrag wird sicher wiederholt, ohne eine zweite Bestellung anzulegen.','La confirmation est en attente. Cliquez à nouveau sur le bouton de commande : la même demande sera répétée sans créer de doublon.'));
- }finally{clearTimeout(timer);checkoutSending=false;orderButton.disabled=false;}
+ }finally{clearTimeout(timer);checkoutSending=false;orderButton.disabled=!!window.PayPalSandbox?.completed;}
 };
 // A pending request must be retried unchanged, even if a configurator was left open.
 document.addEventListener('click',event=>{
