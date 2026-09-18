@@ -1,2 +1,2 @@
 import { paypalHandler } from '../_shared/paypal.ts';
-Deno.serve(paypalHandler('sandbox'));
+Deno.serve(paypalHandler('live'));
