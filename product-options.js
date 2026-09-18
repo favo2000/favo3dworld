@@ -1,3 +1,27 @@
+/* Stable size IDs separate selection identity from bilingual display labels. */
+window.ProductSizes=(()=>{
+ const t=(de,fr)=>document.documentElement.lang==='fr'?fr:de;
+ const options=p=>p.id!==3&&Array.isArray(p.size_options)?p.size_options:(p.id===3?['50']:['50','60','70']).filter(id=>p['price_'+id]!==null&&p['price_'+id]!==undefined&&p['price_'+id]!=='').map(id=>({id:p.id===3?'fixed':id,name_de:p.id===3?'Feste Grösse':id+' cm',name_fr:p.id===3?'Taille fixe':id+' cm',price:Number(p['price_'+id])}));
+ const label=o=>o?t(o.name_de,o.name_fr):t('Keine Größe verfügbar','Aucune taille disponible');
+ const selected=select=>select.selectedOptions[0]?.dataset.sizeId||null;
+ function fill(select,p,simple=false){
+  const previous=selected(select);select.replaceChildren();select.dataset.productId=p.id;
+  options(p).forEach((o,i)=>{const el=document.createElement('option');el.value=simple?String(i):o.id;el.dataset.sizeId=o.id;el.dataset.price=o.price;el.textContent=label(o)+' — CHF '+Number(o.price).toFixed(2);select.append(el);});
+  const found=[...select.options].find(o=>o.dataset.sizeId===previous);if(found)select.value=found.value;
+  select.disabled=!select.options.length;
+ }
+ function sync(prefix){
+  const select=document.getElementById(prefix+'Size');if(!select?.dataset.productId)return false;
+  const p=typeof catalogProducts==='undefined'?null:catalogProducts.find(p=>String(p.id)===select.dataset.productId);if(!p)return false;
+  const o=options(p).find(o=>o.id===selected(select));
+  document.getElementById(prefix+'Price').textContent=o?'CHF '+Number(o.price).toFixed(2):label(null);
+  const add=document.getElementById(prefix+'Add');add.style.display='block';add.disabled=!o;
+  document.getElementById(prefix==='horse'?'requestSize':prefix+'Request').style.display='none';
+  window.ProductOptions?.sync(p.id);return true;
+ }
+ const cartLabel=item=>item.sizeLabels?t(item.sizeLabels.de,item.sizeLabels.fr):item.size==='Feste Grösse'?t('Feste Grösse','Taille fixe'):item.size;
+ return {options,label,selected,fill,sync,cartLabel};
+})();
 /* Product-owned options. No model files, public customer-photo URLs or secrets. */
 (() => {
  'use strict';
@@ -54,7 +78,7 @@
   const prefix=modalFor(s.p),modal=$(prefix+'Modal');
   if(s.p.id===1){horse=s.choices.primary||'schwarz';base=s.choices.secondary||'schwarz';horseLabel=regions(s.p).find(r=>r.id==='primary')?.colors.find(c=>c.id===horse)?.name_de||'';baseLabel=regions(s.p).find(r=>r.id==='secondary')?.colors.find(c=>c.id===base)?.name_de||'';}
   const summary=$(prefix+'Summary'),chosen=$(prefix==='horse'?'chosenPreview':prefix+'Chosen');
-  const sel=$(prefix+'Size');let size=s.p.id===3?t('Feste Grösse','Taille fixe'):sel.value==='custom'?t('Andere Grösse','Autre taille'):(prefix==='simple'?['50','60','70'][Number(sel.value)]:sel.value)+' cm';
+  const sel=$(prefix+'Size'),option=ProductSizes.options(s.p).find(o=>o.id===ProductSizes.selected(sel));const size=ProductSizes.label(option);
   const text=[...describe({colorSelections:selected(s)}),size].join(' · ');
   if(summary)summary.textContent=text;if(chosen)chosen.textContent=text;
   const image=modal.querySelector('.horse-preview img');
@@ -77,7 +101,7 @@
   let s=states.get(p.id);if(!s){s={p,choices:{},file:null,photo:null,preview:null,cartId:crypto.randomUUID()};states.set(p.id,s);}s.p=p;s.image=image;
   for(const r of regions(p)){if(!r.colors.some(c=>c.id===s.choices[r.id]))s.choices[r.id]=r.colors[0]?.id;}
   const modal=$(prefix+'Modal');
-  if(prefix==='simple'){$('simpleSize').querySelector('[value="custom"]').hidden=p.id===3;if(p.id===3)$('simpleSize').options[0].textContent=t('Feste Grösse','Taille fixe')+' — CHF '+Number(p.price_50).toFixed(2);}
+
   modal.querySelectorAll('.horse-options .option').forEach(n=>n.hidden=true);
   modal.querySelector('.product-option-fields')?.remove();
   const host=node('div',undefined,'product-option-fields');host.dataset.productId=p.id;host.append(node('div',undefined,'product-color-regions'));s.host=host;
@@ -99,14 +123,14 @@
   const minus=node('button','−'),value=node('output',String(s.quantity)),plus=node('button','+');
   minus.type=plus.type='button';minus.setAttribute('aria-label',t('Menge verringern','Diminuer la quantité'));plus.setAttribute('aria-label',t('Menge erhöhen','Augmenter la quantité'));
   const subtotal=node('span');
-  const update=()=>{value.textContent=s.quantity;minus.disabled=s.quantity<=1;plus.disabled=s.quantity>=20||(!catalogOnDemand(p)&&s.quantity+cartProductQuantity(p.id)>=Number(p.stock));const select=$(prefix+'Size');const size=p.id===3?'50':prefix==='simple'?['50','60','70'][Number(select.value)]:select.value;const price=catalogPrice(p,size);subtotal.textContent=price===null?'':t('Positionssumme: ','Sous-total : ')+'CHF '+(price*s.quantity).toFixed(2);};
+  const update=()=>{value.textContent=s.quantity;minus.disabled=s.quantity<=1;plus.disabled=s.quantity>=20||(!catalogOnDemand(p)&&s.quantity+cartProductQuantity(p.id)>=Number(p.stock));const select=$(prefix+'Size');const size=ProductSizes.selected(select);const price=catalogPrice(p,size);subtotal.textContent=price===null?'':t('Positionssumme: ','Sous-total : ')+'CHF '+(price*s.quantity).toFixed(2);};
   minus.onclick=()=>{if(s.quantity>1)s.quantity--;update();};plus.onclick=()=>{if(s.quantity<20&&(catalogOnDemand(p)||s.quantity+cartProductQuantity(p.id)<Number(p.stock)))s.quantity++;update();};
   quantity.append(minus,value,plus,subtotal);host.append(quantity);s.updateQuantity=update;update();
   host.append(localized(node('small'),'Maximal 20 Exemplare je Auswahl.','20 exemplaires maximum par configuration.'));
   if(catalogOnDemand(p)){
    const bulk=localized(node('button'),'Mehr als 20 Stück anfragen','Demander plus de 20 pièces');bulk.type='button';bulk.className='btn secondary wide';
    bulk.onclick=()=>{const sel=$(prefix+'Size');if(sel.value==='custom'){localized(host.querySelector('.product-option-status'),'Bitte zuerst eine verfügbare Größe wählen.','Choisis d’abord une taille disponible.');return;}
-    const size=p.id===3?'fixed':prefix==='simple'?['50','60','70'][Number(sel.value)]:sel.value;
+    const size=ProductSizes.selected(sel);if(!size)return;
     window.BulkInquiry.open({product_id:p.id,size,colors:Object.fromEntries(selected(s).map(c=>[c.region_id,c.color_id])),personalization:{text:s.text||''}},p.name,()=>modal.classList.add('open'));modal.classList.remove('open');};host.append(bulk);
   }
   host.append(node('p','','product-option-status'));paint(s);sync(p.id);
@@ -114,8 +138,8 @@
  async function add(id){
   const s=states.get(Number(id));if(!s||s.busy)return;
   const prefix=modalFor(s.p),sel=$(prefix+'Size'),button=$(prefix+'Add'),status=s.host.querySelector('.product-option-status');
-  if(sel.value==='custom')return;
-  const size=s.p.id===3?'Feste Grösse':(prefix==='simple'?['50','60','70'][Number(sel.value)]:sel.value)+' cm';
+  const sizeId=ProductSizes.selected(sel),option=ProductSizes.options(s.p).find(o=>o.id===sizeId);if(!option)return;
+  const size=option.name_de;
   if(s.p.photo_mode==='required'&&!s.file){localized(status,'Bitte zuerst ein Foto auswählen.','Choisis d’abord une photo.');return;}
   if(selected(s).some(c=>!c.color_id)){localized(status,'Bitte alle Farben auswählen.','Choisis toutes les couleurs.');return;}
   s.busy=true;button.disabled=true;sel.disabled=true;
@@ -125,7 +149,7 @@
    if(s.file&&!s.photo){localized(status,'Foto wird privat hochgeladen …','Envoi privé de la photo …');const c=window.FAVO_SUPABASE;const url=new URL(c.url+'/functions/v1/customer-photo');url.searchParams.set('product_id',s.p.id);url.searchParams.set('cart_item_id',s.cartId);
     const response=await fetch(url,{method:'POST',headers:{apikey:c.publishableKey,'Content-Type':s.file.type},body:s.file,signal:AbortSignal.timeout(45000)});const data=await response.json();if(!response.ok||!data.id||!data.token)throw new Error(t('Foto-Upload fehlgeschlagen. Bitte erneut versuchen.','Échec de l’envoi de la photo. Réessaie.'));s.photo={id:data.id,token:data.token};
    }
-   const entry={productId:s.p.id,name:s.p.name,size,image:s.image,quantity:s.quantity,colorSelections:selections,cartItemId:s.cartId,personalization:{...(s.photo||{}),cart_item_id:s.cartId,text:wishText}};
+   const entry={productId:s.p.id,name:s.p.name,size,sizeId,sizeLabels:{de:option.name_de,fr:option.name_fr},image:s.image,quantity:s.quantity,colorSelections:selections,cartItemId:s.cartId,personalization:{...(s.photo||{}),cart_item_id:s.cartId,text:wishText}};
    if(!addCatalogItem(entry))return;
    // Cart metadata is copied, never shared with a later selection.
    s.quantity=1;s.file=null;s.photo=null;s.text='';s.cartId=crypto.randomUUID();if(s.preview){URL.revokeObjectURL(s.preview);s.preview=null;}
@@ -142,7 +166,7 @@
  function refresh(){
   document.querySelectorAll('[data-option-de]').forEach(n=>n.textContent=t(n.dataset.optionDe,n.dataset.optionFr));
   document.querySelectorAll('.product-option-fields .quantity-control').forEach(n=>{const buttons=n.querySelectorAll('button');buttons[0]?.setAttribute('aria-label',t('Menge verringern','Diminuer la quantité'));buttons[1]?.setAttribute('aria-label',t('Menge erhöhen','Augmenter la quantité'));});
-  for(const s of states.values()){if(s.host?.isConnected){paint(s);sync(s.p.id);s.updateQuantity?.();const sel=$(modalFor(s.p)+'Size');if(s.p.id===3)sel.options[0].textContent=t('Feste Grösse','Taille fixe')+' — CHF '+Number(s.p.price_50).toFixed(2);}}
+  for(const s of states.values()){if(s.host?.isConnected){paint(s);sync(s.p.id);s.updateQuantity?.();const prefix=modalFor(s.p),sel=$(prefix+'Size');ProductSizes.fill(sel,s.p,prefix==='simple');sync(s.p.id);ProductSizes.sync(prefix);}}
   categoryRefresh();if(typeof renderCart==='function')renderCart();
   const h=document.querySelector('.hero h1'),p=document.querySelector('.hero-copy > p');h.textContent=t('3D-Druck mit Leidenschaft.','Impression 3D avec passion.');p.textContent=t('Entdecke unsere fertig gedruckten 3D-Modelle. Wähle bei vielen Produkten deine Wunschfarbe und Größe – wir fertigen dein Modell für dich an.','Découvre nos modèles imprimés en 3D. Pour de nombreux produits, choisis ta couleur et ta taille préférées : nous fabriquons ton modèle pour toi.');
   $('qualityTitle').textContent=t('❤️ Mit Liebe gefertigt','❤️ Fabriqué avec amour');$('qualityText').textContent=t('Jedes Modell wird sorgfältig für dich gedruckt.','Chaque modèle est imprimé avec soin pour toi.');

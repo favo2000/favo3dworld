@@ -1,7 +1,7 @@
 /* Only the publishable key is used. RLS is the authoritative access check. */
 (() => {
   'use strict';
-  const COLUMNS = 'id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active,color_regions,category,seasons,photo_mode,allow_wish_text';
+  const COLUMNS = 'id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active,color_regions,category,seasons,photo_mode,allow_wish_text,size_options';
   const $ = id => document.getElementById(id);
   const config = window.FAVO_SUPABASE;
   let client, authorized = false, busy = false, editing = null, rows = [], previewURL;

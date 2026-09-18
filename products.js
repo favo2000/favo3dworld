@@ -15,10 +15,8 @@ function escapeCatalogText(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function catalogPrice(p, size) {
-  const value = p['price_' + size];
-  if (value === null || value === undefined || value === '') return null;
-  const n = Number(value);
-  return Number.isFinite(n) && n >= 0 ? n : null;
+  const option=ProductSizes.options(p).find(o=>o.id===size||(p.id===3&&size==='50'));
+  return option&&Number.isFinite(Number(option.price))?Number(option.price):null;
 }
 function catalogImage(value, fallback = '') {
   if (!value) return fallback;
@@ -34,7 +32,7 @@ function catalogOnDemand(p){return p.stock===null || (p.id===3 && Number(p.stock
 function cartConfigurationKey(item){
   const colors=(item.colorSelections||[]).map(c=>[c.region_id,c.color_id]).sort((a,b)=>a[0].localeCompare(b[0]));
   const personal=item.personalization||{};
-  return JSON.stringify([item.productId,item.size,colors,item.colorSelections?null:[item.horse||'',item.base||'',item.horseLabel||'',item.baseLabel||''],personal.text||'',personal.id||null,personal.id?personal.cart_item_id:null]);
+  return JSON.stringify([item.productId,item.sizeId||(item.size==='Feste Grösse'?'fixed':item.size.split(' ')[0]),colors,item.colorSelections?null:[item.horse||'',item.base||'',item.horseLabel||'',item.baseLabel||''],personal.text||'',personal.id||null,personal.id?personal.cart_item_id:null]);
 }
 function cartProductQuantity(id){return cart.filter(x=>x.productId===id).reduce((n,x)=>n+itemQuantity(x),0);}
 function canIncreaseItem(item,amount=1){
@@ -49,7 +47,7 @@ window.changeCartQuantity=(index,delta)=>{
 };
 function addCatalogItem(item) {
   const p = catalogProducts.find(p => item.productId ? p.id === item.productId : p.name === item.name || catalogOriginalNames[p.id] === item.name);
-  const size = item.size === 'Feste Grösse' ? '50' : item.size.split(' ')[0];
+  const size = item.sizeId||(item.size === 'Feste Grösse' ? 'fixed' : item.size.split(' ')[0]);
   const amount = p && catalogPrice(p, size);
   const quantity=itemQuantity(item);
   const count = p ? cartProductQuantity(p.id) : 0;
@@ -67,15 +65,7 @@ function configureCatalogSizes(p) {
   const binding = catalogBindings[catalogOriginalNames[p.id]];
   if (!binding) return;
   const select = document.getElementById(binding.size);
-  for (const option of select.options) {
-    if (option.value === 'custom') continue;
-    const amount = catalogPrice(p, option.value);
-    option.disabled = amount === null;
-    option.hidden = amount === null;
-    option.dataset.price = amount === null ? '' : amount;
-    option.textContent = option.value + ' cm' + (amount === null ? '' : ' — CHF ' + amount.toFixed(2));
-  }
-  select.value = [...select.options].find(o => !o.disabled)?.value || 'custom';
+  ProductSizes.fill(select,p);
   binding.update();
 }
 function openCatalogSimple(p, image) {
@@ -89,14 +79,7 @@ function openCatalogSimple(p, image) {
   document.getElementById('simpleColorBlock').style.display = simpleHasColor ? 'block' : 'none';
   document.getElementById('simpleColorName').textContent = simpleColor;
   const select = document.getElementById('simpleSize');
-  for (const option of select.options) {
-    if (option.value === 'custom') continue;
-    const i = Number(option.value), amount = simplePrices[i];
-    option.disabled = amount === null;
-    option.hidden = amount === null;
-    option.textContent = catalogSizes[i] + ' cm' + (amount === null ? '' : ' — CHF ' + amount.toFixed(2));
-  }
-  select.value = [...select.options].find(o => !o.disabled)?.value || 'custom';
+  ProductSizes.fill(select,p,true);
   document.querySelectorAll('#simpleColors button').forEach((x,i) => x.classList.toggle('active',i===0));
   updateSimple();
   simpleModal.classList.add('open');
@@ -113,7 +96,7 @@ function refreshCatalogLanguage() {
       : Number(p.stock) > 0 ? catalogText('Auf Lager · ','En stock · ') + p.stock
       : catalogText('Ausverkauft','Épuisé');
     card.querySelector('button:not(.heart)').textContent=catalogText('Konfigurieren','Configurer');
-    const prices=catalogSizes.map(size=>catalogPrice(p,size)).filter(n=>n!==null);
+    const prices=ProductSizes.options(p).map(o=>Number(o.price));
     card.querySelector('strong').textContent=prices.length?(prices.length>1?catalogText('ab ','dès '):'')+'CHF '+Math.min(...prices).toFixed(2):catalogText('Preis auf Anfrage','Prix sur demande');
   }
   window.ProductOptions.refresh();
@@ -141,7 +124,7 @@ function renderCatalog() {
     image.src = src;
     image.alt = p.name;
     image.onerror = () => { image.onerror = null; image.src = fallback; };
-    const prices = catalogSizes.map(size => catalogPrice(p,size)).filter(n => n !== null);
+    const prices = ProductSizes.options(p).map(o=>Number(o.price));
     card.querySelector('strong').textContent = prices.length
       ? (prices.length > 1 ? 'ab ' : '') + 'CHF ' + Math.min(...prices).toFixed(2)
       : catalogText('Preis auf Anfrage','Prix sur demande');
@@ -184,7 +167,7 @@ async function loadCatalog() {
     const config = window.FAVO_SUPABASE;
     const url = new URL('/rest/v1/Products', config.url);
     // Production model URLs are deliberately never requested by the storefront.
-    url.searchParams.set('select','id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active,color_regions,category,seasons,photo_mode,allow_wish_text');
+    url.searchParams.set('select','id,name,description_de,description_fr,price_50,price_60,price_70,stock,image_url,color_mode,active,color_regions,category,seasons,photo_mode,allow_wish_text,size_options');
     url.searchParams.set('active','eq.true');
     url.searchParams.set('order','id.asc');
     const response = await fetch(url, {headers:{apikey:config.publishableKey}, signal:controller.signal, cache:'no-store'});

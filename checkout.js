@@ -20,7 +20,7 @@ function invoiceColors(item) {
 function invoiceItems() {
  const grouped = new Map();
  for (const item of cart) {
-   const data={product_id:item.productId,size:item.size==='Feste Grösse'?'fixed':item.size.split(' ')[0],colors:invoiceColors(item),quantity:itemQuantity(item),personalization:item.personalization||null};
+   const data={product_id:item.productId,size:item.sizeId||(item.size==='Feste Grösse'?'fixed':item.size.split(' ')[0]),colors:invoiceColors(item),quantity:itemQuantity(item),personalization:item.personalization||null};
    const key=cartConfigurationKey(item);
    if(grouped.has(key))grouped.get(key).quantity+=data.quantity;else grouped.set(key,data);
  }
