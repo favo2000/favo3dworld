@@ -14,11 +14,12 @@ Deno.serve(paypalHandler('${environment}'));`),{Deno:{serve:f=>handler=f,env:{ge
    if(url.endsWith('/v1/oauth2/token')){assert.equal(opts.headers.Authorization,'Basic '+btoa(sandbox?'test-client-id:'+paypalSecret:'live-client-id:live-test-secret'));return new Response(JSON.stringify(authOK?{access_token:'test-token',expires_in:300}:{error:'invalid_client'}),{status:authOK?200:401});}
    assert.equal(opts.headers.Authorization,'Bearer test-token');
    if(url.endsWith('/capture')){captureCalls++;assert.ok(opts.headers['PayPal-Request-Id']);remoteStatus='COMPLETED';if(timeoutAfterCapture)throw new Error('Timeout');return new Response(JSON.stringify(provider()));}
-   if(opts.method==='POST'){createCalls++;const b=JSON.parse(opts.body);assert.equal(b.purchase_units[0].amount.value,'15.00');assert.equal(b.purchase_units[0].amount.currency_code,'CHF');assert.equal(b.purchase_units[0].custom_id,order.id);assert.equal(b.payment_source.paypal.experience_context.return_url,'https://favo2000.github.io/favo3dworld/?paypal='+(sandbox?'return':'live-return'));assert.equal(opts.headers['PayPal-Request-Id'],order.id);}
+   if(opts.method==='POST'){createCalls++;const b=JSON.parse(opts.body);assert.equal(b.purchase_units[0].amount.value,'15.00');assert.equal(b.purchase_units[0].amount.currency_code,'CHF');assert.deepEqual(b.purchase_units[0].amount.breakdown,{item_total:{currency_code:'CHF',value:'10.00'},shipping:{currency_code:'CHF',value:'5.00'}});assert.deepEqual(b.purchase_units[0].items,[{name:'Scheiben',sku:'12',quantity:'1',unit_amount:{currency_code:'CHF',value:'10.00'},category:'PHYSICAL_GOODS'}]);assert.equal(b.purchase_units[0].invoice_id,order.order_number);assert.equal(b.purchase_units[0].custom_id,order.id);assert.equal(b.payment_source.paypal.experience_context.return_url,'https://favo2000.github.io/favo3dworld/?paypal='+(sandbox?'return':'live-return'));assert.equal(opts.headers['PayPal-Request-Id'],order.id);}
    return new Response(JSON.stringify(provider()));
   }
   assert.equal(opts.headers.apikey,secret);
   if(url.includes('/rpc/reserve_paypal_environment')){assert.equal(JSON.parse(opts.body).p_environment,environment);order.payment_environment=environment;return new Response('null');}
+  if(url.includes('/OrderItems?')){assert.ok(url.includes('order_id=eq.'+order.id));return new Response(JSON.stringify([{id:'item-id',product_id_snapshot:12,product_name:'Scheiben',quantity:1,unit_price:10,line_total:10}]));}
   if(url.includes('/rpc/submit_shop_order')){const body=JSON.parse(opts.body);assert.match(body.p_client_hash,/^[a-f0-9]{64}$/);if(body.p_request.expected_total!==15)return new Response(JSON.stringify({message:'PRICE_CHANGED'}),{status:400});return new Response('{}');}
   if(url.includes('/rpc/attach_paypal')){order.paypal_order_id=JSON.parse(opts.body).p_paypal_id;return new Response('null');}
   if(url.includes('/rpc/confirm_paypal')){confirmCalls++;const body=JSON.parse(opts.body);assert.equal(body.p_environment,environment);assert.equal(body.p_amount,15);assert.equal(body.p_capture_id,'CAPTURE123456');order.payment_status='paid';return new Response('null');}
@@ -73,6 +74,18 @@ async function storefront(environment){
  w.seed();$('toCheckout').click();assert.equal(w.PayPalSandbox.completed,false);assert.equal($('placeOrder').disabled,false);assert.equal($('paypalConfirmation').hidden,true);assert.ok(!w.document.querySelector('.checkout-card').classList.contains('paypal-confirmed'));
  dom.window.close();console.log('PASS PayPal '+environment+' DOM: selected mode, existing server order payload/totals, Sandbox link, capability-only capture, paid confirmation and DE/FR.');
 }
+function itemization(){
+ const start=source.indexOf('function purchaseUnit('),end=source.indexOf('function verifyOrder(');
+ const build=vm.runInNewContext(stripTypeScriptTypes(source.slice(start,end))+';purchaseUnit');
+ const row={id:'immutable-item',product_id_snapshot:7,product_name:'Frugo',quantity:3,unit_price:'15.04',line_total:'45.12'};
+ const order={id:'order',order_number:'FW-TEST',currency:'CHF',subtotal:'45.12',shipping:'5.00',total:'50.12'};
+ let unit=build(order,[row]);assert.equal(unit.items[0].quantity,'3');assert.equal(unit.items[0].unit_amount.value,'15.04');assert.equal(unit.amount.value,'50.12');assert.equal(unit.amount.breakdown.shipping.value,'5.00');
+ unit=build({...order,subtotal:80,shipping:0,total:80},[{...row,quantity:2,unit_price:40,line_total:80}]);assert.equal(unit.amount.breakdown.shipping.value,'0.00');assert.equal(unit.amount.value,'80.00');
+ unit=build({...order,subtotal:60,shipping:5,total:65},[{...row,quantity:1,unit_price:20,line_total:20},{...row,quantity:2,unit_price:20,line_total:40}]);assert.equal(unit.items.length,2);
+ for(const [o,items] of [[{...order,total:'50.13'},[row]],[{...order,subtotal:'45.11'},[row]],[order,[{...row,line_total:'45.11'}]],[order,[{...row,unit_price:'15.041'}]],[order,[{...row,quantity:0}]],[order,[]]])assert.throws(()=>build(o,items),/PAYMENT_MISMATCH/);
+ unit=build(order,[{...row,product_id_snapshot:null,product_name:'X'.repeat(200)}]);assert.equal(unit.items[0].sku,'immutable-item');assert.equal(unit.items[0].name.length,127);
+ console.log('PASS PayPal itemization: frozen names/SKUs, quantities, decimal CHF prices, separate/free shipping, multiple lines, inconsistent snapshots rejected.');
+}
 async function returnModes(){
  const {JSDOM}=require('jsdom');
  for(const mode of ['return','cancel','live-return','live-cancel']){
@@ -96,4 +109,4 @@ async function returnModes(){
  }
  console.log('PASS PayPal returns: isolated session receipts, legacy Sandbox return/cancel, Live return/cancel, cancellation never captures.');
 }
-(async()=>{for(const environment of ['sandbox','live']){await scenario(environment);await storefront(environment);}await returnModes();})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{itemization();for(const environment of ['sandbox','live']){await scenario(environment);await storefront(environment);}await returnModes();})().catch(e=>{console.error(e);process.exit(1)});

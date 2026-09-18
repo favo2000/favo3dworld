@@ -28,6 +28,27 @@ async function mac(secret:string,value:string){
 }
 function equal(a:string,b:string){if(a.length!==b.length)return false;let diff=0;for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i);return diff===0;}
 const cents=(value:unknown)=>typeof value==='string'&&/^\d+\.\d{2}$/.test(value)?Number(value.replace('.','')):NaN;
+// PayPal itemization comes only from immutable, server-validated order snapshots.
+function purchaseUnit(order:any,rows:any){
+ const minor=(value:unknown)=>{
+  const match=/^(\d+)(?:\.(\d{1,2}))?$/.exec(String(value));
+  if(!match)throw new Error('PAYMENT_MISMATCH');
+  const result=Number(match[1])*100+Number((match[2]||'').padEnd(2,'0'));
+  if(!Number.isSafeInteger(result))throw new Error('PAYMENT_MISMATCH');return result;
+ };
+ const money=(value:number)=>({currency_code:'CHF',value:(value/100).toFixed(2)});
+ if(order.currency!=='CHF'||!Array.isArray(rows)||!rows.length||rows.length>30)throw new Error('PAYMENT_MISMATCH');
+ let itemTotal=0;
+ const items=rows.map((row:any)=>{
+  const unit=minor(row.unit_price),quantity=row.quantity;
+  if(!Number.isInteger(quantity)||quantity<1||quantity>20||unit<=0||unit*quantity!==minor(row.line_total)||typeof row.product_name!=='string'||!row.product_name.trim())throw new Error('PAYMENT_MISMATCH');
+  itemTotal+=unit*quantity;
+  return {name:Array.from(row.product_name.trim()).slice(0,127).join(''),sku:String(row.product_id_snapshot??row.id),quantity:String(quantity),unit_amount:money(unit),category:'PHYSICAL_GOODS'};
+ });
+ const subtotal=minor(order.subtotal),shipping=minor(order.shipping),total=minor(order.total);
+ if(!Number.isSafeInteger(itemTotal)||itemTotal!==subtotal||subtotal+shipping!==total)throw new Error('PAYMENT_MISMATCH');
+ return {reference_id:order.id,custom_id:order.id,invoice_id:order.order_number,items,amount:{...money(total),breakdown:{item_total:money(subtotal),shipping:money(shipping)}}};
+}
 function verifyOrder(data:any,order:any){
  const units=data.purchase_units;
  if(data.id!==order.paypal_order_id||data.intent!=='CAPTURE'||!Array.isArray(units)||units.length!==1)throw new Error('PAYMENT_MISMATCH');
@@ -80,7 +101,9 @@ return async(req:Request)=>{
   order.payment_environment=environment;
   if(!order.paypal_order_id){
    if(body.action!=='create')return reply(409,{error:'PAYMENT_NOT_READY'});
-   const created=await paypal('/v2/checkout/orders','POST',{intent:'CAPTURE',purchase_units:[{reference_id:order.id,custom_id:order.id,invoice_id:order.order_number,amount:{currency_code:'CHF',value:Number(order.total).toFixed(2)}}],payment_source:{paypal:{experience_context:{user_action:'PAY_NOW',shipping_preference:'NO_SHIPPING',return_url:SITE+(sandbox?'?paypal=return':'?paypal=live-return'),cancel_url:SITE+(sandbox?'?paypal=cancel':'?paypal=live-cancel')}}}},order.id);
+   const items=await db('OrderItems?order_id=eq.'+encodeURIComponent(order.id)+'&select=id,product_id_snapshot,product_name,quantity,unit_price,line_total&order=id');
+   const unit=purchaseUnit(order,items);
+   const created=await paypal('/v2/checkout/orders','POST',{intent:'CAPTURE',purchase_units:[unit],payment_source:{paypal:{experience_context:{user_action:'PAY_NOW',shipping_preference:'NO_SHIPPING',return_url:SITE+(sandbox?'?paypal=return':'?paypal=live-return'),cancel_url:SITE+(sandbox?'?paypal=cancel':'?paypal=live-cancel')}}}},order.id);
    if(typeof created.id!=='string'||!/^[A-Z0-9]{5,40}$/.test(created.id))throw new Error('PAYMENT_MISMATCH');
    await db('rpc/attach_paypal','POST',{p_id:order.id,p_paypal_id:created.id,p_environment:environment});order.paypal_order_id=created.id;
   }
