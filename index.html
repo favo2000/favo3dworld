@@ -9,13 +9,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <style>#shop .product[hidden] { display:none !important; }</style>
+  <style>
+    #shop .product[hidden] { display:none !important; }
+    .checkout-card.paypal-confirmed > :not(.x):not(#paypalConfirmation) { display:none !important; }
+    #paypalConfirmation[hidden] { display:none !important; }
+    #paypalConfirmation { padding:clamp(12px,3vw,28px) 0; font-size:1rem; line-height:1.65; overflow-wrap:anywhere; }
+    #paypalConfirmation h2 { font-size:clamp(1.5rem,5vw,2rem); line-height:1.25; margin-top:0; }
+    #paypalConfirmation p { margin:1.25em 0; }
+  </style>
   <script src="supabase-config.js"></script>
   <script src="product-options.js?v=work2-20260917" defer></script>
   <script src="products.js?v=quantity-20260917" defer></script>
   <script src="bulk-inquiry.js?v=work2-20260917" defer></script>
-  <script src="checkout.js?v=paypal-live-20260918" defer></script>
-  <script src="paypal-sandbox.js?v=paypal-live-20260918" defer></script>
+  <script src="checkout.js?v=paypal-confirmation-20260918" defer></script>
+  <script src="paypal-sandbox.js?v=paypal-confirmation-20260918" defer></script>
   <script src="vendor/supabase-2.57.4.js" defer></script>
   <script src="admin-options.js?v=options-20260917" defer></script>
   <script src="admin-orders.js?v=paypal-sandbox-20260917" defer></script>
