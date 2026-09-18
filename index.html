@@ -14,8 +14,8 @@
   <script src="product-options.js?v=work2-20260917" defer></script>
   <script src="products.js?v=quantity-20260917" defer></script>
   <script src="bulk-inquiry.js?v=work2-20260917" defer></script>
-  <script src="checkout.js?v=paypal-sandbox-20260917" defer></script>
-  <script src="paypal-sandbox.js?v=paypal-sandbox-20260917" defer></script>
+  <script src="checkout.js?v=paypal-live-20260918" defer></script>
+  <script src="paypal-sandbox.js?v=paypal-live-20260918" defer></script>
   <script src="vendor/supabase-2.57.4.js" defer></script>
   <script src="admin-options.js?v=options-20260917" defer></script>
   <script src="admin-orders.js?v=paypal-sandbox-20260917" defer></script>
@@ -112,7 +112,7 @@
     </section>
 <section class="order-notice">
  <b>Bestellungen sind möglich</b>
- <span>PayPal und TWINT werden vorbereitet. Online-Zahlungen sind noch nicht verfügbar.</span>
+ <span>Sicher bezahlen mit PayPal. TWINT ist noch nicht verfügbar.</span>
 </section>
 
 
@@ -264,7 +264,7 @@
     <section class="benefits">
       <div><span><b id="qualityTitle">❤️ Mit Liebe gefertigt</b><small id="qualityText">Jedes Modell wird sorgfältig für dich gedruckt.</small></span></div>
       <div>🎨<span><b>Viele Farben</b><small>Wähle deine Lieblingsfarbe bei vielen Modellen.</small></span></div>
-      <div>🔒<span><b>Sicher bestellen</b><small>PayPal und TWINT in Vorbereitung.</small></span></div>
+      <div>🔒<span><b>Sicher bestellen</b><small>Sicher bezahlen mit PayPal.</small></span></div>
       <div>🎧<span><b>Kundensupport</b><small>Wir sind für dich da – vor und nach der Bestellung.</small></span></div>
       <div class="quote">“ <span>Top Qualität, schneller Versand und mit viel Liebe zum Detail gedruckt.<br><b>– Lukas M.</b></span> ★★★★★</div>
     </section>
@@ -565,7 +565,7 @@
       <span class="eyebrow">DEINE BESTELLUNG</span>
       <h2>Warenkorb</h2>
       <div id="cartItems"><p class="empty">Dein Warenkorb ist noch leer.</p></div>
-      <p class="cart-payment" data-option-de="Online-Zahlungen sind noch nicht verfügbar." data-option-fr="Les paiements en ligne ne sont pas encore disponibles.">Online-Zahlungen sind noch nicht verfügbar.</p>
+      <p class="cart-payment" data-option-de="PayPal ist verfügbar. TWINT ist noch nicht angebunden." data-option-fr="PayPal est disponible. TWINT n’est pas encore connecté.">PayPal ist verfügbar. TWINT ist noch nicht angebunden.</p>
       <div class="cart-total"><span data-option-de="Zwischensumme" data-option-fr="Sous-total">Zwischensumme</span><strong id="cartSubtotal">CHF 0.00</strong></div><div class="cart-total"><span data-option-de="Versand" data-option-fr="Livraison">Versand</span><strong id="cartShipping">CHF 0.00</strong></div><p id="freeShipping" role="status"></p><div class="cart-total"><span data-option-de="Gesamt" data-option-fr="Total">Gesamt</span><strong id="cartTotal">CHF 0.00</strong></div>
       <button class="btn primary wide" id="toCheckout" type="button" disabled>Zur Kasse</button>
     </aside>
@@ -589,14 +589,14 @@
         <div>
           <h3>Zahlungsart</h3>
           <div class="payments">
-            <label><span data-option-de="Gewünschte spätere Zahlungsart" data-option-fr="Mode de paiement souhaité pour plus tard">Gewünschte spätere Zahlungsart</span><select id="paymentMethod"><option value="PayPal">PayPal</option><option value="TWINT">TWINT</option></select></label>
+            <label><span data-option-de="Zahlungsart" data-option-fr="Mode de paiement">Zahlungsart</span><select id="paymentMethod"><option value="PayPal">PayPal</option><option value="TWINT">TWINT</option></select></label>
           </div>
           <div class="checkout-summary"><small>Deine Produkte</small><div id="checkoutItems"></div><div class="grand"><span data-option-de="Zwischensumme" data-option-fr="Sous-total">Zwischensumme</span><strong id="checkoutSubtotal">CHF 0.00</strong></div><div class="grand"><span data-option-de="Versand" data-option-fr="Livraison">Versand</span><strong id="checkoutShipping">CHF 0.00</strong></div><div class="grand"><span data-option-de="Gesamt" data-option-fr="Total">Gesamt</span><strong id="checkoutTotal">CHF 0.00</strong></div></div>
         </div>
       </div>
       <button class="btn primary wide place-order" id="placeOrder" type="button">Unbezahlte Bestellung absenden</button>
       <p id="orderStatus" class="demo-note" role="status" aria-live="polite"></p>
-      <p class="demo-note">Deine Bestellung wird unbezahlt gespeichert. Es wird keine Zahlung ausgelöst. PayPal und TWINT sind noch nicht angebunden.</p>
+      <p class="demo-note">Deine Bestellung wird erst nach bestätigter PayPal-Zahlung als bezahlt markiert. TWINT ist noch nicht angebunden.</p>
     </div>
   </div>
 
@@ -855,8 +855,8 @@ const FR_MAP = new Map([
  ['Unbezahlte Bestellung absenden','Envoyer la commande non payée'],
  ['Bestellung','Commande'],['Zahlungsart','Mode de paiement'],['Sicher bestellen','Commande sécurisée'],
  ['🛡 Sicher bestellen','🛡 Commande sécurisée'],['Keine Online-Zahlung','Aucun paiement en ligne'],
- ['PayPal und TWINT in Vorbereitung.','PayPal et TWINT en préparation.'],
- ['Deine Bestellung wird unbezahlt gespeichert. Es wird keine Zahlung ausgelöst. PayPal und TWINT sind noch nicht angebunden.','Ta commande sera enregistrée comme non payée. Aucun paiement ne sera effectué. PayPal et TWINT ne sont pas encore connectés.'],
+ ['Sicher bezahlen mit PayPal.','Paiement sécurisé avec PayPal.'],
+ ['Deine Bestellung wird erst nach bestätigter PayPal-Zahlung als bezahlt markiert. TWINT ist noch nicht angebunden.','Ta commande n’est marquée comme payée qu’après confirmation du paiement PayPal. TWINT n’est pas encore connecté.'],
  ['Shop','Boutique'],['Über uns','À propos'],['Kontakt','Contact'],['Warenkorb','Panier'],
  ['Print on Demand','Impression à la demande'],['Auf Lager','En stock'],['Auf Lager · 5 Stück','En stock · 5 pièces'],
  ['Konfigurieren','Configurer'],['Grösse wählen','Choisir la taille'],['Größe wählen','Choisir la taille'],
@@ -873,7 +873,7 @@ const FR_MAP = new Map([
  ['Originalfarben · keine Farbauswahl','Couleurs originales · sans choix de couleur'],
  ['Eine feste Grösse','Une taille fixe'],['Eine feste Größe','Une taille fixe'],
  ['Bestellungen sind möglich','Les commandes sont possibles'],
- ['PayPal und TWINT werden vorbereitet. Online-Zahlungen sind noch nicht verfügbar.','PayPal et TWINT sont en préparation. Les paiements en ligne ne sont pas encore disponibles.'],
+ ['Sicher bezahlen mit PayPal. TWINT ist noch nicht verfügbar.','Paiement sécurisé avec PayPal. TWINT n’est pas encore disponible.'],
  ['Schwarz','Noir'],['Weiss','Blanc'],['Weiß','Blanc'],['Gold','Or'],['Rot','Rouge'],['Grün','Vert'],['Grau','Gris'],['Gelb','Jaune'],
  ['Feste Grösse','Taille fixe'],['Feste Größe','Taille fixe']
 ]);
