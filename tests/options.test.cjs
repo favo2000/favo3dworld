@@ -62,6 +62,27 @@ async function run(){
  // Editor supports arbitrary zones, bilingual labels, individual removal and independent seasons.
  w.OptionsAdmin.load(photo);$('adminAddColorRegion').click();const group=$('adminColorRegions').firstElementChild;group.querySelector('[data-region-de]').value='Haare';group.querySelector('[data-region-fr]').value='Cheveux';group.querySelector('button').click();const color=group.querySelector('.admin-color-row');color.querySelector('[data-color-de]').value='Weiss';color.querySelector('[data-color-fr]').value='Blanc';color.querySelector('[data-color-hex]').value='#ffffff';const edited=w.OptionsAdmin.read();assert.equal(edited.color_regions[0].name_fr,'Cheveux');assert.deepEqual(Array.from(edited.seasons),['valentine']);
  color.querySelector('button').click();assert.throws(()=>w.OptionsAdmin.read());group.querySelector('button:last-child').click();assert.equal(w.OptionsAdmin.read().color_regions.length,0);
+ // Product-owned sizes: editor CRUD, bilingual labels, stable cart IDs and prices.
+ w.resetTestCart();w.OptionsAdmin.load(frugo);$('adminAddSize').click();
+ const newSize=$('adminSizeList').lastElementChild;
+ newSize.querySelector('[data-size-field="name_de"]').value='Klein 12 cm';
+ newSize.querySelector('[data-size-field="name_fr"]').value='Petit 12 cm';
+ newSize.querySelector('[data-size-field="price"]').value='17.50';
+ frugo.size_options=JSON.parse(JSON.stringify(w.OptionsAdmin.read().size_options));
+ assert.equal(frugo.size_options.length,4);const customId=frugo.size_options.at(-1).id;
+ await w.loadCatalog();w.openCatalogSimple(frugo,'assets/frugo-real.jpg');
+ $('simpleSize').value='3';$('simpleSize').dispatchEvent(new w.Event('change'));
+ assert.match($('simplePrice').textContent,/17.50/);$('simpleAdd').click();await tick();
+ assert.equal(w.invoiceItems()[0].size,customId);assert.equal(w.testCart()[0].price,17.5);
+ $('langFR').click();assert.match($('cartItems').textContent,/Petit 12 cm/);assert.equal($('adminSizeList').querySelectorAll('input').length,12);assert.equal(w.OptionsAdmin.read().size_options.length,4);
+ w.openCatalogSimple(frugo,'assets/frugo-real.jpg');$('simpleSize').value='3';$('simpleAdd').click();await tick();
+ assert.equal(w.testCart().length,1);assert.equal(w.testCart()[0].quantity,2);
+ w.OptionsAdmin.load(frugo);$('adminSizeList').lastElementChild.querySelector('button').click();
+ frugo.size_options=JSON.parse(JSON.stringify(w.OptionsAdmin.read().size_options));assert.equal(frugo.size_options.length,3);
+ w.openCatalogSimple(frugo,'assets/frugo-real.jpg');assert.equal([...$('simpleSize').options].some(o=>o.dataset.sizeId===customId),false);
+ frugo.size_options=[{id:'fixed',name_de:'Feste Größe 8 cm',name_fr:'Taille fixe 8 cm',price:9.5}];
+ w.openCatalogSimple(frugo,'assets/frugo-real.jpg');assert.equal($('simpleSize').options.length,1);assert.match($('simplePrice').textContent,/9.50/);
+ frugo.size_options=[];w.openCatalogSimple(frugo,'assets/frugo-real.jpg');assert.equal($('simpleSize').options.length,0);assert.equal($('simpleAdd').disabled,true);
  photo.active=false;await w.eval('loadCatalog()');assert.equal(w.document.querySelector('[data-category="wedding"]'),null);assert.equal(w.document.querySelector('[data-category="valentine"]'),null);
  dom.window.close();console.log('PASS options: category visibility/filtering, seasons, DE/FR, Cavallo preview/size/cart, independent Pika colors/static photo, cart snapshots, required private photo/upload failure/retry/text escaping, editor zones/colors/removal.');
 }

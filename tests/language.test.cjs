@@ -25,11 +25,9 @@ async function boot(language){
  $('simpleAdd').click();await new Promise(r=>setTimeout(r,0));assert.match($('simpleModal').textContent,/Choisis d’abord une photo/);
  $('langDE').click();assert.match($('simpleModal').textContent,/Bitte zuerst ein Foto/);assert.match($('simpleModal').textContent,/Ganzes Modell/);assert.match($('simpleModal').textContent,/Menge/);assert.equal(text.value,'Texte inchangé');
  $('langFR').click();assert.match($('simpleModal').textContent,/Choisis d’abord une photo/);assert.equal(text.value,'Texte inchangé');
- $('simpleSize').value='custom';$('simpleSize').dispatchEvent(new w.Event('change'));assert.equal($('simplePrice').textContent,'Prix sur demande');
- let question='';w.prompt=s=>{question=s;return null;};$('simpleRequest').click();assert.match(question,/Quelle hauteur/);
- $('langDE').click();$('simpleRequest').click();assert.match(question,/Welche Höhe/);
+ assert.equal($('simpleSize').querySelector('[value=custom]'),null);assert.equal($('simpleRequest').style.display,'none');
  $('langFR').click();$('placeOrder').click();assert.match($('orderStatus').textContent,/panier est vide/);$('langDE').click();assert.match($('orderStatus').textContent,/Warenkorb ist leer/);
  const saved=w.localStorage.getItem('favoLang');dom.window.close();
  ({dom,w,$}=await boot(saved));assert.equal(w.document.documentElement.lang,'de');assert.equal($('langDE').getAttribute('aria-pressed'),'true');assert.match(w.document.querySelector('.catalog-description').textContent,/Deutscher Produkttext/);dom.window.close();
- console.log('PASS language: saved DE/FR, pinned switch structure, database translations, categories, colors, quantities, photo/text labels, validation/status switching, custom size, checkout and preserved input.');
+ console.log('PASS language: saved DE/FR, pinned switch structure, database translations, categories, colors, quantities, photo/text labels, validation/status switching, admin-defined sizes, checkout and preserved input.');
 })().catch(e=>{console.error(e);process.exit(1)});
