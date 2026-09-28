@@ -1,6 +1,6 @@
 // Server-only credentials come from Supabase runtime. Never return a storage URL or key.
 const origin='https://favo2000.github.io';
-const cors={'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
+const cors={'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'apikey, content-type, x-photo-processing-consent, x-photo-reference-consent, x-photo-consent-version, x-photo-consent-language','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
 const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
 const hex=(b:ArrayBuffer)=>Array.from(new Uint8Array(b),n=>n.toString(16).padStart(2,'0')).join('');
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
@@ -11,6 +11,8 @@ Deno.serve(async(req:Request)=>{
  if(req.headers.get('apikey')!=='sb_publishable_sboMkfayulaAF7AZPtsp1Q_hgNaE_pq')return reply(401,{error:'UNAUTHORIZED'});
  const url=new URL(req.url),product=url.searchParams.get('product_id'),cart=url.searchParams.get('cart_item_id'),mime=req.headers.get('content-type')||'';
  if(!product||!/^\d{1,15}$/.test(product)||!cart||!uuid.test(cart)||!['image/jpeg','image/png','image/webp'].includes(mime))return reply(400,{error:'INVALID_REQUEST'});
+ const processing=req.headers.get('x-photo-processing-consent'),reference=req.headers.get('x-photo-reference-consent'),version=req.headers.get('x-photo-consent-version'),language=req.headers.get('x-photo-consent-language');
+ if(processing!=='true'||!['true','false'].includes(reference||'')||version!=='2026-09-28'||!['de','fr'].includes(language||''))return reply(400,{error:'CONSENT_REQUIRED'});
  try{
   const key=JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}').default||Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   const base=Deno.env.get('SUPABASE_URL');if(!key||!base)return reply(503,{error:'SERVICE_UNAVAILABLE'});
@@ -21,7 +23,7 @@ Deno.serve(async(req:Request)=>{
   const signing=await crypto.subtle.importKey('raw',new TextEncoder().encode(key),{name:'HMAC',hash:'SHA-256'},false,['sign']);
   const clientHash=hex(await crypto.subtle.sign('HMAC',signing,new TextEncoder().encode(ip)));
   // Rate-limit before consuming the body, including invalid/aborted attempts.
-  const reservation=await api('/rest/v1/rpc/reserve_customer_photo','POST',{p_product:Number(product),p_cart:cart,p_token_hash:tokenHash,p_client_hash:clientHash,p_mime:mime});
+  const reservation=await api('/rest/v1/rpc/reserve_customer_photo_consented','POST',{p_product:Number(product),p_cart:cart,p_token_hash:tokenHash,p_client_hash:clientHash,p_mime:mime,p_processing:true,p_reference:reference==='true',p_version:version,p_language:language});
   const reader=req.body?.getReader();if(!reader)return reply(400,{error:'INVALID_IMAGE'});
   let size=0,timedOut=false;const chunks:Uint8Array[]=[];const deadline=setTimeout(()=>{timedOut=true;reader.cancel();},30000);
   try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>5242880){await reader.cancel();return reply(413,{error:'FILE_TOO_LARGE'});}chunks.push(part.value);}}finally{clearTimeout(deadline);}

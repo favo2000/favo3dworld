@@ -76,6 +76,18 @@
    box.append(node('p',t('Stückpreis: ','Prix unitaire : ')+money(item.unit_price)+' · '+t('Positionssumme: ','Sous-total de l’article : ')+money(item.line_total)));
    if(item.wish_text)box.append(node('p',t('Wunschtext: ','Texte souhaité : ')+item.wish_text));
    if(item.customer_photo_id){
+    const consentButton=localized(node('button'),'Foto-Einwilligungen prüfen','Vérifier les consentements photo');consentButton.type='button';const consentTarget=node('div');
+    consentButton.onclick=async()=>{
+     if(!authorized)return;const token=epoch;consentButton.disabled=true;
+     try{
+      const result=await client.from('CustomerPhotos').select('processing_consent,reference_consent,consent_version,consent_language,consent_recorded_at').eq('id',item.customer_photo_id).eq('order_id',order.id).eq('status','attached').single();
+      if(token!==epoch||selected?.id!==order.id||!consentTarget.isConnected)return;if(result.error)throw result.error;
+      const consent=result.data,answer=value=>value===true?t('Ja','Oui'):value===false?t('Nein','Non'):t('Nicht dokumentiert','Non documenté');
+      consentTarget.replaceChildren(node('p',t('Verarbeitung: ','Traitement : ')+answer(consent.processing_consent)),node('p',t('Veröffentlichung fertiges Produkt (freiwillig): ','Publication du produit terminé (facultative) : ')+answer(consent.reference_consent)));
+      if(consent.consent_recorded_at)consentTarget.append(node('p',t('Erfasst: ','Enregistré : ')+new Date(consent.consent_recorded_at).toLocaleString(document.documentElement.lang==='fr'?'fr-CH':'de-CH')+' · '+t('Textversion: ','Version du texte : ')+consent.consent_version+' · '+consent.consent_language));
+     }catch{localized(consentTarget,'Einwilligungen konnten nicht geprüft werden. Keine Veröffentlichung freigeben.','Impossible de vérifier les consentements. Ne pas autoriser de publication.');}
+     finally{if(token===epoch)consentButton.disabled=false;}
+    };box.append(consentButton,consentTarget);
     const button=localized(node('button'),'Privates Kundenfoto anzeigen','Afficher la photo privée');button.type='button';const target=node('div');
     button.onclick=async()=>{
      if(!authorized)return;const token=epoch;button.disabled=true;

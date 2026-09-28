@@ -114,7 +114,20 @@ window.ProductSizes=(()=>{
    const status=node('p',s.file?s.file.name:'','photo-selection');
    input.onchange=()=>{const file=input.files[0];if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5242880)){input.value='';localized(status,'Bitte JPG, PNG oder WebP bis 5 MB wählen.','Choisis un JPG, PNG ou WebP de 5 Mo maximum.');return;}if(s.preview)URL.revokeObjectURL(s.preview);s.file=file||null;s.photo=null;s.preview=file?URL.createObjectURL(file):null;localized(status,file?.name||'',file?.name||'');};
    l.append(choose,input);host.append(l,help,status);
-   const remove=localized(node('button'),'Foto entfernen','Retirer la photo');remove.type='button';remove.onclick=()=>{input.value='';if(s.preview)URL.revokeObjectURL(s.preview);s.file=null;s.photo=null;s.preview=null;localized(status,'','');};host.append(remove);
+   const resetConsent=()=>{s.processingConsent=false;s.referenceConsent=false;s.photo=null;host.querySelectorAll('[data-photo-consent]').forEach(i=>i.checked=false);};
+   const previousChange=input.onchange;input.onchange=()=>{previousChange();resetConsent();};
+   for(const [key,index] of [['processing',1],['reference',3]]){
+    const consentLabel=node('label',undefined,'photo-consent'),checkbox=node('input');checkbox.type='checkbox';checkbox.dataset.photoConsent=key;
+    checkbox.checked=key==='processing'?s.processingConsent===true:s.referenceConsent===true;
+    const wording=window.FavoLegalContent?.photo;
+    const de=wording?.de[index]?.text.replace(/^☐\s*/,''),fr=wording?.fr[index]?.text.replace(/^☐\s*/,'');
+    if(!de||!fr){checkbox.disabled=true;localized(consentLabel,'Einwilligungstext konnte nicht geladen werden. Bitte neu laden.','Impossible de charger le consentement. Recharge la page.');}
+    else consentLabel.append(checkbox,localized(node('span'),de,fr));
+    checkbox.onchange=()=>{s[key==='processing'?'processingConsent':'referenceConsent']=checkbox.checked;s.photo=null;};
+    host.append(consentLabel);
+   }
+   const privacy=localized(node('a',undefined,'photo-consent-links'),'Datenschutzerklärung','Déclaration de confidentialité');privacy.href='#legal-privacy';privacy.dataset.legal='privacy';host.append(privacy);
+   const remove=localized(node('button'),'Foto entfernen','Retirer la photo');remove.type='button';remove.onclick=()=>{input.value='';if(s.preview)URL.revokeObjectURL(s.preview);s.file=null;s.photo=null;s.preview=null;resetConsent();localized(status,'','');};host.append(remove);
   }
   if(p.allow_wish_text){const l=node('label');l.append(localized(node('span'),'Wunschtext / Bemerkungen','Texte souhaité / remarques'));const a=node('textarea');a.maxLength=2000;a.rows=3;a.value=s.text||'';a.dataset.wishText='';a.oninput=()=>s.text=a.value;l.append(a);host.append(l);}
   s.quantity=s.quantity||1;
@@ -141,18 +154,19 @@ window.ProductSizes=(()=>{
   const sizeId=ProductSizes.selected(sel),option=ProductSizes.options(s.p).find(o=>o.id===sizeId);if(!option)return;
   const size=option.name_de;
   if(s.p.photo_mode==='required'&&!s.file){localized(status,'Bitte zuerst ein Foto auswählen.','Choisis d’abord une photo.');return;}
+  if(s.file&&(s.processingConsent!==true||!window.FavoLegalContent?.photo)){localized(status,'Bitte bestätige vor dem Foto-Upload die notwendige Einwilligung zur Verarbeitung.','Confirme le consentement obligatoire au traitement avant de téléverser la photo.');return;}
   if(selected(s).some(c=>!c.color_id)){localized(status,'Bitte alle Farben auswählen.','Choisis toutes les couleurs.');return;}
   s.busy=true;button.disabled=true;sel.disabled=true;
   const inputs=[...s.host.querySelectorAll('input,textarea,button')];inputs.forEach(i=>i.disabled=true);
   const selections=selected(s),wishText=s.p.allow_wish_text?(s.text||'').trim():'';
   try{
    if(s.file&&!s.photo){localized(status,'Foto wird privat hochgeladen …','Envoi privé de la photo …');const c=window.FAVO_SUPABASE;const url=new URL(c.url+'/functions/v1/customer-photo');url.searchParams.set('product_id',s.p.id);url.searchParams.set('cart_item_id',s.cartId);
-    const response=await fetch(url,{method:'POST',headers:{apikey:c.publishableKey,'Content-Type':s.file.type},body:s.file,signal:AbortSignal.timeout(45000)});const data=await response.json();if(!response.ok||!data.id||!data.token)throw new Error(t('Foto-Upload fehlgeschlagen. Bitte erneut versuchen.','Échec de l’envoi de la photo. Réessaie.'));s.photo={id:data.id,token:data.token};
+    const response=await fetch(url,{method:'POST',headers:{apikey:c.publishableKey,'Content-Type':s.file.type,'X-Photo-Processing-Consent':'true','X-Photo-Reference-Consent':String(s.referenceConsent===true),'X-Photo-Consent-Version':'2026-09-28','X-Photo-Consent-Language':document.documentElement.lang==='fr'?'fr':'de'},body:s.file,signal:AbortSignal.timeout(45000)});const data=await response.json();if(!response.ok||!data.id||!data.token)throw new Error(t('Foto-Upload fehlgeschlagen. Bitte erneut versuchen.','Échec de l’envoi de la photo. Réessaie.'));s.photo={id:data.id,token:data.token};
    }
    const entry={productId:s.p.id,name:s.p.name,size,sizeId,sizeLabels:{de:option.name_de,fr:option.name_fr},image:s.image,quantity:s.quantity,colorSelections:selections,cartItemId:s.cartId,personalization:{...(s.photo||{}),cart_item_id:s.cartId,text:wishText}};
    if(!addCatalogItem(entry))return;
    // Cart metadata is copied, never shared with a later selection.
-   s.quantity=1;s.file=null;s.photo=null;s.text='';s.cartId=crypto.randomUUID();if(s.preview){URL.revokeObjectURL(s.preview);s.preview=null;}
+   s.quantity=1;s.file=null;s.photo=null;s.processingConsent=false;s.referenceConsent=false;s.text='';s.cartId=crypto.randomUUID();if(s.preview){URL.revokeObjectURL(s.preview);s.preview=null;}
    $(prefix+'Modal').classList.remove('open');renderCart();$('cartDrawer').classList.add('open');mount(s.p,s.image);
   }catch(e){localized(status,'Foto-Upload fehlgeschlagen. Bitte erneut versuchen.','Échec de l’envoi de la photo. Réessaie.');}finally{s.busy=false;button.disabled=false;sel.disabled=false;inputs.forEach(i=>i.disabled=false);}
  }
