@@ -1,0 +1,12 @@
+/* Reuse the existing modal typography, surfaces and palette. */
+footer{flex-wrap:wrap}
+.legal-dialog{position:fixed;border:0;margin:0;color:inherit;line-height:1.65}
+.legal-dialog::backdrop{background:#092d2f99;backdrop-filter:blur(4px)}
+.legal-dialog h2{padding-right:25px;overflow-wrap:anywhere}
+.legal-dialog h3{font-size:1.1rem;margin-top:1.6em}
+.legal-dialog p{overflow-wrap:anywhere}
+.legal-language{display:flex;gap:10px}
+.legal-language [aria-pressed=true]{font-weight:700;text-decoration:underline;text-underline-offset:4px}
+.photo-consent{display:flex!important;align-items:flex-start;gap:10px;font-size:.85rem;line-height:1.5;margin:14px 0}
+.photo-consent input{width:18px!important;height:18px;flex:0 0 18px;margin-top:3px}
+.photo-consent-links{font-size:.85rem;text-decoration:underline;margin-bottom:12px}

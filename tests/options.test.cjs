@@ -5,15 +5,15 @@ const seed=require('./product-options-seed.json');
 async function run(){
  const dom=new JSDOM(read('index.html'),{url:'https://shop.example.test',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,$=id=>w.document.getElementById(id);Object.defineProperty(w,'crypto',{value:webcrypto});
- w.HTMLElement.prototype.scrollIntoView=()=>{};w.alert=()=>{};w.URL.createObjectURL=()=> 'blob:local-preview';w.URL.revokeObjectURL=()=>{};
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};w.HTMLElement.prototype.scrollIntoView=()=>{};w.alert=()=>{};w.URL.createObjectURL=()=> 'blob:local-preview';w.URL.revokeObjectURL=()=>{};
  const names={1:'Cavallo',2:'Hoodie Drache',3:'Scheiben',4:'Zen Schildkröte',5:'Pika Urban',6:'Frugo',7:'Papa Sch.',15:'FIRE'};
  const rows=seed.map(p=>({...p,name:names[p.id],description_de:'Test',description_fr:'Essai',price_50:15,price_60:p.id===3?null:20,price_70:p.id===3?null:25,stock:null,active:true,image_url:null,color_mode:'einfarbig',seasons:[],photo_mode:'none',allow_wish_text:false}));
  rows.push({id:50,name:'Foto Hochzeit',description_de:'Foto',description_fr:'Photo',price_50:30,price_60:null,price_70:null,stock:3,active:true,image_url:null,color_mode:'original',color_regions:[],category:'wedding',seasons:['valentine'],photo_mode:'required',allow_wish_text:true});
  rows.push({...rows.at(-1),id:51,name:'Inactive Christmas',active:false,category:'gifts',seasons:['christmas']});
  let uploads=0,failUpload=false;
- w.fetch=async url=>{if(String(url).includes('customer-photo')){uploads++;return{ok:!failUpload,json:async()=>({id:'11111111-1111-4111-8111-111111111111',token:'a'.repeat(64)})};}return{ok:true,json:async()=>rows.filter(p=>p.active)};};
+ w.fetch=async (url,options)=>{if(String(url).includes('customer-photo')){assert.equal(options.headers['X-Photo-Processing-Consent'],'true');assert.equal(options.headers['X-Photo-Reference-Consent'],'false');uploads++;return{ok:!failUpload,json:async()=>({id:'11111111-1111-4111-8111-111111111111',token:'a'.repeat(64)})};}return{ok:true,json:async()=>rows.filter(p=>p.active)};};
  w.eval(read('supabase-config.js'));const inline=[...w.document.querySelectorAll('script:not([src])')].map(s=>s.textContent).join('\n');
- w.eval(inline+'\n'+read('product-options.js')+'\n'+read('products.js')+'\n'+read('checkout.js')+'\n'+read('admin-options.js')+'\nwindow.testCart=()=>cart;window.resetTestCart=()=>{cart=[];renderCart();};');
+ w.eval(read('legal-content.js')+'\n'+inline+'\n'+read('product-options.js')+'\n'+read('products.js')+'\n'+read('checkout.js')+'\n'+read('admin-options.js')+'\n'+read('legal.js')+'\nwindow.testCart=()=>cart;window.resetTestCart=()=>{cart=[];renderCart();};');
  const tick=()=>new Promise(r=>setTimeout(r,20));await tick();
  assert.equal(w.document.querySelector('[src*="product-3d"]'),null);assert.equal($('adminGlb'),null);
  assert.match(w.document.querySelector('.hero h1').textContent,/3D-Druck mit Leidenschaft/);
@@ -31,6 +31,9 @@ async function run(){
  const photo=rows.find(p=>p.id===50);w.eval('openCatalogSimple')(photo,'assets/logo-reference.png');assert.equal($('simpleModal').querySelectorAll('.product-color-choice').length,0);
  $('simpleAdd').click();await tick();assert.equal(uploads,0);assert.match($('simpleModal').textContent,/Choisis d’abord une photo/);
  const file=$('simpleModal').querySelector('[data-customer-photo]');Object.defineProperty(file,'files',{value:[new w.File(['fake'],'test.png',{type:'image/png'})],configurable:true});file.dispatchEvent(new w.Event('change'));
+ const consent=$('simpleModal').querySelector('[data-photo-consent=processing]'),reference=$('simpleModal').querySelector('[data-photo-consent=reference]');assert.equal(consent.checked,false);assert.equal(reference.checked,false);$('simpleAdd').click();await tick();assert.equal(uploads,0);consent.checked=true;consent.dispatchEvent(new w.Event('change'));$('langDE').click();assert.equal(consent.checked,true);assert.equal(reference.checked,false);$('langFR').click();
+ reference.checked=true;reference.dispatchEvent(new w.Event('change'));file.dispatchEvent(new w.Event('change'));assert.equal(consent.checked,false);assert.equal(reference.checked,false);consent.checked=true;consent.dispatchEvent(new w.Event('change'));
+ const beforeLegal=JSON.stringify(w.testCart());$('simpleModal').querySelector('[data-legal=privacy]').click();assert.equal($('legalDialog').open,true);$('legalDialog').querySelector('.x').click();assert.equal(JSON.stringify(w.testCart()),beforeLegal);assert.equal(consent.checked,true);assert.equal(file.files[0].name,'test.png');
  const txt=$('simpleModal').querySelector('[data-wish-text]');txt.value='<img onerror=alert(1)> Marie & Alex';txt.dispatchEvent(new w.Event('input'));
  failUpload=true;$('simpleAdd').click();await tick();assert.equal(w.testCart().length,2);assert.match($('simpleModal').textContent,/Échec/);
  failUpload=false;$('simpleAdd').click();await tick();assert.equal(w.testCart().length,3);assert.match($('cartItems').textContent,/Photo personnelle associée/);assert.match($('cartItems').textContent,/<img onerror/);assert.equal($('cartItems').querySelector('[onerror]'),null);
@@ -83,6 +86,7 @@ async function run(){
  frugo.size_options=[{id:'fixed',name_de:'Feste Größe 8 cm',name_fr:'Taille fixe 8 cm',price:9.5}];
  w.openCatalogSimple(frugo,'assets/frugo-real.jpg');assert.equal($('simpleSize').options.length,1);assert.match($('simplePrice').textContent,/9.50/);
  frugo.size_options=[];w.openCatalogSimple(frugo,'assets/frugo-real.jpg');assert.equal($('simpleSize').options.length,0);assert.equal($('simpleAdd').disabled,true);
+ w.resetTestCart();photo.photo_mode='optional';w.openCatalogSimple(photo,'assets/logo-reference.png');const uploadsBeforeOptional=uploads;$('simpleAdd').click();await tick();assert.equal(uploads,uploadsBeforeOptional);assert.equal(w.testCart().length,1);
  photo.active=false;await w.eval('loadCatalog()');assert.equal(w.document.querySelector('[data-category="wedding"]'),null);assert.equal(w.document.querySelector('[data-category="valentine"]'),null);
  dom.window.close();console.log('PASS options: category visibility/filtering, seasons, DE/FR, Cavallo preview/size/cart, independent Pika colors/static photo, cart snapshots, required private photo/upload failure/retry/text escaping, editor zones/colors/removal.');
 }
