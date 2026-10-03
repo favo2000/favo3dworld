@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "test": "node tests/admin.test.cjs && node tests/options.test.cjs && node tests/customer-photo.test.cjs && node tests/language.test.cjs && node tests/work2.test.cjs && node tests/paypal-sandbox.test.cjs && node tests/legal.test.cjs",
-    "test:photo-db": "node tests/photo-consent-db.test.cjs"
+    "test:photo-db": "node tests/photo-consent-db.test.cjs",
+    "test:domain": "node tests/domain.test.cjs"
   }
 }

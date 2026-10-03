@@ -1,7 +1,8 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {stripTypeScriptTypes}=require('node:module'),{webcrypto}=require('node:crypto');
 const source=fs.readFileSync('supabase/functions/_shared/paypal.ts','utf8').replace('export function','function');
-async function scenario(environment){
+async function scenario(environment,origin='https://favo2000.github.io'){
+ const site=origin==='https://favo2000.github.io'?origin+'/favo3dworld/':origin+'/';
  const sandbox=environment==='sandbox',host=sandbox?'www.sandbox.paypal.com':'www.paypal.com';
  let handler,remoteStatus='CREATED',captureStatus='COMPLETED',wrongAmount=false,captureCalls=0,confirmCalls=0,createCalls=0,timeoutAfterCapture=false,authOK=true;
  const secret='test-server-secret',paypalSecret='test-paypal-secret';
@@ -14,7 +15,7 @@ Deno.serve(paypalHandler('${environment}'));`),{Deno:{serve:f=>handler=f,env:{ge
    if(url.endsWith('/v1/oauth2/token')){assert.equal(opts.headers.Authorization,'Basic '+btoa(sandbox?'test-client-id:'+paypalSecret:'live-client-id:live-test-secret'));return new Response(JSON.stringify(authOK?{access_token:'test-token',expires_in:300}:{error:'invalid_client'}),{status:authOK?200:401});}
    assert.equal(opts.headers.Authorization,'Bearer test-token');
    if(url.endsWith('/capture')){captureCalls++;assert.ok(opts.headers['PayPal-Request-Id']);remoteStatus='COMPLETED';if(timeoutAfterCapture)throw new Error('Timeout');return new Response(JSON.stringify(provider()));}
-   if(opts.method==='POST'){createCalls++;const b=JSON.parse(opts.body);assert.equal(b.purchase_units[0].amount.value,'15.00');assert.equal(b.purchase_units[0].amount.currency_code,'CHF');assert.deepEqual(b.purchase_units[0].amount.breakdown,{item_total:{currency_code:'CHF',value:'10.00'},shipping:{currency_code:'CHF',value:'5.00'}});assert.deepEqual(b.purchase_units[0].items,[{name:'Scheiben',sku:'12',quantity:'1',unit_amount:{currency_code:'CHF',value:'10.00'},category:'PHYSICAL_GOODS'}]);assert.equal(b.purchase_units[0].invoice_id,order.order_number);assert.equal(b.purchase_units[0].custom_id,order.id);assert.equal(b.payment_source.paypal.experience_context.return_url,'https://favo2000.github.io/favo3dworld/?paypal='+(sandbox?'return':'live-return'));assert.equal(opts.headers['PayPal-Request-Id'],order.id);}
+   if(opts.method==='POST'){createCalls++;const b=JSON.parse(opts.body);assert.equal(b.purchase_units[0].amount.value,'15.00');assert.equal(b.purchase_units[0].amount.currency_code,'CHF');assert.deepEqual(b.purchase_units[0].amount.breakdown,{item_total:{currency_code:'CHF',value:'10.00'},shipping:{currency_code:'CHF',value:'5.00'}});assert.deepEqual(b.purchase_units[0].items,[{name:'Scheiben',sku:'12',quantity:'1',unit_amount:{currency_code:'CHF',value:'10.00'},category:'PHYSICAL_GOODS'}]);assert.equal(b.purchase_units[0].invoice_id,order.order_number);assert.equal(b.purchase_units[0].custom_id,order.id);assert.equal(b.payment_source.paypal.experience_context.return_url,site+'?paypal='+(sandbox?'return':'live-return'));assert.equal(b.payment_source.paypal.experience_context.cancel_url,site+'?paypal='+(sandbox?'cancel':'live-cancel'));assert.equal(opts.headers['PayPal-Request-Id'],order.id);}
    return new Response(JSON.stringify(provider()));
   }
   assert.equal(opts.headers.apikey,secret);
@@ -25,7 +26,7 @@ Deno.serve(paypalHandler('${environment}'));`),{Deno:{serve:f=>handler=f,env:{ge
   if(url.includes('/rpc/confirm_paypal')){confirmCalls++;const body=JSON.parse(opts.body);assert.equal(body.p_environment,environment);assert.equal(body.p_amount,15);assert.equal(body.p_capture_id,'CAPTURE123456');order.payment_status='paid';return new Response('null');}
   return new Response(JSON.stringify([order]));
  }});
- const post=body=>handler(new Request('https://db.example/functions/v1/paypal-sandbox',{method:'POST',headers:{apikey:'sb_publishable_sboMkfayulaAF7AZPtsp1Q_hgNaE_pq','Content-Type':'application/json',origin:'https://favo2000.github.io'},body:JSON.stringify(body)}));
+ const post=body=>handler(new Request('https://db.example/functions/v1/paypal-sandbox',{method:'POST',headers:{apikey:'sb_publishable_sboMkfayulaAF7AZPtsp1Q_hgNaE_pq','Content-Type':'application/json',origin},body:JSON.stringify(body)}));
  const payload={action:'create',order:{request_key:order.request_key,kind:'order',payment_method:'PayPal',expected_total:15}};
  assert.equal((await post({...payload,order:{...payload.order,payment_method:'TWINT'}})).status,400);
  assert.equal((await post({...payload,order:{...payload.order,expected_total:1}})).status,400);assert.equal(createCalls,0);
@@ -45,11 +46,11 @@ Deno.serve(paypalHandler('${environment}'));`),{Deno:{serve:f=>handler=f,env:{ge
  const previous=captureCalls;await post(capture);assert.equal(captureCalls,previous);assert.equal(confirmCalls,1);
  console.log('PASS PayPal '+environment+' server: mode isolation, server CHF total, capability authorization, approval required, amount mismatch, pending capture rejection, timeout recovery, idempotent create/capture, no exposed secrets.');
 }
-async function storefront(environment){
+async function storefront(environment,site='https://favo2000.github.io/favo3dworld/'){
  const sandbox=environment==='sandbox',host=sandbox?'www.sandbox.paypal.com':'www.paypal.com';
  const {JSDOM}=require('jsdom');const read=p=>fs.readFileSync(p,'utf8');
  const tick=()=>new Promise(r=>setTimeout(r,30));
- const dom=new JSDOM(read('index.html'),{url:'https://favo2000.github.io/favo3dworld/'+(sandbox?'?paypal=sandbox':''),runScripts:'outside-only'}),w=dom.window,$=id=>w.document.getElementById(id);
+ const dom=new JSDOM(read('index.html'),{url:site+(sandbox?'?paypal=sandbox':''),runScripts:'outside-only'}),w=dom.window,$=id=>w.document.getElementById(id);
  Object.defineProperty(w,'crypto',{value:webcrypto});w.TextEncoder=TextEncoder;w.AbortSignal=AbortSignal;w.HTMLElement.prototype.scrollIntoView=()=>{};w.alert=()=>{};
  let calls=[],paid=false;
  w.fetch=async(url,options)=>{
@@ -109,4 +110,4 @@ async function returnModes(){
  }
  console.log('PASS PayPal returns: isolated session receipts, legacy Sandbox return/cancel, Live return/cancel, cancellation never captures.');
 }
-(async()=>{itemization();for(const environment of ['sandbox','live']){await scenario(environment);await storefront(environment);}await returnModes();})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{itemization();for(const environment of ['sandbox','live']){for(const origin of ['https://favo2000.github.io','https://favo3dworld.ch','https://www.favo3dworld.ch']){await scenario(environment,origin);await storefront(environment,origin==='https://favo2000.github.io'?origin+'/favo3dworld/':origin+'/');}}await returnModes();})().catch(e=>{console.error(e);process.exit(1)});
