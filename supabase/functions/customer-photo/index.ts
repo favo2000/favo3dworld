@@ -1,11 +1,12 @@
 // Server-only credentials come from Supabase runtime. Never return a storage URL or key.
-const origin='https://favo2000.github.io';
-const cors={'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'apikey, content-type, x-photo-processing-consent, x-photo-reference-consent, x-photo-consent-version, x-photo-consent-language','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
-const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+const allowedOrigins=['https://favo2000.github.io','https://favo3dworld.ch','https://www.favo3dworld.ch'];
 const hex=(b:ArrayBuffer)=>Array.from(new Uint8Array(b),n=>n.toString(16).padStart(2,'0')).join('');
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 Deno.serve(async(req:Request)=>{
- if(req.headers.get('origin')&&req.headers.get('origin')!==origin)return reply(403,{error:'ORIGIN_DENIED'});
+ const requestOrigin=req.headers.get('origin')||allowedOrigins[0];
+ const cors={'Access-Control-Allow-Origin':allowedOrigins.includes(requestOrigin)?requestOrigin:allowedOrigins[0],'Access-Control-Allow-Headers':'apikey, content-type, x-photo-processing-consent, x-photo-reference-consent, x-photo-consent-version, x-photo-consent-language','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
+ const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+ if(!allowedOrigins.includes(requestOrigin))return reply(403,{error:'ORIGIN_DENIED'});
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  if(req.method!=='POST')return reply(405,{error:'METHOD_NOT_ALLOWED'});
  if(req.headers.get('apikey')!=='sb_publishable_sboMkfayulaAF7AZPtsp1Q_hgNaE_pq')return reply(401,{error:'UNAUTHORIZED'});

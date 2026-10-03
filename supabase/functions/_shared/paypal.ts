@@ -4,10 +4,8 @@ export function paypalHandler(environment:'sandbox'|'live'){
 const sandbox=environment==='sandbox';
 const API=sandbox?'https://api-m.sandbox.paypal.com':'https://api-m.paypal.com';
 const approvalHost=sandbox?'www.sandbox.paypal.com':'www.paypal.com';
-const SITE='https://favo2000.github.io/favo3dworld/';
+const sites:Record<string,string>={'https://favo2000.github.io':'https://favo2000.github.io/favo3dworld/','https://favo3dworld.ch':'https://favo3dworld.ch/','https://www.favo3dworld.ch':'https://www.favo3dworld.ch/'};
 const KEY='sb_publishable_sboMkfayulaAF7AZPtsp1Q_hgNaE_pq';
-const cors={'Access-Control-Allow-Origin':'https://favo2000.github.io','Access-Control-Allow-Headers':'apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
-const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
 const uuid=(v:unknown)=>typeof v==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(v);
 let cachedToken='',tokenExpiry=0;
 async function oauth(){
@@ -57,7 +55,11 @@ function verifyOrder(data:any,order:any){
  return unit;
 }
 return async(req:Request)=>{
- if(req.headers.get('origin')&&req.headers.get('origin')!=='https://favo2000.github.io')return reply(403,{error:'ORIGIN_DENIED'});
+ const requestOrigin=req.headers.get('origin')||'https://favo2000.github.io';
+ const SITE=Object.hasOwn(sites,requestOrigin)?sites[requestOrigin]:undefined;
+const cors={'Access-Control-Allow-Origin':SITE?requestOrigin:'https://favo2000.github.io','Access-Control-Allow-Headers':'apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
+const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+ if(!SITE)return reply(403,{error:'ORIGIN_DENIED'});
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  if(req.method!=='POST')return reply(405,{error:'METHOD_NOT_ALLOWED'});
  if(req.headers.get('apikey')!==KEY)return reply(401,{error:'UNAUTHORIZED'});

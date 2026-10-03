@@ -1,11 +1,12 @@
 // No third-party dependencies. Guest application key is checked here because
 // publishable keys are not JWTs. Database RPC is executable only by service_role.
-const origin = 'https://favo2000.github.io';
-const cors = {'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
-const reply = (status:number, body:unknown) => new Response(JSON.stringify(body), {status, headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+const allowedOrigins=['https://favo2000.github.io','https://favo3dworld.ch','https://www.favo3dworld.ch'];
 const publicKey = 'sb_publishable_sboMkfayulaAF7AZPtsp1Q_hgNaE_pq';
 Deno.serve(async (req:Request) => {
- if (req.headers.get('origin') && req.headers.get('origin') !== origin) return reply(403,{error:'ORIGIN_DENIED'});
+ const requestOrigin=req.headers.get('origin')||allowedOrigins[0];
+ const cors = {'Access-Control-Allow-Origin':allowedOrigins.includes(requestOrigin)?requestOrigin:allowedOrigins[0],'Access-Control-Allow-Headers':'apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
+ const reply = (status:number, body:unknown) => new Response(JSON.stringify(body), {status, headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+ if (!allowedOrigins.includes(requestOrigin)) return reply(403,{error:'ORIGIN_DENIED'});
  if (req.method === 'OPTIONS') return new Response(null,{status:204,headers:cors});
  if (req.method !== 'POST') return reply(405,{error:'METHOD_NOT_ALLOWED'});
  if (req.headers.get('apikey') !== publicKey) return reply(401,{error:'UNAUTHORIZED'});
