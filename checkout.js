@@ -55,7 +55,8 @@ const checkoutErrors={
  INVALID_REQUEST:['Die Bestellung konnte nicht verarbeitet werden. Bitte prüfe deine Angaben.','Impossible de traiter la commande. Vérifiez vos informations.']
 };
 orderButton.onclick=async()=>{
- if(checkoutSending||window.PayPalSandbox?.completed)return;
+ if(checkoutSending||window.PayPalSandbox?.completed||window.PayrexxPayment?.completed)return;
+ if(window.PayrexxPayment?.returnPending){window.PayrexxPayment.verify();return;}
  if(!pendingInvoice){
    if(!cart.length){setOrderStatus(orderMessage('Dein Warenkorb ist leer.','Votre panier est vide.'));return;}
    if(customerFields.some(id=>!document.getElementById(id).value.trim()) || !document.getElementById('email').checkValidity()){
@@ -71,7 +72,7 @@ orderButton.onclick=async()=>{
  setOrderStatus(orderMessage('Bestellung wird gespeichert …','Enregistrement de la commande …'));
  const paypal=window.PayPalSandbox?.enabled&&pendingInvoice.payment_method==='PayPal';
  const twint=pendingInvoice.payment_method==='TWINT';
- const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),paypal?60000:25000);
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),(paypal||twint)?60000:25000);
  try{
    const response=await fetch(window.FAVO_SUPABASE.url+'/functions/v1/'+(paypal?window.PayPalSandbox.endpoint:(twint?'payrexx':'place-order-work2')),{method:'POST',headers:{'Content-Type':'application/json',apikey:window.FAVO_SUPABASE.publishableKey},body:JSON.stringify(paypal?{action:'create',order:pendingInvoice}:(twint?{action:'create',order:pendingInvoice,language:document.documentElement.lang}:pendingInvoice)),signal:controller.signal});
    const data=await response.json();
@@ -81,9 +82,8 @@ orderButton.onclick=async()=>{
      throw new Error('Unknown outcome');
    }
    if(typeof data.order_number!=='string'||data.payment_method!==pendingInvoice.payment_method||!((paypal||twint)?['unpaid','paid']:['unpaid']).includes(data.payment_status)||data.kind!=='order'||!Number.isFinite(Number(data.total))||(paypal&&(!window.PayPalSandbox.valid(data)||!data.payment_token))||(twint&&(!data.payment_token||(!data.payment_url&&data.payment_status!=='paid'))))throw new Error('Invalid receipt');
-   if(twint&&data.payment_status!=='paid'){
-     try{sessionStorage.setItem('favoPayrexxReturn',JSON.stringify({request_key:data.request_key,payment_token:data.payment_token,order_number:data.order_number}));}catch{}
-     window.location.assign(data.payment_url);return;
+   if(twint){
+     window.PayrexxPayment.accept(data);return;
    }
    setOrderStatus(orderMessage(`Bestellung ${data.order_number} gespeichert. Gesamtbetrag: CHF ${Number(data.total).toFixed(2)}. Noch nicht bezahlt; keine Zahlung wurde ausgelöst. Bitte bewahre die Bestellnummer auf.`,`Commande ${data.order_number} enregistrée. Total : CHF ${Number(data.total).toFixed(2)}. Non payée ; aucun paiement effectué. Conservez le numéro de commande.`));
    lastOrderReceipt={subtotal:Number(data.subtotal),shipping:Number(data.shipping),total:Number(data.total)};
@@ -97,7 +97,7 @@ orderButton.onclick=async()=>{
    if(paypal)window.PayPalSandbox.show(data);
  }catch{
    setOrderStatus(orderMessage('Die Bestätigung ist noch offen. Bitte klicke erneut auf den Bestellbutton. Derselbe Auftrag wird sicher wiederholt, ohne eine zweite Bestellung anzulegen.','La confirmation est en attente. Cliquez à nouveau sur le bouton de commande : la même demande sera répétée sans créer de doublon.'));
- }finally{clearTimeout(timer);checkoutSending=false;orderButton.disabled=!!window.PayPalSandbox?.completed;}
+ }finally{clearTimeout(timer);checkoutSending=false;orderButton.disabled=!!(window.PayPalSandbox?.completed||window.PayrexxPayment?.completed);}
 };
 // A pending request must be retried unchanged, even if a configurator was left open.
 document.addEventListener('click',event=>{
@@ -112,4 +112,52 @@ document.getElementById('toCheckout').onclick = () => {
   if (!pendingInvoice) setOrderStatus('');
 };
 
-(async()=>{const p=new URLSearchParams(location.search);if(!p.has('payrexx'))return;let saved=null;try{saved=JSON.parse(sessionStorage.getItem('favoPayrexxReturn')||'null')}catch{};if(!saved?.request_key||!saved?.payment_token)return;setOrderStatus(orderMessage('TWINT-Zahlung wird geprüft …','Vérification du paiement TWINT …'));try{const r=await fetch(window.FAVO_SUPABASE.url+'/functions/v1/payrexx',{method:'POST',headers:{'Content-Type':'application/json',apikey:window.FAVO_SUPABASE.publishableKey},body:JSON.stringify({action:'verify',request_key:saved.request_key,payment_token:saved.payment_token})});const d=await r.json();if(r.ok&&d.payment_status==='paid'){setOrderStatus(orderMessage('TWINT-Zahlung bestätigt. Vielen Dank! Bestellung '+d.order_number+'.','Paiement TWINT confirmé. Merci ! Commande '+d.order_number+'.'));try{sessionStorage.removeItem('favoPayrexxReturn')}catch{}}else setOrderStatus(orderMessage('Die TWINT-Zahlung ist noch nicht bestätigt. Bitte versuche es in einem Moment erneut.','Le paiement TWINT n’est pas encore confirmé. Réessayez dans un instant.'));}catch{setOrderStatus(orderMessage('Die TWINT-Zahlung konnte noch nicht geprüft werden.','Le paiement TWINT n’a pas encore pu être vérifié.'));}})();
+// A redirect alone is never proof of payment. Verify the saved capability
+// against the existing server endpoint before clearing the cart.
+(() => {
+ const key='favoPayrexxReturn', {node,localized}=window.ProductOptions;
+ let saved=null,completed=false,verifying=false;
+ try{saved=JSON.parse(sessionStorage.getItem(key)||'null');}catch{}
+ const box=node('div');box.id='payrexxStatus';box.hidden=true;
+ const resume=localized(node('a',undefined,'btn primary wide'),'TWINT über Payrexx öffnen','Ouvrir TWINT via Payrexx');resume.referrerPolicy='no-referrer';
+ const check=localized(node('button',undefined,'btn secondary wide'),'TWINT-Zahlung prüfen','Vérifier le paiement TWINT');check.type='button';
+ box.append(resume,check);orderStatus.after(box);
+ function paymentURL(value){try{const u=new URL(value);return u.protocol==='https:'&&u.hostname==='favo3dworld.payrexx.com'&&!u.username&&!u.password?u.href:null;}catch{return null;}}
+ function valid(data){return data?.kind==='order'&&data.payment_method==='TWINT'&&data.currency==='CHF'&&['paid','unpaid','pending'].includes(data.payment_status)&&typeof data.order_number==='string'&&data.order_number.length>0&&['total','subtotal','shipping'].every(k=>Number.isFinite(Number(data[k]))&&Number(data[k])>=0)&&Number(data.total)>0;}
+ function show(data){
+  if(!valid(data))throw new Error('Invalid receipt');
+  lastOrderReceipt={subtotal:Number(data.subtotal),shipping:Number(data.shipping),total:Number(data.total)};
+  if(data.payment_status==='paid'){
+   completed=true;box.hidden=true;pendingInvoice=null;cart=[];renderCart();lockCheckout(false);orderButton.disabled=true;
+   try{sessionStorage.removeItem(key);sessionStorage.removeItem('favoInvoiceAttempt');}catch{}
+   setOrderStatus(orderMessage(`Vielen Dank! Deine TWINT-Zahlung über CHF ${Number(data.total).toFixed(2)} wurde bestätigt. Bestellnummer: ${data.order_number}.`,`Merci ! Ton paiement TWINT de CHF ${Number(data.total).toFixed(2)} a été confirmé. Numéro de commande : ${data.order_number}.`));
+   loadCatalog();
+  }else{
+   completed=false;box.hidden=false;const url=paymentURL(data.payment_url);resume.hidden=!url;if(url)resume.href=url;else resume.removeAttribute('href');
+   setOrderStatus(orderMessage(`Bestellung ${data.order_number}: TWINT-Zahlung noch nicht bestätigt. Du kannst die Zahlung fortsetzen oder erneut prüfen.`,`Commande ${data.order_number} : paiement TWINT non confirmé. Tu peux reprendre le paiement ou vérifier à nouveau.`));
+  }
+  renderCheckoutSummary();document.getElementById('checkoutModal').classList.add('open');
+ }
+ async function verify(){
+  if(verifying||completed||!saved?.request_key||!saved?.payment_token)return;
+  verifying=true;check.disabled=true;
+  setOrderStatus(orderMessage('TWINT-Zahlung wird geprüft …','Vérification du paiement TWINT …'));
+  try{
+   const r=await fetch(window.FAVO_SUPABASE.url+'/functions/v1/payrexx',{method:'POST',headers:{'Content-Type':'application/json',apikey:window.FAVO_SUPABASE.publishableKey},body:JSON.stringify({action:'verify',request_key:saved.request_key,payment_token:saved.payment_token}),signal:AbortSignal.timeout(60000)});
+   const d=await r.json();if(!r.ok)throw new Error('Not confirmed');show(d);
+  }catch{box.hidden=false;resume.hidden=true;document.getElementById('checkoutModal').classList.add('open');setOrderStatus(orderMessage('Die TWINT-Zahlung konnte noch nicht bestätigt werden. Bitte erneut prüfen; keine zweite Bestellung anlegen.','Le paiement TWINT n’a pas encore pu être confirmé. Vérifie à nouveau sans créer une deuxième commande.'));}
+  finally{verifying=false;check.disabled=completed;}
+ }
+ check.onclick=verify;
+ window.PayrexxPayment={get completed(){return completed;},get returnPending(){return new URLSearchParams(location.search).has('payrexx')&&!!saved&&!completed;},verify,accept(data){
+  if(!valid(data)||!data.request_key||!data.payment_token)throw new Error('Invalid receipt');
+  if(data.payment_status==='paid'){show(data);return;}
+  const url=paymentURL(data.payment_url);if(!url)throw new Error('Invalid redirect');
+  saved={request_key:data.request_key,payment_token:data.payment_token};
+  sessionStorage.setItem(key,JSON.stringify(saved));window.location.assign(url);
+ }};
+ document.getElementById('toCheckout').addEventListener('click',()=>{if(completed&&cart.length){completed=false;orderButton.disabled=false;box.hidden=true;setOrderStatus('');}},true);
+ if(new URLSearchParams(location.search).has('payrexx')&&saved?.request_key&&saved?.payment_token){
+  orderButton.disabled=true;verify().finally(()=>{orderButton.disabled=completed;});
+ }
+})();

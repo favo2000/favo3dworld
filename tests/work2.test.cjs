@@ -9,8 +9,8 @@ async function storefront(){
  let requests=[],fail=false;
  w.fetch=async(url,options)=>{
   if(!String(url).includes('/functions/'))return {ok:true,json:async()=>[row]};
-  const body=JSON.parse(options.body);requests.push(body);if(fail)throw new Error('Network interrupted');
-  return {ok:true,json:async()=>({order_number:'FW-TEST',kind:body.kind,payment_method:body.payment_method,payment_status:'unpaid',subtotal:body.kind==='order'?body.items[0].quantity*10:210,shipping:body.kind==='order'?5:0,total:body.expected_total||210})};
+  const envelope=JSON.parse(options.body),body=envelope.order||envelope;requests.push(body);if(fail)throw new Error('Network interrupted');
+  return {ok:true,json:async()=>({order_number:'FW-TEST',kind:body.kind,payment_method:body.payment_method,payment_status:body.kind==='order'?'paid':'unpaid',currency:'CHF',request_key:body.request_key,payment_token:'test-capability',subtotal:body.kind==='order'?body.items[0].quantity*10:210,shipping:body.kind==='order'?5:0,total:body.expected_total||210})};
  };
  const inline=[...w.document.querySelectorAll('script:not([src])')].map(x=>x.textContent).join('\n');
  w.eval(read('supabase-config.js')+'\n'+inline+'\n'+read('product-options.js')+'\n'+read('products.js')+'\n'+read('bulk-inquiry.js')+'\n'+read('checkout.js')+'\nwindow.setCartForTest=x=>{cart=x;renderCart();};window.getCartForTest=()=>cart;');
@@ -21,14 +21,14 @@ async function storefront(){
   for(const prefix of ['cart','checkout']){assert.equal($(prefix+'Subtotal').textContent,'CHF '+price.toFixed(2));assert.equal($(prefix+'Shipping').textContent,'CHF '+shipping.toFixed(2));assert.equal($(prefix+'Total').textContent,'CHF '+total.toFixed(2));}
  }
  w.setCartForTest([{...entry,quantity:2}]);assert.equal($('cartTotal').textContent,'CHF 25.00');
- $('langFR').click();assert.match($('freeShipping').textContent,/Encore CHF 60.00/);assert.match($('checkoutModal').textContent,/Sous-total/);assert.match($('placeOrder').textContent,/non payée/);
+ $('langFR').click();assert.match($('freeShipping').textContent,/Encore CHF 60.00/);assert.match($('checkoutModal').textContent,/Sous-total/);assert.match($('placeOrder').textContent,/Démarrer le paiement|Zahlung starten/);
  assert.doesNotMatch($('cartDrawer').textContent+$('checkoutModal').textContent,/Rechnung|facture/i);
  $('langDE').click();
  for(const [id,value] of Object.entries({firstName:'Test',lastName:'Only',email:'test@example.invalid',street:'Test 1',zip:'1000',city:'Test'}))$(id).value=value;
  $('paymentMethod').value='TWINT';fail=true;$('placeOrder').click();await tick();
  assert.equal(requests[0].expected_total,25);assert.equal(requests[0].payment_method,'TWINT');assert.equal(requests[0].items[0].quantity,2);assert.equal(requests[0].payment_status,undefined);assert.equal($('paymentMethod').disabled,true);
- fail=false;$('placeOrder').click();await tick();assert.deepEqual(requests[1],requests[0]);assert.equal(w.getCartForTest().length,0);assert.match($('orderStatus').textContent,/Noch nicht bezahlt/);assert.equal($('checkoutTotal').textContent,'CHF 25.00');
- $('langFR').click();assert.match($('orderStatus').textContent,/Non payée/);assert.equal(w.localStorage.getItem('favoLang'),'fr');
+ fail=false;$('placeOrder').click();await tick();assert.deepEqual(requests[1],requests[0]);assert.equal(w.getCartForTest().length,0);assert.match($('orderStatus').textContent,/TWINT-Zahlung.*bestätigt/);assert.equal($('checkoutTotal').textContent,'CHF 25.00');
+ $('langFR').click();assert.match($('orderStatus').textContent,/paiement TWINT.*confirmé/);assert.equal(w.localStorage.getItem('favoLang'),'fr');
  w.openCatalogSimple(row,'assets/frugo-real.jpg');
  const host=$('simpleModal').querySelector('.product-option-fields');const plus=host.querySelector('.quantity-control button:last-of-type');
  for(let n=0;n<25;n++)plus.click();assert.equal(host.querySelector('output').textContent,'20');assert.equal(plus.disabled,true);
@@ -38,7 +38,7 @@ async function storefront(){
  fail=true;bulk.querySelector('form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();const attempt=requests.at(-1);assert.equal(attempt.kind,'inquiry');assert.equal(attempt.items[0].quantity,25);assert.equal(attempt.payment_method,null);
  fail=false;bulk.querySelector('form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.deepEqual(requests.at(-1),attempt);assert.match(bulk.textContent,/enregistrée/);assert.match(bulk.textContent,/Aucune commande/);
  dom.window.close();
- console.log('PASS Work 2 DOM: shipping boundaries, quantity totals, unpaid TWINT receipt, unchanged retries, DE/FR, POD cap and stored inquiry flow.');
+ console.log('PASS Work 2 DOM: shipping boundaries, quantity totals, server-confirmed TWINT receipt, unchanged retries, DE/FR, POD cap and stored inquiry flow.');
 }
 async function edge(){
  let handler,calls=[];const secret='test-only-secret';
