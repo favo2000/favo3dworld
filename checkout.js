@@ -70,16 +70,21 @@ orderButton.onclick=async()=>{
  checkoutSending=true;orderButton.disabled=true;lockCheckout(true);
  setOrderStatus(orderMessage('Bestellung wird gespeichert …','Enregistrement de la commande …'));
  const paypal=window.PayPalSandbox?.enabled&&pendingInvoice.payment_method==='PayPal';
+ const twint=pendingInvoice.payment_method==='TWINT';
  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),paypal?60000:25000);
  try{
-   const response=await fetch(window.FAVO_SUPABASE.url+'/functions/v1/'+(paypal?window.PayPalSandbox.endpoint:'place-order-work2'),{method:'POST',headers:{'Content-Type':'application/json',apikey:window.FAVO_SUPABASE.publishableKey},body:JSON.stringify(paypal?{action:'create',order:pendingInvoice}:pendingInvoice),signal:controller.signal});
+   const response=await fetch(window.FAVO_SUPABASE.url+'/functions/v1/'+(paypal?window.PayPalSandbox.endpoint:(twint?'payrexx':'place-order-work2')),{method:'POST',headers:{'Content-Type':'application/json',apikey:window.FAVO_SUPABASE.publishableKey},body:JSON.stringify(paypal?{action:'create',order:pendingInvoice}:(twint?{action:'create',order:pendingInvoice,language:document.documentElement.lang}:pendingInvoice)),signal:controller.signal});
    const data=await response.json();
    if(!response.ok){
      const known=checkoutErrors[data.error];
      if(known){pendingInvoice=null;lockCheckout(false);setOrderStatus(orderMessage(...known));return;}
      throw new Error('Unknown outcome');
    }
-   if(typeof data.order_number!=='string'||data.payment_method!==pendingInvoice.payment_method||!(paypal?['unpaid','paid']:['unpaid']).includes(data.payment_status)||data.kind!=='order'||!Number.isFinite(Number(data.total))||(paypal&&(!window.PayPalSandbox.valid(data)||!data.payment_token)))throw new Error('Invalid receipt');
+   if(typeof data.order_number!=='string'||data.payment_method!==pendingInvoice.payment_method||!((paypal||twint)?['unpaid','paid']:['unpaid']).includes(data.payment_status)||data.kind!=='order'||!Number.isFinite(Number(data.total))||(paypal&&(!window.PayPalSandbox.valid(data)||!data.payment_token))||(twint&&(!data.payment_token||(!data.payment_url&&data.payment_status!=='paid'))))throw new Error('Invalid receipt');
+   if(twint&&data.payment_status!=='paid'){
+     try{sessionStorage.setItem('favoPayrexxReturn',JSON.stringify({request_key:data.request_key,payment_token:data.payment_token,order_number:data.order_number}));}catch{}
+     window.location.assign(data.payment_url);return;
+   }
    setOrderStatus(orderMessage(`Bestellung ${data.order_number} gespeichert. Gesamtbetrag: CHF ${Number(data.total).toFixed(2)}. Noch nicht bezahlt; keine Zahlung wurde ausgelöst. Bitte bewahre die Bestellnummer auf.`,`Commande ${data.order_number} enregistrée. Total : CHF ${Number(data.total).toFixed(2)}. Non payée ; aucun paiement effectué. Conservez le numéro de commande.`));
    lastOrderReceipt={subtotal:Number(data.subtotal),shipping:Number(data.shipping),total:Number(data.total)};
    pendingInvoice=null;try{sessionStorage.removeItem('favoInvoiceAttempt');}catch{}
@@ -106,3 +111,5 @@ document.getElementById('toCheckout').onclick = () => {
   openInvoiceCheckout();
   if (!pendingInvoice) setOrderStatus('');
 };
+
+(async()=>{const p=new URLSearchParams(location.search);if(!p.has('payrexx'))return;let saved=null;try{saved=JSON.parse(sessionStorage.getItem('favoPayrexxReturn')||'null')}catch{};if(!saved?.request_key||!saved?.payment_token)return;setOrderStatus(orderMessage('TWINT-Zahlung wird geprüft …','Vérification du paiement TWINT …'));try{const r=await fetch(window.FAVO_SUPABASE.url+'/functions/v1/payrexx',{method:'POST',headers:{'Content-Type':'application/json',apikey:window.FAVO_SUPABASE.publishableKey},body:JSON.stringify({action:'verify',request_key:saved.request_key,payment_token:saved.payment_token})});const d=await r.json();if(r.ok&&d.payment_status==='paid'){setOrderStatus(orderMessage('TWINT-Zahlung bestätigt. Vielen Dank! Bestellung '+d.order_number+'.','Paiement TWINT confirmé. Merci ! Commande '+d.order_number+'.'));try{sessionStorage.removeItem('favoPayrexxReturn')}catch{}}else setOrderStatus(orderMessage('Die TWINT-Zahlung ist noch nicht bestätigt. Bitte versuche es in einem Moment erneut.','Le paiement TWINT n’est pas encore confirmé. Réessayez dans un instant.'));}catch{setOrderStatus(orderMessage('Die TWINT-Zahlung konnte noch nicht geprüft werden.','Le paiement TWINT n’a pas encore pu être vérifié.'));}})();
