@@ -83,8 +83,8 @@
     if(sandbox)localized(note,'Sandbox-Test mit Testgeld. Die Bestellung wird gespeichert; bezahlt erst nach bestätigter PayPal-Testzahlung. TWINT ist nicht angebunden.','Test Sandbox avec de l’argent fictif. La commande est enregistrée ; elle n’est payée qu’après confirmation du paiement test PayPal. TWINT n’est pas connecté.');
     else localized(note,'Die Bestellung wird gespeichert und erst nach bestätigter PayPal-Zahlung als bezahlt markiert. TWINT ist noch nicht angebunden.','La commande est enregistrée et n’est marquée comme payée qu’après confirmation du paiement PayPal. TWINT n’est pas encore connecté.');
    }else{
-    localized(button,'Unbezahlte Bestellung absenden','Envoyer la commande non payée');
-    localized(note,'TWINT ist noch nicht angebunden. Es wird keine Zahlung ausgelöst.','TWINT n’est pas encore connecté. Aucun paiement n’est effectué.');
+    localized(button,'Zahlung mit TWINT starten','Démarrer le paiement avec TWINT');
+    localized(note,'Du wirst für die sichere Zahlung zu TWINT über Payrexx weitergeleitet. Die Bestellung gilt erst nach bestätigter Zahlung als bezahlt.','Tu seras redirigé vers TWINT via Payrexx pour le paiement sécurisé. La commande n’est considérée comme payée qu’après confirmation du paiement.');
    }
   };method.addEventListener('change',update);update();
  }
