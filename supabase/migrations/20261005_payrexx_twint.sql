@@ -1,0 +1,9 @@
+alter table public."Orders" add column if not exists payrexx_gateway_id bigint;
+alter table public."Orders" add column if not exists payrexx_gateway_hash text;
+create unique index if not exists orders_payrexx_gateway_id_uq on public."Orders"(payrexx_gateway_id) where payrexx_gateway_id is not null;
+create or replace function public.attach_payrexx(p_id uuid,p_gateway_id bigint,p_gateway_hash text) returns void language plpgsql security definer set search_path=public as $$ begin update "Orders" set payrexx_gateway_id=coalesce(payrexx_gateway_id,p_gateway_id),payrexx_gateway_hash=coalesce(payrexx_gateway_hash,p_gateway_hash) where id=p_id and payment_method='TWINT' and payment_status='unpaid' and (payrexx_gateway_id is null or payrexx_gateway_id=p_gateway_id); if not found then raise exception 'PAYMENT_MISMATCH'; end if; end $$;
+create or replace function public.confirm_payrexx(p_id uuid,p_gateway_id bigint,p_currency text,p_amount numeric) returns void language plpgsql security definer set search_path=public as $$ begin update "Orders" set payment_status='paid' where id=p_id and payment_method='TWINT' and payrexx_gateway_id=p_gateway_id and currency=p_currency and total=p_amount and payment_status in ('unpaid','pending'); if not found and not exists(select 1 from "Orders" where id=p_id and payment_status='paid' and payrexx_gateway_id=p_gateway_id) then raise exception 'PAYMENT_MISMATCH'; end if; end $$;
+revoke all on function public.attach_payrexx(uuid,bigint,text) from public,anon,authenticated;
+revoke all on function public.confirm_payrexx(uuid,bigint,text,numeric) from public,anon,authenticated;
+grant execute on function public.attach_payrexx(uuid,bigint,text) to service_role;
+grant execute on function public.confirm_payrexx(uuid,bigint,text,numeric) to service_role;

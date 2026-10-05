@@ -1,3 +1,6 @@
 [functions.place-order]
 # Publishable application key checked in the function; guest checkout has no user JWT.
 verify_jwt = false
+
+[functions.payrexx]
+verify_jwt = false
