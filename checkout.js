@@ -70,7 +70,7 @@ orderButton.onclick=async()=>{
  }
  checkoutSending=true;orderButton.disabled=true;lockCheckout(true);
  setOrderStatus(orderMessage('Bestellung wird gespeichert …','Enregistrement de la commande …'));
- const paypal=window.PayPalSandbox?.enabled&&pendingInvoice.payment_method==='PayPal';
+ const paypal=pendingInvoice.payment_method==='PayPal';
  const twint=pendingInvoice.payment_method==='TWINT';
  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),(paypal||twint)?60000:25000);
  try{
