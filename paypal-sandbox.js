@@ -80,8 +80,8 @@
   const update=()=>{
    if(method.value==='PayPal'){
     localized(button,sandbox?'Mit PayPal Sandbox testen':'Mit PayPal bezahlen',sandbox?'Tester avec PayPal Sandbox':'Payer avec PayPal');
-    if(sandbox)localized(note,'Sandbox-Test mit Testgeld. Die Bestellung wird gespeichert; bezahlt erst nach bestätigter PayPal-Testzahlung. TWINT ist nicht angebunden.','Test Sandbox avec de l’argent fictif. La commande est enregistrée ; elle n’est payée qu’après confirmation du paiement test PayPal. TWINT n’est pas connecté.');
-    else localized(note,'Die Bestellung wird gespeichert und erst nach bestätigter PayPal-Zahlung als bezahlt markiert. TWINT ist noch nicht angebunden.','La commande est enregistrée et n’est marquée comme payée qu’après confirmation du paiement PayPal. TWINT n’est pas encore connecté.');
+    if(sandbox)localized(note,'Sandbox-Test mit Testgeld. Die Bestellung wird gespeichert; bezahlt erst nach bestätigter PayPal-Testzahlung.','Test Sandbox avec de l’argent fictif. La commande est enregistrée ; elle n’est payée qu’après confirmation du paiement test PayPal.');
+    else localized(note,'Die Bestellung wird gespeichert und erst nach bestätigter PayPal-Zahlung als bezahlt markiert.','La commande est enregistrée et n’est marquée comme payée qu’après confirmation du paiement PayPal.');
    }else{
     localized(button,'Zahlung mit TWINT starten','Démarrer le paiement avec TWINT');
     localized(note,'Du wirst für die sichere Zahlung zu TWINT über Payrexx weitergeleitet. Die Bestellung gilt erst nach bestätigter Zahlung als bezahlt.','Tu seras redirigé vers TWINT via Payrexx pour le paiement sécurisé. La commande n’est considérée comme payée qu’après confirmation du paiement.');
