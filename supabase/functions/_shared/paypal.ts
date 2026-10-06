@@ -16,9 +16,15 @@ async function oauth(){
  const data=await res.json();if(!res.ok||typeof data.access_token!=='string')throw new Error('PAYPAL_AUTH');
  cachedToken=data.access_token;tokenExpiry=Date.now()+Math.max(0,Math.min(Number(data.expires_in)||0,300)-30)*1000;return cachedToken;
 }
+const providerIssues=new Set(['AMOUNT_MISMATCH','ITEM_TOTAL_MISMATCH','INVALID_PARAMETER_VALUE','INVALID_CURRENCY_CODE','CURRENCY_NOT_SUPPORTED','PAYEE_ACCOUNT_RESTRICTED','PAYEE_ACCOUNT_NOT_VERIFIED','PAYEE_NOT_ENABLED_FOR_CARD_PROCESSING','NOT_ENABLED_FOR_CARD_PROCESSING','INSTRUMENT_DECLINED','DUPLICATE_INVOICE_ID','PERMISSION_DENIED','NOT_AUTHORIZED','VALIDATION_ERROR']);
 async function paypal(path:string,method='GET',body?:unknown,requestID?:string){
  const res=await fetch(API+path,{method,headers:{Authorization:'Bearer '+await oauth(),'Content-Type':'application/json',Prefer:'return=representation',...(requestID?{'PayPal-Request-Id':requestID}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(18000)});
- const data=await res.json();if(!res.ok)throw new Error('PAYPAL_UNAVAILABLE');return data;
+ const data=await res.json();if(!res.ok){
+  // Log only fixed issue codes. Never log response bodies, descriptions or headers.
+  const issues=Array.isArray(data?.details)?data.details.map((d:any)=>d?.issue).filter((v:unknown)=>typeof v==='string'&&providerIssues.has(v)):[];
+  console.error(JSON.stringify({event:'paypal_provider_error',environment,operation:method==='POST'?(path.endsWith('/capture')?'capture':'create'):'read',status:res.status,issues}));
+  throw new Error('PAYPAL_UNAVAILABLE');
+ }return data;
 }
 async function mac(secret:string,value:string){
  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
@@ -59,6 +65,7 @@ return async(req:Request)=>{
  const SITE=Object.hasOwn(sites,requestOrigin)?sites[requestOrigin]:undefined;
 const cors={'Access-Control-Allow-Origin':SITE?requestOrigin:'https://favo2000.github.io','Access-Control-Allow-Headers':'apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
 const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+ let stage='request';
  if(!SITE)return reply(403,{error:'ORIGIN_DENIED'});
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  if(req.method!=='POST')return reply(405,{error:'METHOD_NOT_ALLOWED'});
@@ -86,11 +93,11 @@ const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{sta
   if(body.action==='capture'&&(typeof body.payment_token!=='string'||!equal(body.payment_token,capability)))return reply(403,{error:'UNAUTHORIZED'});
   if(body.action==='create'){
    if(body.order?.payment_method!=='PayPal'||body.order?.kind!=='order')return reply(400,{error:'INVALID_REQUEST'});
-   await oauth(); // Bad provider credentials must not create a shop order.
+   stage='oauth';await oauth(); // Bad provider credentials must not create a shop order.
    const ip=req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'unknown';
-   await db('rpc/submit_shop_order','POST',{p_request:body.order,p_client_hash:await mac(service,ip)});
+   stage='submit_order';await db('rpc/submit_shop_order','POST',{p_request:body.order,p_client_hash:await mac(service,ip)});
   }
-  const rows=await db('Orders?request_key=eq.'+encodeURIComponent(requestKey)+'&select=id,order_number,request_key,total,subtotal,shipping,currency,payment_method,payment_status,kind,status,paypal_order_id,paypal_capture_id,payment_environment');
+  stage='read_order';const rows=await db('Orders?request_key=eq.'+encodeURIComponent(requestKey)+'&select=id,order_number,request_key,total,subtotal,shipping,currency,payment_method,payment_status,kind,status,paypal_order_id,paypal_capture_id,payment_environment');
   const order=rows?.[0];if(!order||order.payment_method!=='PayPal'||order.kind!=='order')return reply(404,{error:'ORDER_NOT_FOUND'});
   const receipt=()=>({sandbox,payment_environment:environment,order_number:order.order_number,kind:'order',payment_method:'PayPal',payment_status:order.payment_status,currency:'CHF',total:order.total,subtotal:order.subtotal,shipping:order.shipping,request_key:requestKey,payment_token:capability});
   if(order.payment_environment!==null&&order.payment_environment!==environment)throw new Error('PAYMENT_MISMATCH');
@@ -99,17 +106,17 @@ const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{sta
    return reply(200,receipt());
   }
   if(order.status==='Storniert')return reply(409,{error:'ORDER_CANCELLED'});
-  await db('rpc/reserve_paypal_environment','POST',{p_id:order.id,p_environment:environment});
+  stage='reserve_environment';await db('rpc/reserve_paypal_environment','POST',{p_id:order.id,p_environment:environment});
   order.payment_environment=environment;
   if(!order.paypal_order_id){
    if(body.action!=='create')return reply(409,{error:'PAYMENT_NOT_READY'});
-   const items=await db('OrderItems?order_id=eq.'+encodeURIComponent(order.id)+'&select=id,product_id_snapshot,product_name,quantity,unit_price,line_total&order=id');
-   const unit=purchaseUnit(order,items);
-   const created=await paypal('/v2/checkout/orders','POST',{intent:'CAPTURE',purchase_units:[unit],payment_source:{paypal:{experience_context:{user_action:'PAY_NOW',shipping_preference:'NO_SHIPPING',return_url:SITE+(sandbox?'?paypal=return':'?paypal=live-return'),cancel_url:SITE+(sandbox?'?paypal=cancel':'?paypal=live-cancel')}}}},order.id);
+   stage='read_items';const items=await db('OrderItems?order_id=eq.'+encodeURIComponent(order.id)+'&select=id,product_id_snapshot,product_name,quantity,unit_price,line_total&order=id');
+   stage='itemization';const unit=purchaseUnit(order,items);
+   stage='provider_create';const created=await paypal('/v2/checkout/orders','POST',{intent:'CAPTURE',purchase_units:[unit],payment_source:{paypal:{experience_context:{user_action:'PAY_NOW',shipping_preference:'NO_SHIPPING',return_url:SITE+(sandbox?'?paypal=return':'?paypal=live-return'),cancel_url:SITE+(sandbox?'?paypal=cancel':'?paypal=live-cancel')}}}},order.id);
    if(typeof created.id!=='string'||!/^[A-Z0-9]{5,40}$/.test(created.id))throw new Error('PAYMENT_MISMATCH');
-   await db('rpc/attach_paypal','POST',{p_id:order.id,p_paypal_id:created.id,p_environment:environment});order.paypal_order_id=created.id;
+   stage='attach_order';await db('rpc/attach_paypal','POST',{p_id:order.id,p_paypal_id:created.id,p_environment:environment});order.paypal_order_id=created.id;
   }
-  let remote=await paypal('/v2/checkout/orders/'+order.paypal_order_id);let unit=verifyOrder(remote,order);
+  stage='provider_read';let remote=await paypal('/v2/checkout/orders/'+order.paypal_order_id);let unit=verifyOrder(remote,order);
   if(body.action==='capture'&&remote.status==='APPROVED'){
    // Verify order identity, currency and amount before capturing a payment.
    try{await paypal('/v2/checkout/orders/'+order.paypal_order_id+'/capture','POST',{},order.id.replaceAll('-','')+'-cap');}catch{/* A timeout/already-captured response is resolved with a fresh authenticated read. */}
@@ -126,6 +133,7 @@ const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{sta
   return reply(200,{...receipt(),approval_url:approvalURL});
  }catch(error){
   const code=error instanceof Error?error.message:'';
+  console.error(JSON.stringify({event:'paypal_handler_error',environment,stage,code:['PAYPAL_CONFIG','PAYPAL_AUTH','PAYMENT_MISMATCH','SERVICE_UNAVAILABLE','PAYPAL_UNAVAILABLE','INVALID_CUSTOMER','INVALID_ITEMS','INVALID_OPTIONS','PRODUCT_UNAVAILABLE','OUT_OF_STOCK','PRICE_CHANGED','REQUEST_CONFLICT','RATE_LIMIT','INVALID_REQUEST'].includes(code)?code:'UNEXPECTED_ERROR'}));
   const safe=['INVALID_CUSTOMER','INVALID_ITEMS','INVALID_OPTIONS','PRODUCT_UNAVAILABLE','OUT_OF_STOCK','PRICE_CHANGED','REQUEST_CONFLICT','RATE_LIMIT','INVALID_REQUEST','PAYPAL_CONFIG','PAYPAL_AUTH','PAYMENT_MISMATCH'];
   return reply(code==='RATE_LIMIT'?429:code.startsWith('INVALID_')||['OUT_OF_STOCK','PRICE_CHANGED','PRODUCT_UNAVAILABLE','REQUEST_CONFLICT'].includes(code)?400:503,{error:safe.includes(code)?code:'PAYPAL_UNAVAILABLE',sandbox,payment_environment:environment});
  }
