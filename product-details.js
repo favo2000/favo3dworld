@@ -9,6 +9,15 @@
  // labelled details; they do not claim to show a different product or angle.
  function photos(p,src){
   const list=[{src,de:'Gesamtansicht',fr:'Vue d’ensemble'}];
+  // Presentation-owned photo lists can add approved images without altering
+  // Products, prices, variants or the database schema.
+  for(const photo of window.FavoProductPhotos?.[p.id]||[]){
+   try{const url=new URL(photo.src,document.baseURI);
+    if(!['https:','http:'].includes(url.protocol)||list.some(v=>v.src===url.href))continue;
+    list.push({src:url.href,de:photo.de||'Weitere Ansicht',fr:photo.fr||'Autre vue'});
+   }catch{/* Ignore invalid presentation image URLs. */}
+  }
+  if(list.length>1)return list;
   if(p.id===4&&new URL(src,document.baseURI).pathname.endsWith('/assets/zen-real.jpg')){
    list.push({src,de:'Seitenansicht',fr:'Vue de profil',crop:{x:0,y:.33,w:.266,h:.333}},
     {src,de:'Vorderansicht',fr:'Vue de face',crop:{x:0,y:.67,w:.266,h:.33}});
@@ -58,7 +67,7 @@
   if(!s){
    const options=modal.querySelector('.horse-options'),preview=modal.querySelector('.horse-preview'),image=preview.querySelector('img');
    modal.classList.add('product-detail-modal');modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');
-   const heading=options.querySelector('h2');heading.id=prefix+'DetailHeading';heading.tabIndex=-1;modal.setAttribute('aria-labelledby',heading.id);
+   const heading=options.querySelector('h2');if(!heading.id)heading.id=prefix+'DetailHeading';heading.tabIndex=-1;modal.setAttribute('aria-labelledby',heading.id);
    const description=node('p','product-detail-description');heading.after(description);
    const price=node('p','product-detail-price');description.before(price);
    const availability=node('span','product-detail-availability');price.after(availability);
@@ -87,7 +96,9 @@
   s.p=p;s.selected=0;s.photos=photos(p,src);s.thumbs.replaceChildren();
   s.photos.forEach((view,i)=>{
    const b=node('button');b.type='button';const thumbnail=node('img');thumbnail.src=view.src;thumbnail.alt='';thumbnail.loading='lazy';
-   b.append(thumbnail);b.onclick=()=>{s.selected=i;drawPhoto(s);};s.thumbs.append(b);
+   const clip=node('span','product-thumbnail-photo');clip.append(thumbnail);b.append(clip);
+   if(view.crop){const c=view.crop;thumbnail.style.position='absolute';thumbnail.style.width=(100/c.w)+'%';thumbnail.style.height='auto';thumbnail.style.maxWidth='none';thumbnail.style.left=(-c.x/c.w*100)+'%';thumbnail.style.top=(-c.y/c.h*100)+'%';}
+   b.onclick=()=>{s.selected=i;drawPhoto(s);};s.thumbs.append(b);
   });
   s.thumbs.hidden=s.photos.length<2;s.galleryHelp.hidden=s.photos.length<2;
   const sizeLabel=modal.querySelector('.select-label'),fields=modal.querySelector('.product-option-fields');
@@ -95,4 +106,10 @@
   sync(p,src);
  }
  window.ProductDetails={mount,sync};
+ // A fast cached catalog may finish before this deferred script is loaded.
+ if(typeof catalogProducts!=='undefined')for(const p of catalogProducts){
+  if(!prefixes[p.id])continue;
+  const image=document.querySelector('[data-catalog-id="'+p.id+'"] .product-media img');
+  if(image)mount(p,image.src);
+ }
 })();

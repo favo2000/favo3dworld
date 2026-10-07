@@ -16,7 +16,9 @@
 .product-photo-thumbnails[hidden],.product-gallery-help[hidden]{display:none}
 .product-photo-thumbnails button{width:68px;height:68px;padding:4px;border:1px solid var(--line);border-radius:10px;background:white;cursor:pointer}
 .product-photo-thumbnails button[aria-pressed=true]{border:2px solid var(--teal);box-shadow:0 0 0 2px white}
+.product-thumbnail-photo{display:block;position:relative;width:100%;height:100%;overflow:hidden;border-radius:6px}
 .product-photo-thumbnails img{width:100%;height:100%;object-fit:cover!important;filter:none;border-radius:6px}
+.product-thumbnail-photo img[style]{object-fit:initial!important}
 .product-gallery-help{margin:0;font-size:.75rem;color:var(--muted);text-align:center}
 .product-detail-modal .horse-options{min-width:0;padding:40px 32px 32px}
 .product-detail-modal .horse-options h2{margin:10px 0;font-size:2.1rem;overflow-wrap:anywhere}
