@@ -30,7 +30,10 @@
   <script src="vendor/supabase-2.57.4.js" defer></script>
   <script src="admin-options.js?v=admin-sizes-20260918" defer></script>
   <script src="admin-orders.js?v=legal-20260928" defer></script>
-  <script src="admin.js?v=admin-sizes-20260918" defer></script>
+  <script src="portfolio.js?v=portfolio-20261007" defer></script>
+  <script src="admin-portfolio.js?v=portfolio-20261007" defer></script>
+  <script src="admin.js?v=portfolio-20261007" defer></script>
+  <link rel="stylesheet" href="portfolio.css?v=portfolio-20261007">
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="product-options.css?v=language-20260917">
   <link rel="stylesheet" href="language.css?v=language-20260917">
@@ -70,6 +73,7 @@
     <div class="lang-switch" role="group" aria-label="Sprache / Langue"><button id="langDE" type="button" lang="de" aria-label="Deutsch" aria-pressed="true">DE</button><span aria-hidden="true">|</span><button id="langFR" type="button" lang="fr" aria-label="Français" aria-pressed="false">FR</button></div>
   <nav class="nav">
     <a href="#shop">Shop⌄</a>
+    <a href="#arbeiten" data-portfolio-text="nav">Meine Arbeiten</a>
     <a href="#kategorien">Kategorien⌄</a>
     <a href="#lager">Auf Lager</a>
     <a href="#demand">Print on Demand</a>
@@ -271,6 +275,19 @@
         </article>
 </section>
 
+    <section id="arbeiten" class="portfolio-section" aria-labelledby="portfolioHeading">
+      <div class="portfolio-intro">
+        <div><span class="eyebrow" data-portfolio-text="eyebrow">AUS MEINER WERKSTATT</span>
+        <h2 id="portfolioHeading" data-portfolio-text="heading">Meine Arbeiten</h2>
+        <p data-portfolio-text="intro">Einblicke in meine 3D-Druck-Projekte: besondere Modelle, Einzelstücke und persönliche Arbeiten.</p></div>
+        <span class="portfolio-label" data-portfolio-text="notice">Einzelprojekte · nicht zum Verkauf</span>
+      </div>
+      <div id="portfolioGrid" class="portfolio-grid"></div>
+      <p id="portfolioEmpty" class="portfolio-empty" role="status" data-portfolio-text="loading">Die Galerie wird geladen …</p>
+      <div class="portfolio-actions"><button id="portfolioMore" class="btn secondary" type="button" hidden data-portfolio-text="all">Alle Arbeiten ansehen</button>
+      <button id="openPortfolioAdmin" class="portfolio-manage" type="button" data-portfolio-text="manage">Galerie verwalten</button></div>
+    </section>
+
     <section class="benefits">
       <div><span><b id="qualityTitle">❤️ Mit Liebe gefertigt</b><small id="qualityText">Jedes Modell wird sorgfältig für dich gedruckt.</small></span></div>
       <div>🎨<span><b>Viele Farben</b><small>Wähle deine Lieblingsfarbe bei vielen Modellen.</small></span></div>
@@ -294,7 +311,7 @@
 
   <footer id="kontakt">
     <div><b>FAVO3D WORLD</b><span>Printed into Reality</span></div>
-    <div><a href="#shop">Shop</a><a href="#kategorien">Kategorien</a></div>
+    <div><a href="#shop">Shop</a><a href="#arbeiten" data-portfolio-text="nav">Meine Arbeiten</a><a href="#kategorien">Kategorien</a></div>
     <div><a href="#faq">FAQ</a><a href="#">Versand</a><a href="#">Kontakt</a></div>
     <div><a href="#legal-agb" data-legal="agb">AGB</a><a href="#legal-privacy" data-legal="privacy">Datenschutzerklärung</a><a href="#legal-imprint" data-legal="imprint">Impressum</a></div>
   </footer>
@@ -340,7 +357,26 @@
  </fieldset></form>
  </section><section><h3>Online-Produkte</h3><button id="adminReload" type="button">Liste aktualisieren</button><div id="adminProducts"></div>
  <p class="small-note">Änderungen gelten sofort im Shop. Private Originaldateien bleiben geschützt.</p>
- </section></div><section id="adminOrders" hidden></section></div></div></div>
+ </section></div><section id="adminOrders" hidden></section>
+<section id="adminPortfolio" hidden aria-labelledby="adminPortfolioHeading">
+ <hr><h3 id="adminPortfolioHeading">Meine Arbeiten · Galerie verwalten</h3>
+ <p>Diese Modelle erscheinen nur in der Galerie, ohne Preis oder Kaufbutton.</p>
+ <p id="portfolioAdminStatus" role="status" aria-live="polite"></p>
+ <div class="admin-grid"><section>
+ <h4 id="portfolioEditHeading">Neue Arbeit</h4>
+ <form id="portfolioAdminForm"><fieldset id="portfolioAdminFields">
+ <label>Modellname<input id="portfolioName" maxlength="200" required></label>
+ <label>Beschreibung Deutsch<textarea id="portfolioDescriptionDe" maxlength="5000" rows="4" required></textarea></label>
+ <label>Description française<textarea id="portfolioDescriptionFr" maxlength="5000" rows="4"></textarea></label>
+ <label>Weitere Fotos<input id="portfolioFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
+ <p class="field-help">Bis zu 12 Fotos pro Arbeit, JPG/PNG/WebP, je maximal 5 MB. Erstes Foto = Titelbild. Hochgeladene Fotos sind über ihre Bildadresse öffentlich abrufbar.</p>
+ <div id="portfolioAdminPhotos" class="portfolio-admin-photos"></div>
+ <label class="check"><input id="portfolioPublished" type="checkbox"> In der Galerie veröffentlichen</label>
+ <button class="btn primary wide" type="submit">Arbeit speichern</button>
+ <button class="btn secondary wide" id="portfolioNew" type="button">Neue Arbeit / Bearbeiten abbrechen</button>
+ </fieldset></form></section>
+ <section><h4>Meine Galerie</h4><button id="portfolioReload" type="button">Galerie aktualisieren</button><div id="portfolioAdminList"></div></section></div>
+</section></div></div></div>
 
 <div class="horse-modal" id="horseModal">
     <div class="overlay" data-close-horse></div>
@@ -911,6 +947,7 @@ function translatePage(lang){
  document.documentElement.lang=lang;
  currentLang=lang;
  window.FavoLegal?.refresh();
+ window.FavoPortfolio?.refreshLanguage();
  if(window.refreshCatalogLanguage) window.refreshCatalogLanguage();
  window.OrdersAdmin?.refresh();
  document.getElementById('langDE')?.classList.toggle('active',lang==='de');

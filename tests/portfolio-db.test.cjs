@@ -1,0 +1,22 @@
+const {PGlite}=require('@electric-sql/pglite');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+(async()=>{
+ const db=new PGlite();await db.exec(`create role anon;create role authenticated;create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(bucket_id text,name text);alter table storage.objects enable row level security;grant usage on schema storage to authenticated;grant select,insert on storage.objects to authenticated;create function public.is_favo_admin() returns boolean language sql stable security invoker as $$select current_setting('test.is_admin',true)='yes'$$;`);
+ await db.exec(fs.readFileSync(require('node:path').join(__dirname,'../supabase/portfolio-setup.sql'),'utf8'));
+ const image='00000000-0000-4000-8000-000000000001.jpg';
+ await db.exec(`insert into portfolio_projects(name,description_de,image_paths,published) values('Public','Description',array['${image}'],true),('Draft','Description',array['${image}'],false);set role anon;`);
+ assert.equal((await db.query('select name from portfolio_projects')).rows.length,1);
+ await assert.rejects(db.exec("insert into portfolio_projects(name,description_de) values('Anon','Test')"),/permission denied/);
+ await db.exec("reset role;set role authenticated;select set_config('test.is_admin','no',false);");assert.equal((await db.query('select name from portfolio_projects')).rows.length,1);
+ await assert.rejects(db.exec("insert into portfolio_projects(name,description_de) values('Other user','Test')"),/row-level security/);
+ await assert.rejects(db.exec(`insert into storage.objects values('portfolio-images','${image}')`),/row-level security/);
+ await db.exec("select set_config('test.is_admin','yes',false);");assert.equal((await db.query('select name from portfolio_projects')).rows.length,2);
+ await db.exec(`insert into portfolio_projects(name,description_de,image_paths) values('Admin draft','Test',array['${image}']);insert into storage.objects values('portfolio-images','${image}');`);
+ await assert.rejects(db.exec("insert into storage.objects values('product-images','test.jpg')"),/row-level security/);
+ await assert.rejects(db.exec("insert into portfolio_projects(name,description_de,image_paths) values('Invalid','Test',array['javascript:alert(1)'])"),/portfolio_photo_paths/);
+ await assert.rejects(db.exec("insert into portfolio_projects(name,description_de,published) values('Empty','Test',true)"),/portfolio_photo_count/);
+ await assert.rejects(db.exec('delete from portfolio_projects'),/permission denied/);
+ await db.exec("update portfolio_projects set published=false where name='Public';set role anon;");assert.equal((await db.query('select name from portfolio_projects')).rows.length,0);
+ await db.close();console.log('PASS isolated portfolio database: RLS public/draft separation, admin-only writes/uploads, bucket scope, URL and photo constraints, unpublish, no delete grants.');
+})().catch(e=>{console.error(e);process.exit(1);});

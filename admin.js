@@ -16,6 +16,7 @@
   function setAccess(allowed) {
     authorized = allowed;
     window.OrdersAdmin?.setAccess(client,allowed);
+    window.PortfolioAdmin?.setAccess(client,allowed);
     $('adminWorkspace').hidden = !allowed;
     $('adminLogin').hidden = allowed;
     if (!allowed) { rows = []; $('adminProducts').replaceChildren(); reset(); }
@@ -176,3 +177,4 @@
   }
   init();
 })();
+
