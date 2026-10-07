@@ -53,7 +53,7 @@
  }
  async function load(){
   const ticket=++request;state='loading';render();
-  try{const r=await fetch(config.url+'/rest/v1/portfolio_projects?select=id,name,description_de,description_fr,image_paths&published=eq.true&order=created_at.desc,id.desc',{headers:{apikey:config.publishableKey,Accept:'application/json'}});
+  try{const r=await fetch(config.url+'/rest/v1/portfolio_projects?select=id,name,description_de,description_fr,image_paths&published=eq.true&order=sort_order.asc,created_at.desc,id.desc',{headers:{apikey:config.publishableKey,Accept:'application/json'}});
    if(!r.ok)throw new Error('Gallery unavailable');const data=await r.json();if(!Array.isArray(data))throw new Error('Invalid gallery');if(ticket!==request)return;
    projects=data.filter(p=>Array.isArray(p.image_paths)&&p.image_paths.length&&p.image_paths.every(validPath));state='ready';
   }catch{if(ticket!==request)return;projects=[];state='error';}render();
