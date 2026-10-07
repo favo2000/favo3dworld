@@ -82,20 +82,21 @@ function openCatalogSimple(p, image) {
   ProductSizes.fill(select,p,true);
   document.querySelectorAll('#simpleColors button').forEach((x,i) => x.classList.toggle('active',i===0));
   updateSimple();
-  simpleModal.classList.add('open');
   window.ProductOptions.mount(p,image);
+  simpleModal.classList.add('open');
 }
 function refreshCatalogLanguage() {
   for (const card of document.querySelectorAll('[data-catalog-id]')) {
     const p = catalogProducts.find(p => String(p.id) === card.dataset.catalogId);
     if (!p) continue;
-    card.querySelector('.catalog-description').textContent = document.documentElement.lang === 'fr'
-      ? p.description_fr || p.description_de || '' : p.description_de || '';
+    const full=catalogText(p.description_de||'',p.description_fr||p.description_de||'');
+    const short=full.replace(/\s+/g,' ').trim();
+    card.querySelector('.catalog-description').textContent=short.length>105?short.slice(0,102).replace(/\s+\S*$/,'')+'…':short;
     const badge = card.querySelector('.badge');
     badge.textContent = catalogOnDemand(p) ? catalogText('Auf Bestellung','Sur commande')
       : Number(p.stock) > 0 ? catalogText('Auf Lager · ','En stock · ') + p.stock
       : catalogText('Ausverkauft','Épuisé');
-    card.querySelector('button:not(.heart)').textContent=catalogText('Konfigurieren','Configurer');
+    card.querySelector('button:not(.heart)').textContent=catalogText('Kaufen','Acheter');
     const prices=ProductSizes.options(p).map(o=>Number(o.price));
     card.querySelector('strong').textContent=prices.length?(prices.length>1?catalogText('ab ','dès '):'')+'CHF '+Math.min(...prices).toFixed(2):catalogText('Preis auf Anfrage','Prix sur demande');
   }
@@ -112,7 +113,7 @@ function renderCatalog() {
       card = document.createElement('article');
       card.className = 'product catalog-generated';
       // Only static markup enters innerHTML. Database values use textContent.
-      card.innerHTML = '<div class="product-media"><span class="badge demand"></span><img alt=""></div><h3></h3><strong></strong><div class="stars"><small></small></div><button class="hoodie-configure" type="button">Konfigurieren</button>';
+      card.innerHTML = '<div class="product-media"><span class="badge demand"></span><img alt=""></div><h3></h3><strong></strong><div class="stars"><small></small></div><button class="hoodie-configure" type="button">Kaufen</button>';
       grid.appendChild(card);
     }
     card.dataset.catalogId = p.id;
@@ -143,7 +144,7 @@ function renderCatalog() {
       const replacement = button.cloneNode(true);
       button.replaceWith(replacement);
       replacement.addEventListener('click', () => openCatalogSimple(p, src));
-      if(p.id===3)replacement.textContent=catalogText('Konfigurieren','Configurer');
+      if(p.id===3)replacement.textContent=catalogText('Kaufen','Acheter');
     }
     if(catalogBindings[catalogOriginalNames[p.id]])window.ProductOptions.mount(p,src);
     card.hidden = false;
@@ -190,3 +191,4 @@ async function loadCatalog() {
 }
 document.getElementById('catalogRetry').addEventListener('click', loadCatalog);
 loadCatalog();
+

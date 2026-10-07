@@ -21,8 +21,9 @@
   <script src="supabase-config.js"></script>
   <script src="legal-content.js?v=legal-20260928" defer></script>
   <script src="legal.js?v=legal-20260928" defer></script>
-  <script src="product-options.js?v=legal-20260928" defer></script>
-  <script src="products.js?v=admin-sizes-20260918" defer></script>
+  <script src="product-options.js?v=shop-details-20261007" defer></script>
+  <script src="products.js?v=shop-details-20261007" defer></script>
+  <script src="product-details.js?v=shop-details-20261007" defer></script>
   <script src="bulk-inquiry.js?v=work2-20260917" defer></script>
   <script src="checkout.js?v=paypal-fix-20261006-1" defer></script>
   <script src="paypal-sandbox.js?v=paypal-fix-20261006-1" defer></script>
@@ -33,6 +34,7 @@
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="product-options.css?v=language-20260917">
   <link rel="stylesheet" href="language.css?v=language-20260917">
+  <link rel="stylesheet" href="product-details.css?v=shop-details-20261007">
 </head>
 <body>
   <div class="topbar">
@@ -146,7 +148,7 @@
             <h3>Cavallo</h3>
             <strong>ab CHF 15.–</strong>
             <div class="stars">★★★★★ <small>Mehrfarbig konfigurierbar</small></div>
-            <button class="horse-configure" id="openHorseConfig" type="button">Konfigurieren</button>
+            <button class="horse-configure" id="openHorseConfig" type="button">Kaufen</button>
           </article>
           <article class="product" hidden>
             <div class="product-media">
@@ -157,7 +159,7 @@
             <h3>Hoodie Drache</h3>
             <strong>ab CHF 18.–</strong>
             <div class="stars">★★★★★ <small>Körper & Hoodie konfigurierbar</small></div>
-            <button class="hoodie-configure" id="openHoodieConfig" type="button">Konfigurieren</button>
+            <button class="hoodie-configure" id="openHoodieConfig" type="button">Kaufen</button>
           </article>
 
           <article class="product" hidden>
@@ -169,7 +171,7 @@
             <h3>Nordischer Krieger</h3>
             <strong>CHF 34.90</strong>
             <div class="stars">★★★★★ <small>(86)</small></div>
-            <button class="configure" data-name="Nordischer Krieger" data-price="34.90">Konfigurieren</button>
+            <button class="configure" data-name="Nordischer Krieger" data-price="34.90">Kaufen</button>
           </article>
 
           <article class="product" hidden>
@@ -193,7 +195,7 @@
             <h3>Baby Drache</h3>
             <strong>CHF 24.90</strong>
             <div class="stars">★★★★★ <small>(92)</small></div>
-            <button class="configure" data-name="Baby Drache" data-price="24.90">Konfigurieren</button>
+            <button class="configure" data-name="Baby Drache" data-price="24.90">Kaufen</button>
           </article>
         </div>
         <div class="all-products"><button>Alle Produkte ansehen</button></div>
@@ -232,7 +234,7 @@
           <h3>Zen Schildkröte</h3>
           <strong>ab CHF 18.–</strong>
           <div class="stars"><small>50 / 60 / 70 cm · Sondergrösse auf Anfrage</small></div>
-          <button class="hoodie-configure" id="openZenConfig" type="button">Konfigurieren</button>
+          <button class="hoodie-configure" id="openZenConfig" type="button">Kaufen</button>
         </article>
 
         <article class="product" hidden>
@@ -243,7 +245,7 @@
           <h3>Pika Urban</h3>
           <strong>ab CHF 18.–</strong>
           <div class="stars"><small>Mehrfarbig · Farben wählbar</small></div>
-          <button class="hoodie-configure" id="openPikaConfig" type="button">Farben & Grösse wählen</button>
+          <button class="hoodie-configure" id="openPikaConfig" type="button">Kaufen</button>
         </article>
 
         <article class="product" hidden>
@@ -254,7 +256,7 @@
           <h3>Frugo</h3>
           <strong>ab CHF 15.–</strong>
           <div class="stars"><small>Einfarbig · Farbe wählbar</small></div>
-          <button class="hoodie-configure simple-config" data-product="Frugo" data-image="assets/frugo-real.jpg" data-prices="15,20,25" data-color="yes" type="button">Konfigurieren</button>
+          <button class="hoodie-configure simple-config" data-product="Frugo" data-image="assets/frugo-real.jpg" data-prices="15,20,25" data-color="yes" type="button">Kaufen</button>
         </article>
 
         <article class="product" hidden>
@@ -873,7 +875,7 @@ const FR_MAP = new Map([
  ['Deine Bestellung wird erst nach bestätigter Zahlung als bezahlt markiert.','Ta commande n’est marquée comme payée qu’après confirmation du paiement.'],
  ['Shop','Boutique'],['Über uns','À propos'],['Kontakt','Contact'],['Warenkorb','Panier'],
  ['Print on Demand','Impression à la demande'],['Auf Lager','En stock'],['Auf Lager · 5 Stück','En stock · 5 pièces'],
- ['Konfigurieren','Configurer'],['Grösse wählen','Choisir la taille'],['Größe wählen','Choisir la taille'],
+ ['Kaufen','Acheter'],['Konfigurieren','Configurer'],['Grösse wählen','Choisir la taille'],['Größe wählen','Choisir la taille'],
  ['Farben & Grösse wählen','Choisir couleurs & taille'],['Farben & Größe wählen','Choisir couleurs & taille'],
  ['In den Warenkorb','Ajouter au panier'],['Modellfarbe','Couleur du modèle'],['Körper','Corps'],['Hoodie','Sweat à capuche'],
  ['Grösse','Taille'],['Größe','Taille'],['Andere Grösse — auf Anfrage','Autre taille — sur demande'],
@@ -927,3 +929,4 @@ window.addEventListener('DOMContentLoaded',()=>{
 </script>
 </body>
 </html>
+

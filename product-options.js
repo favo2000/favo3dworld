@@ -85,7 +85,8 @@ window.ProductSizes=(()=>{
   image.src=s.image;
   image.onerror=()=>{image.onerror=null;image.src=s.image;};
   modal.querySelector('h2').textContent=s.p.name;
-  let help=modal.querySelector('.horse-options > p');if(!help){help=node('p');modal.querySelector('.horse-options h2').after(help);}help.textContent=t('Wähle die verfügbaren Optionen. Das Foto zeigt ein Beispielmodell.','Choisis les options disponibles. La photo montre un exemple du modèle.');
+  let help=modal.querySelector('.product-selection-help')||modal.querySelector('.horse-options > p:not(.product-detail-description)');if(!help){help=node('p');modal.querySelector('.horse-options h2').after(help);}help.classList.add('product-selection-help');help.textContent=t('Wähle die verfügbaren Optionen. Das Foto zeigt ein Beispielmodell.','Choisis les options disponibles. La photo montre un exemple du modèle.');
+  window.ProductDetails?.sync(s.p,s.image);
  }
  function paint(s){
   const host=s.host;host.querySelector('.product-color-regions').replaceChildren();
@@ -146,7 +147,7 @@ window.ProductSizes=(()=>{
     const size=ProductSizes.selected(sel);if(!size)return;
     window.BulkInquiry.open({product_id:p.id,size,colors:Object.fromEntries(selected(s).map(c=>[c.region_id,c.color_id])),personalization:{text:s.text||''}},p.name,()=>modal.classList.add('open'));modal.classList.remove('open');};host.append(bulk);
   }
-  host.append(node('p','','product-option-status'));paint(s);sync(p.id);
+  host.append(node('p','','product-option-status'));paint(s);sync(p.id);window.ProductDetails?.mount(p,image);
  }
  async function add(id){
   const s=states.get(Number(id));if(!s||s.busy)return;
@@ -187,3 +188,4 @@ window.ProductSizes=(()=>{
  }
  window.ProductOptions={categories,t,label,node,localized,validate,mount,sync,refresh,cartDetails,describe,categoryRefresh};
 })();
+
