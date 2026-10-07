@@ -30,8 +30,8 @@
   <script src="vendor/supabase-2.57.4.js" defer></script>
   <script src="admin-options.js?v=admin-sizes-20260918" defer></script>
   <script src="admin-orders.js?v=legal-20260928" defer></script>
-  <script src="portfolio.js?v=portfolio-20261007" defer></script>
-  <script src="admin-portfolio.js?v=portfolio-20261007" defer></script>
+  <script src="portfolio.js?v=portfolio-order-20261007" defer></script>
+  <script src="admin-portfolio.js?v=portfolio-order-20261007" defer></script>
   <script src="admin.js?v=portfolio-20261007" defer></script>
   <link rel="stylesheet" href="portfolio.css?v=portfolio-20261007">
   <link rel="stylesheet" href="admin.css">
@@ -366,6 +366,8 @@
  <h4 id="portfolioEditHeading">Neue Arbeit</h4>
  <form id="portfolioAdminForm"><fieldset id="portfolioAdminFields">
  <label>Modellname<input id="portfolioName" maxlength="200" required></label>
+ <label>Position auf der Website / Position sur le site<input id="portfolioPosition" type="number" min="1" max="1000000" step="1" value="1000" required inputmode="numeric"></label>
+ <p class="admin-hint">1 = zuerst, 2 = danach. Kleinere Zahlen erscheinen weiter oben. / Les petits nombres apparaissent en premier.</p>
  <label>Beschreibung Deutsch<textarea id="portfolioDescriptionDe" maxlength="5000" rows="4" required></textarea></label>
  <label>Description française<textarea id="portfolioDescriptionFr" maxlength="5000" rows="4"></textarea></label>
  <label>Weitere Fotos<input id="portfolioFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
