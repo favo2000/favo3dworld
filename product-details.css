@@ -1,0 +1,44 @@
+/* Same Favo3DWorld palette; compact cards and spacious product details. */
+#productGrid .product{display:flex;flex-direction:column;min-width:0}
+#productGrid .product[hidden]{display:none}
+#productGrid .catalog-description{color:var(--muted);font-size:.82rem;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.55em;margin:8px 0 14px}
+#productGrid .product>button:not(.heart){margin-top:auto;min-height:44px}
+#productGrid .stars:has(small:empty){display:none}
+.product-detail-modal .horse-card{width:min(1040px,94vw);grid-template-columns:minmax(0,1fr) minmax(0,1fr);overscroll-behavior:contain;max-height:92dvh}
+.product-detail-modal .horse-preview{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;padding:64px 30px 30px;gap:14px}
+.product-detail-modal .horse-preview>.badge{position:absolute;top:24px;left:24px}
+.product-detail-photo{width:100%;aspect-ratio:1;position:relative;overflow:hidden;border-radius:14px;display:grid;place-items:center}
+.product-detail-photo img{width:100%;height:100%;max-height:440px;object-fit:contain!important;filter:none}
+.product-detail-photo.is-detail-crop img{position:absolute;max-height:none;object-fit:initial!important}
+.product-detail-modal .chosen{position:static;width:100%;font-size:.75rem;line-height:1.5}
+.product-photo-caption{margin:0;font-size:.8rem;color:var(--muted);text-align:center}
+.product-photo-thumbnails{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
+.product-photo-thumbnails[hidden],.product-gallery-help[hidden]{display:none}
+.product-photo-thumbnails button{width:68px;height:68px;padding:4px;border:1px solid var(--line);border-radius:10px;background:white;cursor:pointer}
+.product-photo-thumbnails button[aria-pressed=true]{border:2px solid var(--teal);box-shadow:0 0 0 2px white}
+.product-thumbnail-photo{display:block;position:relative;width:100%;height:100%;overflow:hidden;border-radius:6px}
+.product-photo-thumbnails img{width:100%;height:100%;object-fit:cover!important;filter:none;border-radius:6px}
+.product-thumbnail-photo img[style]{object-fit:initial!important}
+.product-gallery-help{margin:0;font-size:.75rem;color:var(--muted);text-align:center}
+.product-detail-modal .horse-options{min-width:0;padding:40px 32px 32px}
+.product-detail-modal .horse-options h2{margin:10px 0;font-size:2.1rem;overflow-wrap:anywhere}
+.product-detail-modal .horse-options>.product-detail-price{font-size:1.4rem;font-weight:700;color:var(--teal);margin:12px 0}
+.product-detail-availability{display:inline-block;border:1px solid var(--line);border-radius:999px;background:var(--cream);padding:6px 12px;font-size:.75rem;margin-bottom:18px}
+.product-detail-modal .horse-options>.product-detail-description{font-size:.9rem;line-height:1.75;color:var(--dark);white-space:pre-line;margin:0 0 18px;overflow-wrap:anywhere}
+.product-detail-modal .product-selection-help{font-size:.75rem;margin:0 0 18px}
+.product-detail-modal .product-color-region{margin:14px 0}
+.product-detail-modal .quantity-control{border-top:1px solid var(--line);padding-top:16px;margin-top:18px}
+.product-detail-modal .quantity-control>span:last-child{width:100%;font-size:.8rem;color:var(--muted);margin-top:4px}
+.product-detail-modal .x{width:44px;height:44px;right:12px;top:12px;border:1px solid var(--line)}
+.product-detail-modal button:focus-visible,.product-detail-modal select:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.product-detail-modal .horse-options>h2:focus{outline:none}
+@media(max-width:760px){
+ .product-detail-modal .horse-card{grid-template-columns:minmax(0,1fr);width:94vw;border-radius:18px;max-height:94dvh}
+ .product-detail-modal .horse-preview{padding:62px 20px 20px;gap:10px}
+ .product-detail-photo{aspect-ratio:1.2;max-width:440px;max-height:340px;align-self:center}
+ .product-detail-modal .horse-options{padding:24px 20px}
+ .product-detail-modal .horse-options h2{font-size:1.8rem}
+ .product-detail-modal .horse-preview>.badge{left:20px;top:24px}
+ .product-detail-modal .config-summary{flex-wrap:wrap;line-height:1.6}
+ .product-detail-modal .product-color-choice{min-height:44px}
+}
