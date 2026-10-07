@@ -1,0 +1,43 @@
+const {JSDOM}=require('jsdom');
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const {webcrypto}=require('node:crypto');
+const read=p=>fs.readFileSync(require('node:path').join(__dirname,'..',p),'utf8');
+const photo=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}.jpg`;
+const fixture=Array.from({length:4},(_,i)=>({id:String(i),name:'Arbeit '+i,description_de:'Vollständige Beschreibung\nMaterial und Grösse '+i,description_fr:'Description complète '+i,image_paths:[photo(i+1),photo(i+11)],published:true}));
+const tick=()=>new Promise(r=>setTimeout(r,25));
+(async()=>{
+ const dom=new JSDOM(read('index.html'),{url:'https://shop.example.test',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,$=id=>w.document.getElementById(id);
+ let rows=structuredClone(fixture),failFetch=false,authorized=true,failSave=false,uploads=[],writes=[];
+ w.FAVO_SUPABASE={url:'https://portfolio.example.test',publishableKey:'public-test'};
+ w.HTMLElement.prototype.scrollIntoView=()=>{};
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+ w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+ w.URL.createObjectURL=()=> 'blob:https://shop.example.test/photo';w.URL.revokeObjectURL=()=>{};
+ Object.defineProperty(w,'crypto',{value:webcrypto});
+ w.fetch=async(url,options)=>{assert.match(url,/\/rest\/v1\/portfolio_projects\?/);assert.equal(options.method,undefined);assert.equal(options.headers.apikey,'public-test');return{ok:!failFetch,json:async()=>structuredClone(rows.filter(r=>r.published))};};
+ w.eval(read('portfolio.js'));await tick();
+ assert.equal($('portfolioGrid').children.length,3);assert.equal($('portfolioMore').hidden,false);assert.equal($('portfolioEmpty').hidden,true);
+ assert.equal($('portfolioGrid').querySelector('.product'),null);assert.doesNotMatch($('portfolioGrid').textContent,/CHF|Kaufen|In den Warenkorb/);
+ $('portfolioMore').click();assert.equal($('portfolioGrid').children.length,4);
+ const opener=$('portfolioGrid').querySelector('button');opener.click();assert.equal($('portfolioDialog').open,true);assert.match($('portfolioDialog').textContent,/Vollständige Beschreibung/);
+ assert.match($('portfolioDialog').querySelector('.portfolio-viewer>img').src,new RegExp(photo(1)));assert.equal($('portfolioDialog').querySelectorAll('.portfolio-thumbnails button').length,2);
+ $('portfolioDialog').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));assert.match($('portfolioDialog').querySelector('.portfolio-viewer>img').src,new RegExp(photo(11)));
+ w.document.documentElement.lang='fr';w.FavoPortfolio.refreshLanguage();assert.match($('portfolioHeading').textContent,/Mes réalisations/);assert.match($('portfolioDialog').textContent,/Description complète/);assert.equal($('portfolioDialog').querySelector('.portfolio-close').getAttribute('aria-label'),'Fermer la galerie');
+ $('portfolioDialog').querySelector('.portfolio-close').click();assert.equal($('portfolioDialog').open,false);assert.equal(w.document.body.classList.contains('portfolio-dialog-open'),false);
+ rows=[{...fixture[0],image_paths:['javascript:alert(1)']}];await w.FavoPortfolio.reload();assert.equal($('portfolioGrid').children.length,0);assert.equal(w.FavoPortfolio.validPath('../secret.png'),false);
+ failFetch=true;await w.FavoPortfolio.reload();assert.match($('portfolioEmpty').textContent,/n’a pas pu/);failFetch=false;rows=[];
+ let isAdmin=true;
+ const client={auth:{getUser:async()=>({data:{user:authorized?{id:'test-admin'}:null}})},rpc:async()=>({data:isAdmin}),
+ storage:{from(bucket){assert.equal(bucket,'portfolio-images');return{upload:async(path,file,options)=>{assert.equal(options.upsert,false);uploads.push(path);return{};}};}},
+ from(table){assert.equal(table,'portfolio_projects');let values,id,write=false;return{select(){if(!write)return this;if(failSave)return Promise.resolve({error:{message:'Test save error'}});writes.push(structuredClone(values));if(id)rows=rows.map(r=>r.id===id?{...r,...values}:r);else rows.push({...values,id:'new-id'});return Promise.resolve({data:[{id:id||'new-id'}]});},order:async()=>({data:structuredClone(rows)}),insert(v){values=v;write=true;return this;},update(v){values=v;write=true;return this;},eq(k,v){id=v;return this;}};}};
+ w.eval(read('admin-portfolio.js'));w.PortfolioAdmin.setAccess(client,true);await tick();assert.equal($('adminPortfolio').hidden,false);
+ $('portfolioName').value='Mein Modell';$('portfolioDescriptionDe').value='<img onerror=alert(1)> Material: PLA';$('portfolioDescriptionFr').value='Mon modèle';$('portfolioPublished').checked=true;
+ Object.defineProperty($('portfolioFiles'),'files',{configurable:true,value:[new w.File(['a'],'a.jpg',{type:'image/jpeg'}),new w.File(['b'],'b.png',{type:'image/png'})]});
+ $('portfolioAdminForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await tick();assert.equal(uploads.length,2);assert.equal(writes.length,1);assert.equal(rows[0].image_paths.length,2);assert.equal($('portfolioGrid').children.length,1);assert.match($('portfolioAdminStatus').textContent,/veröffentlicht/);assert.equal($('portfolioGrid').querySelector('img[onerror]'),null);
+ Object.defineProperty($('portfolioFiles'),'files',{configurable:true,value:[]});$('portfolioAdminList').querySelector('button').click();$('portfolioPublished').checked=false;$('portfolioAdminForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await tick();assert.equal(rows[0].published,false);assert.equal($('portfolioGrid').children.length,0);
+ $('portfolioAdminList').querySelector('button').click();failSave=true;$('portfolioAdminForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await tick();assert.match($('portfolioAdminStatus').textContent,/Test save error/);assert.equal($('portfolioAdminFields').disabled,false);failSave=false;
+ const before=writes.length;isAdmin=false;$('portfolioAdminForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await tick();assert.equal(writes.length,before);assert.match($('portfolioAdminStatus').textContent,/Keine Admin/);
+ w.PortfolioAdmin.setAccess(client,false);assert.equal($('adminPortfolio').hidden,true);assert.equal($('portfolioName').value,'');
+ dom.window.close();console.log('PASS portfolio DOM: DE/FR, 3-card preview/all works, full description, multiple photos, keyboard photo navigation, safe image paths, network failure, separate admin upload/create/edit/unpublish, save failure, rejected non-admin, logout; no product/cart writes.');
+})().catch(e=>{console.error(e);process.exit(1);});
